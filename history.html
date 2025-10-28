@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Battle History</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{min-height:100vh;color:white;background:#0b1021}
+    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);} 
+    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
+    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
+    nav a:hover{color:#fff}
+    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
+    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
+    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+
+    .container{padding:1.5rem;font-family:'Inter',system-ui}
+    .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.75rem}
+    .item{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;margin:10px 0;display:flex;justify-content:space-between;align-items:center}
+    .win{color:#4caf50}
+    .loss{color:#f44336}
+    .trophy{vertical-align:middle;margin-left:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Battle History</h1></div>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="arena.html">Arena</a>
+      <a href="shop.html">Shop</a>
+      <a href="settings.html">Settings</a>
+      <span class="coins" id="coinDisplay">0 Coins</span>
+      <span class="wallet" id="walletDisplay"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="title">Recent Battles</div>
+    <div id="list"></div>
+  </div>
+
+  <script>
+    const session = JSON.parse(localStorage.getItem('trainerSession'));
+    if (!session) location.href = 'index.html';
+    const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
+    const ns = (k) => `${USER_ID}:${k}`;
+    const COIN_KEY = ns('coins');
+    const HIST_KEY = ns('tournaments');
+    const SETTINGS_KEY = ns('settings');
+
+    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
+    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
+
+    const walletDisplay = document.getElementById('walletDisplay');
+    if (session.type==='metamask') walletDisplay.textContent = session.address.slice(0,6)+"..."+session.address.slice(-4);
+    document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('trainerSession'); location.href = 'index.html'; };
+
+    function trophySvg(){
+      return '<svg class="trophy" width="18" height="18" viewBox="0 0 24 24" fill="#ffeb3b" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12v3h3v4a5 5 0 0 1-5 5h-1.1A5.002 5.002 0 0 1 12 17a5.002 5.002 0 0 1-2.9-3H8a5 5 0 0 1-5-5V5h3V2Zm12 5V4H6v3H4v2a3 3 0 0 0 3 3h1.18A5.988 5.988 0 0 1 12 10c1.55 0 2.97.59 4.02 1.56L17 12a3 3 0 0 0 3-3V7h-2Zm-6 7a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 14Zm-4 4h8v2H8v-2Z"/></svg>';
+    }
+
+    function load(){
+      const list = document.getElementById('list'); list.innerHTML='';
+      const history = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+      if (history.length===0){ list.innerHTML = '<div style="opacity:.7">No battles yet.</div>'; return; }
+      history.slice(-20).reverse().forEach((t,i)=>{
+        const div = document.createElement('div'); div.className='item';
+        const left = `#${history.length - i} ${t.player} vs ${t.opponent}`;
+        const right = t.won ? `<span class="win">Victory ${trophySvg()}</span>` : '<span class="loss">Defeat</span>';
+        div.innerHTML = `<span>${left}</span><span>${right}</span>`; list.appendChild(div);
+      });
+    }
+
+    const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
+    document.body.classList.add(`theme-${theme}`);
+    const style = document.createElement('style');
+    style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+    document.head.appendChild(style);
+
+    load();
+  </script>
+</body>
+</html>
+

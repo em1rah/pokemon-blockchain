@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pokémon Trainer – Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
-    body{min-height:100vh;background:linear-gradient(to bottom,#1a2a6c,#b21f1f,#1a2a6c),url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="%23ffcb05" stroke-width="8" opacity="0.1"/></svg>') repeat;background-blend-mode:overlay;color:white;display:flex;flex-direction:column;}
-    header{background:rgba(0,0,0,.4);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{min-height:100vh;color:white;display:flex;flex-direction:column;background:#0b1021 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="%230b1021"/><circle cx="16" cy="16" r="6" fill="none" stroke="%23ffcb05" stroke-width="2" opacity="0.15"/><circle cx="48" cy="48" r="6" fill="none" stroke="%23ffcb05" stroke-width="2" opacity="0.15"/></svg>') repeat;}
+    header h1, nav a, .welcome h2, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
+    header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
+    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);}
     header h1{font-size:1.8rem;color:#ffcb05;}
     nav a{margin-left:1.5rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:.2s;}
     nav a:hover{color:#fff;}
@@ -25,7 +30,7 @@
     .arena{background:linear-gradient(to bottom,rgba(0,0,0,.7),rgba(0,0,0,.9));}
     .battlefield{display:flex;justify-content:space-around;align-items:flex-end;width:100%;max-width:900px;margin:30px 0;position:relative;}
     .pokemon{position:relative;text-align:center;min-width:180px;}
-    .pokemon img{width:160px;height:160px;image-rendering:pixelated;transition:transform .2s;}
+    .pokemon img{width:200px;height:200px;object-fit:contain;transition:transform .2s;filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));}
     .pokemon.hit img{animation:shake .4s;}
     @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}50%{transform:translateX(8px);}75%{transform:translateX(-8px);}}
     .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:20px;width:160px;margin:10px auto;position:relative;overflow:hidden;}
@@ -48,7 +53,7 @@
     .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:20px;}
     .shop-card{background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;padding:14px;text-align:center;transition:.3s;}
     .shop-card:hover{transform:scale(1.05);background:rgba(255,203,5,.2);}
-    .shop-card img{width:100px;height:100px;image-rendering:pixelated;margin:8px 0;}
+    .shop-card img{width:140px;height:140px;object-fit:contain;margin:8px 0;filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));}
     .shop-card .price{color:#ffeb3b;font-weight:700;font-size:1.1rem;}
     .shop-card button{margin-top:8px;padding:8px 16px;background:#4caf50;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
     .shop-card button:disabled{background:#666;cursor:not-allowed;}
@@ -58,7 +63,7 @@
     .my-pokemon-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:16px;}
     .my-card{background:rgba(0,0,0,.4);border:2px solid #ffcb05;border-radius:12px;padding:12px;text-align:center;position:relative;}
     .my-card.equipped::after{content:"★";position:absolute;top:8px;right:8px;color:#ffeb3b;font-size:1.4rem;}
-    .my-card img{width:90px;height:90px;image-rendering:pixelated;}
+    .my-card img{width:120px;height:120px;object-fit:contain;}
     .equip-btn{margin-top:6px;padding:6px 12px;background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;}
     .equip-btn:hover{background:#f57c00;}
 
@@ -70,6 +75,24 @@
     .logout:hover{background:#d32f2f;}
 
     .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
+    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
+    .settings-btn{margin-left:12px;color:#ffcb05;text-decoration:none;font-weight:600;}
+    .settings-btn:hover{color:#fff}
+    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+
+    /* Settings */
+    .settings-panel{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.6);box-shadow:0 15px 35px rgba(0,0,0,.6);}
+    .settings-panel.active{display:block;}
+    .settings-field{margin:10px 0}
+    .settings-field label{display:block;margin-bottom:6px;color:#ffcb05}
+    .settings-field input, .settings-field select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,203,5,.4);background:rgba(255,255,255,.1);color:#fff;width:100%}
+    .save-settings{margin-top:10px;padding:10px 16px;background:#4caf50;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
+
+    /* Themes (game-inspired) */
+    .theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed;}
+    .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed;}
+    .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed;}
+    .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed;}
 
     @media(max-width:700px){
       .battlefield{flex-direction:column;align-items:center;gap:30px;}
@@ -90,7 +113,10 @@
       <a href="#" id="navShop">Shop</a>
       <a href="#" id="navMyPokemon">My Pokémon</a>
       <a href="#" id="navTournaments">History</a>
+      <a href="#" id="navSettings" class="settings-btn">Settings</a>
       <span class="coins" id="coinDisplay">∞ Coins</span>
+      <span class="wallet" id="walletDisplay"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
     </nav>
   </header>
 
@@ -101,67 +127,27 @@
     <button class="btn-enter" id="enterArenaBtn">Enter Arena</button>
   </section>
 
-  <!-- TABS -->
-  <div class="tab-content active" id="arenaTab">
-    <div class="arena">
-      <h2 style="color:#ffcb05;font-size:2rem;margin-bottom:8px;">Battle Arena</h2>
-      <p style="color:#ccc;margin-bottom:20px;">Defeat your opponent to win a tournament!</p>
-
-      <div class="battlefield">
-        <div class="pokemon" id="playerPokemon">
-          <div class="name" id="playerName">Pikachu</div>
-          <img id="playerSprite" src="" alt="You">
-          <div class="hp-bar"><div class="hp-fill" id="playerHP"></div><div class="hp-text" id="playerHPText">100/100</div></div>
-        </div>
-        <div class="pokemon" id="opponentPokemon">
-          <div class="name" id="opponentName">???</div>
-          <img id="opponentSprite" src="" alt="Opponent">
-          <div class="hp-bar"><div class="hp-fill" id="opponentHP"></div><div class="hp-text" id="opponentHPText">100/100</div></div>
-        </div>
-      </div>
-
-      <div class="moves">
-        <button class="move-btn" data-move="thunderbolt">Thunderbolt</button>
-        <button class="move-btn" data-move="quickattack">Quick Attack</button>
-        <button class="move-btn" data-move="irontail">Iron Tail</button>
-        <button class="move-btn" data-move="run">Run Away</button>
-      </div>
-
-      <div class="log" id="battleLog">
-        <p class="system">Click "Enter Arena" to begin...</p>
-      </div>
-
-      <button class="btn-attack" id="newBattleBtn" style="margin-top:20px;display:none;padding:12px 30px;background:#4caf50;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;">
-        Start New Battle
-      </button>
-    </div>
+  <!-- NAV CARDS -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:1rem;">
+    <a href="arena.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
+      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">Battle Arena</div>
+      <div style="color:#ccc;">Fight and earn trophies & coins</div>
+    </a>
+    <a href="shop.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
+      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">Shop & My Pokémon</div>
+      <div style="color:#ccc;">Buy and manage your team</div>
+    </a>
+    <a href="history.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
+      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">History</div>
+      <div style="color:#ccc;">See your latest battles</div>
+    </a>
+    <a href="settings.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
+      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">Settings</div>
+      <div style="color:#ccc;">Theme and profile</div>
+    </a>
   </div>
 
-  <!-- SHOP TAB -->
-  <div class="tab-content" id="shopTab">
-    <h2 style="color:#ffcb05;text-align:center;margin-bottom:16px;">Pokémon Shop</h2>
-    <p style="text-align:center;color:#ddd;margin-bottom:20px;">Buy new Pokémon with your infinite coins!</p>
-    <div class="shop-grid" id="shopGrid"></div>
-  </div>
-
-  <!-- MY POKEMON TAB -->
-  <div class="tab-content" id="myPokemonTab">
-    <h2 style="color:#ffcb05;text-align:center;margin-bottom:16px;">My Pokémon</h2>
-    <p style="text-align:center;color:#ddd;margin-bottom:20px;">Equip a Pokémon to battle with it!</p>
-    <div class="my-pokemon-list" id="myPokemonList">
-      <p style="grid-column:1/-1;text-align:center;color:#aaa;">No Pokémon yet. Visit the shop!</p>
-    </div>
-  </div>
-
-  <!-- TOURNAMENT HISTORY -->
-  <div class="tournament-list" id="tournamentList">
-    <h3 style="color:#ffcb05;text-align:center;margin-bottom:16px;">Tournament History</h3>
-    <div id="tournamentEntries">
-      <p style="text-align:center;color:#aaa;">No battles yet. Enter the arena!</p>
-    </div>
-  </div>
-
-  <button class="logout" id="logoutBtn">Logout</button>
+  
 
   <script>
     // === Session ===
@@ -174,74 +160,57 @@
     // === DOM ===
     const welcomeSection = document.getElementById('welcomeSection');
     const enterArenaBtn = document.getElementById('enterArenaBtn');
-    const tabs = {
-      arena: document.getElementById('arenaTab'),
-      shop: document.getElementById('shopTab'),
-      myPokemon: document.getElementById('myPokemonTab')
-    };
-    const playerSprite = document.getElementById('playerSprite');
-    const playerName = document.getElementById('playerName');
-    const playerHP = document.getElementById('playerHP');
-    const playerHPText = document.getElementById('playerHPText');
-    const opponentSprite = document.getElementById('opponentSprite');
-    const opponentName = document.getElementById('opponentName');
-    const opponentHP = document.getElementById('opponentHP');
-    const opponentHPText = document.getElementById('opponentHPText');
-    const battleLog = document.getElementById('battleLog');
-    const newBattleBtn = document.getElementById('newBattleBtn');
-    const moveButtons = document.querySelectorAll('.move-btn');
-    const shopGrid = document.getElementById('shopGrid');
-    const myPokemonList = document.getElementById('myPokemonList');
-    const tournamentEntries = document.getElementById('tournamentEntries');
+    const walletDisplay = document.getElementById('walletDisplay');
 
     // === Player & Coins ===
     let player = { id: 25, name: "Pikachu", hp: 100, maxHp: 100 };
-    const COINS_INFINITE = true;
-    document.getElementById('coinDisplay').textContent = COINS_INFINITE ? '∞ Coins' : '0 Coins';
+    const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
+    const ns = (k) => `${USER_ID}:${k}`;
+    const COIN_KEY = ns('coins');
+    const STARTER_KEY = ns('starterClaimed');
+    const SETTINGS_KEY = ns('settings');
+    const WALLET = session.type === 'metamask' ? session.address : null;
+    if (WALLET) walletDisplay.textContent = WALLET.slice(0,6)+"..."+WALLET.slice(-4);
 
-    // === Pokémon Shop Data ===
-    const shopPokemon = [
-      { id: 1, name: "Bulbasaur", price: 500 },
-      { id: 4, name: "Charmarmander", price: 600 },
-      { id: 7, name: "Squirtle", price: 600 },
-      { id: 10, name: "Caterpie", price: 200 },
-      { id: 13, name: "Weedle", price: 200 },
-      { id: 16, name: "Pidgey", price: 300 },
-      { id: 19, name: "Rattata", price: 250 },
-      { id: 23, name: "Ekans", price: 400 },
-      { id: 27, name: "Sandshrew", price: 450 },
-      { id: 37, name: "Vulpix", price: 700 },
-      { id: 39, name: "Jigglypuff", price: 550 },
-      { id: 52, name: "Meowth", price: 800 },
-      { id: 63, name: "Abra", price: 900 },
-      { id: 74, name: "Geodude", price: 400 },
-      { id: 92, name: "Gastly", price: 750 },
-      { id: 104, name: "Cubone", price: 650 },
-      { id: 133, name: "Eevee", price: 1200 },
-      { id: 143, name: "Snorlax", price: 2000 },
-      { id: 147, name: "Dratini", price: 1500 },
-      { id: 150, name: "Mewtwo", price: 5000 }
-    ];
+    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
+    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
 
-    // === Owned Pokémon & Equipped ===
-    let ownedPokemon = JSON.parse(localStorage.getItem('ownedPokemon') || '[]');
-    if (!ownedPokemon.find(p => p.id === 25)) {
-      ownedPokemon.push({ id: 25, name: "Pikachu" });
-      localStorage.setItem('ownedPokemon', JSON.stringify(ownedPokemon));
-    }
-    let equippedId = parseInt(localStorage.getItem('equippedPokemon') || '25');
+    // This page no longer hosts arena/shop; it's a hub. Still show wallet & coins.
 
-    // === Load Equipped Pokémon ===
-    function loadEquipped() {
-      const p = ownedPokemon.find(p => p.id === equippedId) || ownedPokemon[0];
-      player.id = p.id;
-      player.name = p.name;
-      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`;
-      playerName.textContent = p.name;
-      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-    }
+    // No-op functions retained for minimal header logic
 
     // === Shop ===
+    function loadStarters(){
+      const claimed = localStorage.getItem(STARTER_KEY) === '1';
+      starterGrid.innerHTML = '';
+      starterNotice.style.display = claimed ? 'none' : 'block';
+      if (claimed) return;
+      starterPokemon.forEach(poke => {
+        const card = document.createElement('div');
+        card.className = 'shop-card';
+        card.innerHTML = `
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${poke.id}.png" alt="${poke.name}">
+          <div class="name">${poke.name}</div>
+          <div class="price">Free Starter</div>
+          <button>Claim</button>
+        `;
+        card.querySelector('button').onclick = () => claimStarter(poke);
+        starterGrid.appendChild(card);
+      });
+    }
+
+    function claimStarter(poke){
+      if (!ownedPokemon.some(o=>o.id===poke.id)){
+        ownedPokemon.push({ id: poke.id, name: poke.name });
+        localStorage.setItem('ownedPokemon', JSON.stringify(ownedPokemon));
+      }
+      const ownedStarters = ownedPokemon.filter(o=>[1,4,7].includes(o.id)).length;
+      if (ownedStarters >= 3) { localStorage.setItem(STARTER_KEY,'1'); }
+      loadStarters();
+      loadMyPokemon();
+    }
+
     function loadShop() {
       shopGrid.innerHTML = '';
       shopPokemon.forEach(poke => {
@@ -249,7 +218,7 @@
         const card = document.createElement('div');
         card.className = 'shop-card';
         card.innerHTML = `
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png" alt="${poke.name}">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${poke.id}.png" alt="${poke.name}">
           <div class="name">${poke.name}</div>
           <div class="price">${poke.price} Coins</div>
           <button ${owned ? 'disabled' : ''}>${owned ? 'Owned' : 'Buy'}</button>
@@ -262,14 +231,15 @@
     }
 
     function buyPokemon(poke) {
-      if (COINS_INFINITE || true) {
-        if (!ownedPokemon.some(o => o.id === poke.id)) {
-          ownedPokemon.push({ id: poke.id, name: poke.name });
-          localStorage.setItem('ownedPokemon', JSON.stringify(ownedPokemon));
-          loadShop();
-          loadMyPokemon();
-          alert(`You bought ${poke.name}!`);
-        }
+      const coins = getCoins();
+      if (coins < poke.price) { alert('Not enough coins'); return; }
+      if (!ownedPokemon.some(o => o.id === poke.id)) {
+        setCoins(coins - poke.price);
+        ownedPokemon.push({ id: poke.id, name: poke.name });
+        localStorage.setItem('ownedPokemon', JSON.stringify(ownedPokemon));
+        loadShop();
+        loadMyPokemon();
+        alert(`You bought ${poke.name}!`);
       }
     }
 
@@ -284,7 +254,7 @@
         const card = document.createElement('div');
         card.className = `my-card ${poke.id === equippedId ? 'equipped' : ''}`;
         card.innerHTML = `
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png" alt="${poke.name}">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${poke.id}.png" alt="${poke.name}">
           <div>${poke.name}</div>
           <button class="equip-btn" ${poke.id === equippedId ? 'disabled' : ''}>
             ${poke.id === equippedId ? 'Equipped' : 'Equip'}
@@ -341,7 +311,7 @@
         hp: 100,
         maxHp: 100
       };
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${oppId}.png`;
+      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
       opponentName.textContent = opponent.name;
       updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
 
@@ -414,11 +384,14 @@
       loadTournaments();
 
       if (won && !ran) {
-        log(`<strong style="color:#4caf50;">Victory! You won the tournament! Trophy</strong>`, 'system');
+        log(`<strong style=\"color:#4caf50;\">Victory! You won the tournament! Trophy</strong>`, 'system');
+        const reward = 100;
+        setCoins(getCoins() + reward);
+        log(`You earned <strong>${reward}</strong> coins!`, 'system');
       } else if (ran) {
         log(`<strong style="color:#ff9800;">You escaped safely.</strong>`, 'system');
       } else {
-        log(`<strong style="color:#f44336;">Defeat... Better luck next time.</strong>`, 'system');
+        log(`<strong style=\"color:#f44336;\">Defeat... Better luck next time.</strong>`, 'system');
       }
 
       newBattleBtn.style.display = 'block';
@@ -450,41 +423,47 @@
     }
 
     // === Navigation ===
-    document.getElementById('navArena').onclick = e => { e.preventDefault(); enterArenaBtn.click(); };
-    document.getElementById('navShop').onclick = e => { e.preventDefault(); showTab('shop'); };
-    document.getElementById('navMyPokemon').onclick = e => { e.preventDefault(); showTab('myPokemon'); };
-    document.getElementById('navTournaments').onclick = e => { e.preventDefault(); loadTournaments(); };
+    document.getElementById('navArena').setAttribute('href','arena.html');
+    document.getElementById('navShop').setAttribute('href','shop.html');
+    document.getElementById('navMyPokemon').setAttribute('href','shop.html#my');
+    document.getElementById('navTournaments').setAttribute('href','history.html');
+    document.getElementById('navSettings').setAttribute('href','settings.html');
     document.getElementById('logoutBtn').onclick = () => {
       localStorage.removeItem('trainerSession');
       location.href = 'index.html';
     };
 
-    // === Load Tournaments ===
-    function loadTournaments() {
-      const history = JSON.parse(localStorage.getItem('tournaments') || '[]');
-      tournamentEntries.innerHTML = '';
-      if (history.length === 0) {
-        tournamentEntries.innerHTML = '<p style="text-align:center;color:#aaa;">No tournaments yet. Enter the arena!</p>';
-        return;
-      }
-      history.slice(-10).reverse().forEach((t, i) => {
-        const div = document.createElement('div');
-        div.className = 'tournament-item';
-        div.innerHTML = `
-          <span><strong>#${history.length - i}</strong> ${t.player} vs ${t.opponent}</span>
-          <span style="color:${t.won ? '#4caf50' : '#f44336'};">
-            ${t.won ? 'Victory Trophy' : 'Defeat'}
-          </span>
-        `;
-        tournamentEntries.appendChild(div);
-      });
+    // History is now its own page
+
+    // === Settings ===
+    function applyTheme(theme){
+      const body = document.body;
+      body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
+      if (theme === 'johto') body.classList.add('theme-johto');
+      else if (theme === 'gym') body.classList.add('theme-gym');
+      else if (theme === 'champion') body.classList.add('theme-champion');
+      else body.classList.add('theme-kanto');
     }
+    function loadSettings(){
+      const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      themeSelect.value = s.theme || 'kanto';
+      displayNameInput.value = s.displayName || '';
+      applyTheme(themeSelect.value);
+    }
+    function showSettings(){
+      Object.values(tabs).forEach(t => t.classList.remove('active'));
+      settingsTab.classList.add('active');
+      loadSettings();
+    }
+    document.getElementById('saveSettingsBtn').onclick = () => {
+      const s = { theme: themeSelect.value, displayName: displayNameInput.value.trim() };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+      applyTheme(s.theme);
+      alert('Settings saved');
+    };
 
     // === Init ===
-    loadEquipped();
-    loadTournaments();
-    loadShop();
-    loadMyPokemon();
+    loadSettings();
   </script>
 </body>
 </html>

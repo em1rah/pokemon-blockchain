@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Battle Arena</title>
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{min-height:100vh;color:white;display:flex;flex-direction:column;background:#0b1021;}
+    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);} 
+    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
+    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
+    nav a:hover{color:#fff}
+    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
+    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
+    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+
+    .container{padding:1.5rem;}
+    .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.25rem;font-family:'Inter',system-ui}
+    .subtitle{color:#ccc;margin-bottom:1rem;font-family:'Inter',system-ui}
+
+    .battlefield{display:flex;justify-content:space-around;align-items:flex-end;width:100%;max-width:900px;margin:20px auto;position:relative;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px}
+    .pokemon{position:relative;text-align:center;min-width:200px}
+    .pokemon img{width:200px;height:200px;object-fit:contain;filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));}
+    .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:20px;width:200px;margin:10px auto;position:relative;overflow:hidden;}
+    .hp-fill{height:100%;background:#4caf50;border-radius:8px;transition:width .5s ease,background .3s;}
+    .hp-text{position:absolute;top:0;left:0;right:0;text-align:center;font-weight:600;font-size:13px;color:white;text-shadow:1px 1px 2px #000;}
+    .name{font-weight:700;color:#ffcb05;font-size:1.1rem;text-shadow:1px 1px 3px #000;margin-bottom:4px;font-family:'Inter',system-ui}
+
+    .moves{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:0 auto;max-width:700px;padding:0 1rem}
+    .move-btn{padding:14px;background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;color:white;font-weight:600;cursor:pointer;transition:.2s;font-family:'Inter',system-ui}
+    .move-btn:hover{background:rgba(255,203,5,.2);} 
+    .move-btn:disabled{background:#444;cursor:not-allowed;opacity:.6;}
+
+    .log{background:rgba(0,0,0,.6);padding:16px;border-radius:12px;max-height:160px;overflow-y:auto;font-size:15px;margin:16px auto 0;max-width:900px;border:1px solid rgba(255,203,5,.3);font-family:'Inter',system-ui}
+    .log p{margin:6px 0;opacity:.9;}
+    .system{color:#ffcb05;font-weight:600}
+    .trophy{vertical-align:middle;margin-left:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Pokémon Arena</h1></div>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="history.html">History</a>
+      <a href="settings.html">Settings</a>
+      <span class="coins" id="coinDisplay">0 Coins</span>
+      <span class="wallet" id="walletDisplay"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="title">Battle Arena</div>
+    <div class="subtitle">Defeat your opponent to earn coins and a trophy</div>
+
+    <div class="battlefield">
+      <div class="pokemon" id="playerPokemon">
+        <div class="name" id="playerName">Pikachu</div>
+        <img id="playerSprite" src="" alt="You">
+        <div class="hp-bar"><div class="hp-fill" id="playerHP"></div><div class="hp-text" id="playerHPText">100/100</div></div>
+      </div>
+      <div class="pokemon" id="opponentPokemon">
+        <div class="name" id="opponentName">???</div>
+        <img id="opponentSprite" src="" alt="Opponent">
+        <div class="hp-bar"><div class="hp-fill" id="opponentHP"></div><div class="hp-text" id="opponentHPText">100/100</div></div>
+      </div>
+    </div>
+
+    <div class="moves">
+      <button class="move-btn" data-move="thunderbolt">Thunderbolt</button>
+      <button class="move-btn" data-move="quickattack">Quick Attack</button>
+      <button class="move-btn" data-move="irontail">Iron Tail</button>
+      <button class="move-btn" data-move="run">Run Away</button>
+    </div>
+
+    <div class="log" id="battleLog">
+      <p class="system">Click any move to begin...</p>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
+      <button class="move-btn" id="startBtn">Start Battle</button>
+      <button class="move-btn" id="againBtn" disabled>Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    const session = JSON.parse(localStorage.getItem('trainerSession'));
+    // Web3 setup
+    const NFT_ADDRESS = '0xYourPokemonNFTAddressHere';
+    const BADGE_ADDRESS = '0xYourBadgeAddressHere';
+    const ERC721_ABI = [
+      'function mint(address to, uint256 pokeId, string memory pokeName) external returns (uint256)',
+      'function ownerOf(uint256 tokenId) view returns (address)'
+    ];
+    const BADGE_ABI = [
+      'function mint(address to, uint256 id, uint256 amount, bytes memory data) external'
+    ];
+    function getSigner(){
+      if (!window.ethereum) return null;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      return provider.getSigner();
+    }
+    if (!session) location.href = 'index.html';
+    const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
+    const ns = (k) => `${USER_ID}:${k}`;
+    const COIN_KEY = ns('coins');
+    const OWNED_KEY = ns('owned');
+    const EQUIPPED_KEY = ns('equipped');
+    const HIST_KEY = ns('tournaments');
+    const SETTINGS_KEY = ns('settings');
+
+    const walletDisplay = document.getElementById('walletDisplay');
+    if (session.type === 'metamask') walletDisplay.textContent = session.address.slice(0,6)+"..."+session.address.slice(-4);
+    document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('trainerSession'); location.href = 'index.html'; };
+
+    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
+    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
+
+    // Owned & equipped
+    let ownedPokemon = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
+    if (!ownedPokemon.find(p => p.id === 25)) {
+      ownedPokemon.push({ id: 25, name: 'Pikachu' });
+      localStorage.setItem(OWNED_KEY, JSON.stringify(ownedPokemon));
+    }
+    let equippedId = parseInt(localStorage.getItem(EQUIPPED_KEY) || '25');
+
+    const player = { id: equippedId, name: (ownedPokemon.find(p=>p.id===equippedId)||{name:'Pikachu'}).name, hp:100, maxHp:100 };
+    const playerSprite = document.getElementById('playerSprite');
+    const playerName = document.getElementById('playerName');
+    const playerHP = document.getElementById('playerHP');
+    const playerHPText = document.getElementById('playerHPText');
+    const opponentSprite = document.getElementById('opponentSprite');
+    const opponentName = document.getElementById('opponentName');
+    const opponentHP = document.getElementById('opponentHP');
+    const opponentHPText = document.getElementById('opponentHPText');
+    const battleLog = document.getElementById('battleLog');
+    const moveButtons = document.querySelectorAll('.move-btn');
+
+    function updateHP(bar, textEl, hp, max) {
+      const percent = (hp / max) * 100;
+      bar.style.width = percent + '%';
+      textEl.textContent = `${hp}/${max}`;
+      bar.style.background = percent > 50 ? '#4caf50' : percent > 25 ? '#ff9800' : '#f44336';
+    }
+    function log(msg, cls=''){
+      const p = document.createElement('p'); p.innerHTML = msg; if (cls) p.className = cls; battleLog.appendChild(p); battleLog.scrollTop = battleLog.scrollHeight;
+    }
+
+    function loadPlayer(){
+      const p = ownedPokemon.find(p=>p.id===equippedId) || ownedPokemon[0];
+      player.id = p.id; player.name = p.name; player.hp = player.maxHp;
+      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
+      playerName.textContent = p.name;
+      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+    }
+
+    let opponent = null; let battleActive = false; let playerTurn = true;
+    const moves = {
+      thunderbolt: { name: 'Thunderbolt', power: 30, color: '#ffeb3b' },
+      quickattack: { name: 'Quick Attack', power: 20, color: '#81c784' },
+      irontail: { name: 'Iron Tail', power: 40, color: '#9e9e9e' },
+      run: { name: 'Run Away', power: 0, color: '#ff9800', run: true }
+    };
+
+    async function newBattle(){
+      battleActive = true; playerTurn = true; battleLog.innerHTML = ''; moveButtons.forEach(b=>b.disabled=false); loadPlayer();
+      const oppId = Math.floor(Math.random() * 150) + 1;
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${oppId}`);
+      const data = await res.json();
+      opponent = { id: oppId, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100 };
+      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
+      opponentName.textContent = opponent.name; updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+      log(`A wild <strong>${opponent.name}</strong> appeared!`, 'system');
+      document.getElementById('againBtn').disabled = true;
+    }
+
+    moveButtons.forEach(btn=>btn.addEventListener('click',()=>{
+      if (!battleActive || !playerTurn) return;
+      const key = btn.dataset.move; const move = moves[key];
+      if (move.run){ log(`<strong>${player.name}</strong> ran away.`, 'system'); return endBattle(false, true); }
+      const dmg = Math.floor(Math.random()*8)+move.power; opponent.hp=Math.max(0,opponent.hp-dmg);
+      log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
+      log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
+      updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+      if (opponent.hp===0) return setTimeout(()=>endBattle(true), 300);
+      playerTurn=false; moveButtons.forEach(b=>b.disabled=true);
+      setTimeout(()=>{
+        const oppDmg = Math.floor(Math.random()*25)+15; player.hp=Math.max(0,player.hp-oppDmg);
+        log(`${opponent.name} attacked! You took <strong>${oppDmg}</strong> damage.`);
+        updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+        if (player.hp===0) return endBattle(false);
+        playerTurn=true; moveButtons.forEach(b=>b.disabled=false);
+      }, 900);
+    }));
+
+    function trophySvg(){
+      return '<svg class="trophy" width="18" height="18" viewBox="0 0 24 24" fill="#ffeb3b" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12v3h3v4a5 5 0 0 1-5 5h-1.1A5.002 5.002 0 0 1 12 17a5.002 5.002 0 0 1-2.9-3H8a5 5 0 0 1-5-5V5h3V2Zm12 5V4H6v3H4v2a3 3 0 0 0 3 3h1.18A5.988 5.988 0 0 1 12 10c1.55 0 2.97.59 4.02 1.56L17 12a3 3 0 0 0 3-3V7h-2Zm-6 7a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 14Zm-4 4h8v2H8v-2Z"/></svg>';
+    }
+
+    async function endBattle(won, ran=false){
+      battleActive=false; moveButtons.forEach(b=>b.disabled=true);
+      const history = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+      history.push({ player: player.name, opponent: opponent.name, won: won && !ran, date: new Date().toISOString() });
+      localStorage.setItem(HIST_KEY, JSON.stringify(history));
+      if (won && !ran){
+        log(`<strong style=\"color:#4caf50;\">Victory!</strong> ${trophySvg()}`, 'system');
+        const reward=100; setCoins(getCoins()+reward); log(`You earned <strong>${reward}</strong> coins.`);
+        // Mint victory badge NFT
+        try{
+          const signer = getSigner();
+          if (signer) {
+            const badge = new ethers.Contract(BADGE_ADDRESS, BADGE_ABI, signer);
+            await badge.mint(session.address, 1, 1, '0x');
+          }
+        }catch(e){ console.warn('Badge mint failed:', e); }
+      } else if (ran){
+        log(`<strong style=\"color:#ff9800;\">You escaped safely.</strong>`, 'system');
+      } else {
+        log(`<strong style=\"color:#f44336;\">Defeat...</strong>`, 'system');
+      }
+      document.getElementById('againBtn').disabled = false;
+    }
+
+    // Apply theme
+    const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
+    document.body.classList.add(`theme-${theme}`);
+    // minimal theme CSS fallback via classes borrowed from home
+    const style = document.createElement('style');
+    style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+    document.head.appendChild(style);
+
+    // controls
+    document.getElementById('startBtn').onclick = () => { if (!battleActive) newBattle(); };
+    document.getElementById('againBtn').onclick = () => { if (!battleActive) newBattle(); };
+  </script>
+</body>
+</html>
+

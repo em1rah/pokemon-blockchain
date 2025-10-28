@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop & My Pokémon</title>
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{min-height:100vh;color:white;background:#0b1021}
+    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);} 
+    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
+    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
+    nav a:hover{color:#fff}
+    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
+    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
+    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+
+    .container{padding:1.5rem;font-family:'Inter',system-ui}
+    .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.25rem}
+    .subtitle{color:#ccc;margin-bottom:1rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+    .card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px;text-align:center}
+    .card img{width:140px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+    .price{color:#ffeb3b;font-weight:700;margin-top:4px}
+    .btn{margin-top:8px;padding:8px 14px;background:#4caf50;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
+    .btn:disabled{background:#666}
+    .equip{background:#ff9800}
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Pokémon Shop</h1></div>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="arena.html">Arena</a>
+      <a href="history.html">History</a>
+      <a href="settings.html">Settings</a>
+      <span class="coins" id="coinDisplay">0 Coins</span>
+      <span class="wallet" id="walletDisplay"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="title">Starters</div>
+    <div class="subtitle">Claim up to three free starters</div>
+    <div class="grid" id="starterGrid"></div>
+
+    <div class="title" style="margin-top:18px;">Shop</div>
+    <div class="subtitle">Spend coins to expand your team</div>
+    <div class="grid" id="shopGrid"></div>
+
+    <div class="title" style="margin-top:18px;">My Pokémon</div>
+    <div class="grid" id="myGrid"></div>
+  </div>
+
+  <script>
+    const session = JSON.parse(localStorage.getItem('trainerSession'));
+    if (!session) location.href = 'index.html';
+    const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
+    const ns = (k) => `${USER_ID}:${k}`;
+    const COIN_KEY = ns('coins');
+    const STARTER_KEY = ns('starterClaimed');
+    // Web3 setup
+    const NFT_ADDRESS = '0xYourPokemonNFTAddressHere';
+    const ERC721_ABI = [
+      'function mint(address to, uint256 pokeId, string memory pokeName) external returns (uint256)'
+    ];
+    function getSigner(){ if (!window.ethereum) return null; const provider=new ethers.providers.Web3Provider(window.ethereum); return provider.getSigner(); }
+
+    const OWNED_KEY = ns('owned');
+    const EQUIPPED_KEY = ns('equipped');
+    const SETTINGS_KEY = ns('settings');
+
+    const walletDisplay = document.getElementById('walletDisplay');
+    if (session.type === 'metamask') walletDisplay.textContent = session.address.slice(0,6)+"..."+session.address.slice(-4);
+    document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('trainerSession'); location.href = 'index.html'; };
+
+    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
+    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
+
+    let owned = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
+    if (!owned.find(p=>p.id===25)) { owned.push({ id:25, name:'Pikachu' }); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
+    let equippedId = parseInt(localStorage.getItem(EQUIPPED_KEY) || '25');
+
+    const starters = [ {id:1,name:'Bulbasaur'},{id:4,name:'Charmander'},{id:7,name:'Squirtle'} ];
+    const shop = [
+      { id: 10, name: 'Caterpie', price: 200 }, { id: 13, name: 'Weedle', price: 200 },
+      { id: 16, name: 'Pidgey', price: 300 },   { id: 19, name: 'Rattata', price: 250 },
+      { id: 23, name: 'Ekans', price: 400 },    { id: 27, name: 'Sandshrew', price: 450 },
+      { id: 37, name: 'Vulpix', price: 700 },   { id: 39, name: 'Jigglypuff', price: 550 },
+      { id: 52, name: 'Meowth', price: 800 },   { id: 63, name: 'Abra', price: 900 },
+      { id: 74, name: 'Geodude', price: 400 },  { id: 92, name: 'Gastly', price: 750 },
+      { id: 104, name: 'Cubone', price: 650 },  { id: 133, name: 'Eevee', price: 1200 },
+      { id: 143, name: 'Snorlax', price: 2000 },{ id: 147, name: 'Dratini', price: 1500 },
+      { id: 150, name: 'Mewtwo', price: 5000 }
+    ];
+
+    function img(id){ return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
+
+    function loadStarters(){
+      const claimed = localStorage.getItem(STARTER_KEY)==='1';
+      const grid = document.getElementById('starterGrid');
+      grid.innerHTML=''; if (claimed) { grid.innerHTML='<div style="opacity:.7">Starters claimed.</div>'; return; }
+      starters.forEach(p=>{
+        const ownedAlready = owned.some(o=>o.id===p.id);
+        const div = document.createElement('div');
+        div.className='card';
+        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">Free Starter</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Claim'}</button>`;
+        if (!ownedAlready) div.querySelector('button').onclick=()=>claimStarter(p);
+        grid.appendChild(div);
+      });
+    }
+    function claimStarter(p){
+      if (!owned.some(o=>o.id===p.id)){ owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
+      const count = owned.filter(o=>[1,4,7].includes(o.id)).length; if (count>=3) localStorage.setItem(STARTER_KEY,'1');
+      loadStarters(); loadOwned();
+    }
+
+    function loadShop(){
+      const grid = document.getElementById('shopGrid'); grid.innerHTML='';
+      shop.forEach(p=>{
+        const ownedAlready = owned.some(o=>o.id===p.id);
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">${p.price} Coins</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Buy'}</button>`;
+        if (!ownedAlready) div.querySelector('button').onclick=()=>buy(p);
+        grid.appendChild(div);
+      });
+    }
+    async function buy(p){
+      const c = getCoins(); if (c < p.price) return alert('Not enough coins');
+      setCoins(c - p.price); owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned));
+      // Mint on-chain NFT (best-effort, optional)
+      try { const signer = getSigner(); if (signer){ const nft=new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer); await nft.mint(await signer.getAddress(), p.id, p.name); } } catch(e){ console.warn('NFT mint failed:', e); }
+      loadShop(); loadOwned();
+    }
+
+    function loadOwned(){
+      const grid = document.getElementById('myGrid'); grid.innerHTML='';
+      owned.forEach(p=>{
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><button class="btn equip" ${p.id===equippedId?'disabled':''}>${p.id===equippedId?'Equipped':'Equip'}</button>`;
+        if (p.id!==equippedId) div.querySelector('button').onclick=()=>equip(p.id);
+        grid.appendChild(div);
+      });
+    }
+    function equip(id){ equippedId=id; localStorage.setItem(EQUIPPED_KEY,String(id)); loadOwned(); }
+
+    // Theme
+    const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
+    document.body.classList.add(`theme-${theme}`);
+    const style = document.createElement('style');
+    style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+    document.head.appendChild(style);
+
+    loadStarters(); loadShop(); loadOwned();
+  </script>
+</body>
+</html>
+
