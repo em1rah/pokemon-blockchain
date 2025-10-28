@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon Trainer Portal</title>
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+  <style>
+    /* SAME STYLES FROM YOUR ORIGINAL FILE */
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
+    body{min-height:100vh;background:linear-gradient(to bottom,#1a2a6c,#b21f1f,#1a2a6c),url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="%23ffcb05" stroke-width="8" opacity="0.1"/></svg>') repeat;background-blend-mode:overlay;display:flex;justify-content:center;align-items:center;padding:20px;color:white;}
+    .container{background:rgba(100,65,165,.85);backdrop-filter:blur(12px);border-radius:24px;max-width:420px;width:100%;padding:32px;box-shadow:0 20px 40px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden;}
+    .header{text-align:center;margin-bottom:28px;}
+    .header img{width:32px;filter:brightness(0) invert(1);margin-bottom:8px;}
+    .header h1{font-size:24px;font-weight:700;color:#ffcb05;text-shadow:0 2px 4px rgba(0,0,0,.3);}
+    .header p{font-size:14px;color:#ccc;margin-top:4px;}
+    .toggle-tabs{display:flex;margin-bottom:24px;background:rgba(0,0,0,.2);border-radius:12px;padding:4px;}
+    .tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-weight:600;cursor:pointer;transition:all .3s;}
+    .tab.active{background:#ffcb05;color:#1a2a6c;}
+    .form-group{margin-bottom:16px;}
+    label{display:block;margin-bottom:6px;font-size:14px;color:#ffcb05;font-weight:500;}
+    input[type=email],input[type=password]{width:100%;padding:12px 16px;border:2px solid rgba(255,203,5,.4);border-radius:12px;background:rgba(255,255,255,.1);color:white;font-size:16px;transition:all .3s;}
+    input::placeholder{color:#aaa;}
+    input:focus{outline:none;border-color:#ffcb05;background:rgba(255,255,255,.15);box-shadow:0 0 0 4px rgba(255,203,5,.2);}
+    .checkbox{display:flex;align-items:center;gap:8px;font-size:14px;color:#ddd;margin-bottom:20px;}
+    .checkbox input{accent-color:#ffcb05;}
+    .btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s;margin-bottom:12px;}
+    .btn-login{background:#4CAF50;color:white;}
+    .btn-login:hover{background:#45a049;transform:translateY(-2px);}
+    .divider{text-align:center;margin:20px 0;color:#aaa;position:relative;}
+    .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(255,255,255,.2);}
+    .divider span{background:rgba(100,65,165,.85);padding:0 12px;}
+    .btn-metamask{background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;gap:10px;}
+    .btn-metamask:hover{background:#1557b0;transform:translateY(-2px);}
+    .btn-metamask img{width:20px;height:20px;}
+    .links{text-align:center;margin-top:16px;font-size:14px;}
+    .links a{color:#ffcb05;text-decoration:none;}
+    .links a:hover{text-decoration:underline;}
+    .form{display:none;animation:fadeIn .4s ease;}
+    .form.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .metamask-status{margin-top:12px;font-size:14px;text-align:center;color:#ffcb05;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffcb05'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>" alt="Pokeball">
+      <h1>Pokémon Trainer Portal</h1>
+      <p>Join the adventure and catch 'em all!</p>
+    </div>
+
+    <div class="toggle-tabs">
+      <div class="tab active" data-form="login">Login</div>
+      <div class="tab" data-form="register">Register</div>
+    </div>
+
+    <div class="form-container">
+      <!-- LOGIN -->
+      <form id="loginForm" class="form active">
+        <div class="form-group"><label>Email Address</label><input type="email" placeholder="Enter your email" required></div>
+        <div class="form-group"><label>Password</label><input type="password" placeholder="Enter your password" required></div>
+        <div class="checkbox"><input type="checkbox" id="remember"><label for="remember">Remember me</label></div>
+        <button type="submit" class="btn btn-login">Login</button>
+        <div class="divider"><span>or</span></div>
+        <button type="button" id="metamaskLogin" class="btn btn-metamask">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1024px-MetaMask_Fox.svg.png" alt="MetaMask">
+          Login with MetaMask
+        </button>
+        <div class="metamask-status" id="metamaskStatus"></div>
+        <div class="links"><a href="#">Forgot your password?</a></div>
+      </form>
+
+      <!-- REGISTER -->
+      <form id="registerForm" class="form">
+        <div class="form-group"><label>Email Address</label><input type="email" placeholder="Enter your email" required></div>
+        <div class="form-group"><label>Password</label><input type="password" placeholder="Create a password" required></div>
+        <div class="form-group"><label>Confirm Password</label><input type="password" placeholder="Confirm your password" required></div>
+        <button type="submit" class="btn btn-login">Create Account</button>
+        <div class="divider"><span>or</span></div>
+        <button type="button" id="metamaskRegister" class="btn btn-metamask">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1024px-MetaMask_Fox.svg.png" alt="MetaMask">
+          Register with MetaMask
+        </button>
+        <div class="links">Already have an account? <a href="#" class="switch-to-login">Login here</a></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ----- Tab switching -----
+    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const form = t.dataset.form + 'Form';
+      document.querySelectorAll('.form').forEach(f=>f.classList.remove('active'));
+      document.getElementById(form).classList.add('active');
+    }));
+    document.querySelector('.switch-to-login').addEventListener('click',e=>{e.preventDefault();document.querySelector('[data-form=login]').click();});
+
+    // ----- Mock email/password -----
+    document.getElementById('loginForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      goToHome({type:'email', address: e.target[0].value});
+    });
+    document.getElementById('registerForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      if(e.target[1].value !== e.target[2].value){alert('Passwords do not match!');return;}
+      goToHome({type:'email', address: e.target[0].value});
+    });
+
+    // ----- MetaMask -----
+    async function connectMetaMask(statusEl){
+      if(!window.ethereum){alert('MetaMask not detected!');return;}
+      try{
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts",[]);
+        const addr = accounts[0];
+        const short = `${addr.slice(0,6)}...${addr.slice(-4)}`;
+        statusEl.textContent = `Connected: ${short}`;
+        statusEl.style.color = '#4CAF50';
+        goToHome({type:'metamask', address: addr});
+      }catch(err){
+        statusEl.textContent = 'Connection rejected';
+        statusEl.style.color = '#f44336';
+      }
+    }
+    document.getElementById('metamaskLogin').addEventListener('click',()=>connectMetaMask(document.getElementById('metamaskStatus')));
+    document.getElementById('metamaskRegister').addEventListener('click',()=>connectMetaMask(document.getElementById('metamaskStatus')));
+
+    // ----- Redirect -----
+    function goToHome(user){
+      localStorage.setItem('trainerSession', JSON.stringify(user));
+      location.href = 'home.html';
+    }
+  </script>
+</body>
+</html>
