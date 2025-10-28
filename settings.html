@@ -75,22 +75,33 @@
     function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
 
+    function applyTheme(theme){
+      document.body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
+      document.body.classList.add(`theme-${theme}`);
+    }
+
     function load(){
       const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      document.getElementById('themeSelect').value = s.theme || 'kanto';
+      const theme = s.theme || 'kanto';
+      document.getElementById('themeSelect').value = theme;
       document.getElementById('displayName').value = s.displayName || '';
+      applyTheme(theme);
     }
     document.getElementById('saveBtn').onclick = () => {
-      const s = { theme: document.getElementById('themeSelect').value, displayName: document.getElementById('displayName').value.trim() };
+      const theme = document.getElementById('themeSelect').value;
+      const name = document.getElementById('displayName').value.trim();
+      const s = { theme, displayName: name };
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+      applyTheme(theme);
       alert('Saved');
     };
 
-    const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
-    document.body.classList.add(`theme-${theme}`);
     const style = document.createElement('style');
     style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
     document.head.appendChild(style);
+
+    // live preview when changing
+    document.getElementById('themeSelect').addEventListener('change', (e)=>applyTheme(e.target.value));
 
     load();
   </script>

@@ -230,12 +230,16 @@
     }
 
     // Apply theme
-    const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
-    document.body.classList.add(`theme-${theme}`);
-    // minimal theme CSS fallback via classes borrowed from home
-    const style = document.createElement('style');
-    style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
-    document.head.appendChild(style);
+    (function ensureTheme(){
+      const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
+      document.body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
+      document.body.classList.add(`theme-${theme}`);
+      if (!document.getElementById('theme-css')){
+        const style = document.createElement('style'); style.id='theme-css';
+        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+        document.head.appendChild(style);
+      }
+    })();
 
     // controls
     document.getElementById('startBtn').onclick = () => { if (!battleActive) newBattle(); };

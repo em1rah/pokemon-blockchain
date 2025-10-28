@@ -109,11 +109,11 @@
       <h1>Pokémon Trainer</h1>
     </div>
     <nav>
-      <a href="#" id="navArena">Arena</a>
-      <a href="#" id="navShop">Shop</a>
+      <a href="arena.html" id="navArena">Arena</a>
+      <a href="shop.html" id="navShop">Shop</a>
       <a href="#" id="navMyPokemon">My Pokémon</a>
-      <a href="#" id="navTournaments">History</a>
-      <a href="#" id="navSettings" class="settings-btn">Settings</a>
+      <a href="history.html" id="navTournaments">History</a>
+      <a href="settings.html" id="navSettings" class="settings-btn">Settings</a>
       <span class="coins" id="coinDisplay">∞ Coins</span>
       <span class="wallet" id="walletDisplay"></span>
       <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -444,25 +444,27 @@
       else if (theme === 'champion') body.classList.add('theme-champion');
       else body.classList.add('theme-kanto');
     }
+    function applyTheme(theme){
+      const body = document.body;
+      body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
+      body.classList.add(`theme-${theme}`);
+    }
     function loadSettings(){
       const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      themeSelect.value = s.theme || 'kanto';
-      displayNameInput.value = s.displayName || '';
-      applyTheme(themeSelect.value);
+      const theme = s.theme || 'kanto';
+      applyTheme(theme);
     }
-    function showSettings(){
-      Object.values(tabs).forEach(t => t.classList.remove('active'));
-      settingsTab.classList.add('active');
-      loadSettings();
-    }
-    document.getElementById('saveSettingsBtn').onclick = () => {
-      const s = { theme: themeSelect.value, displayName: displayNameInput.value.trim() };
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-      applyTheme(s.theme);
-      alert('Settings saved');
-    };
 
     // === Init ===
+    // Ensure theme CSS exists
+    (function ensureThemeCss(){
+      if (!document.getElementById('theme-css')){
+        const style = document.createElement('style');
+        style.id = 'theme-css';
+        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+        document.head.appendChild(style);
+      }
+    })();
     loadSettings();
   </script>
 </body>

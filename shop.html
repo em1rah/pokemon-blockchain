@@ -54,6 +54,10 @@
     <div class="subtitle">Spend coins to expand your team</div>
     <div class="grid" id="shopGrid"></div>
 
+    <div class="title" style="margin-top:18px;">Special (MetaMask)</div>
+    <div class="subtitle">Rare Pokémon purchasable on-chain with ETH (mints an NFT)</div>
+    <div class="grid" id="specialGrid"></div>
+
     <div class="title" style="margin-top:18px;">My Pokémon</div>
     <div class="grid" id="myGrid"></div>
   </div>
@@ -101,6 +105,21 @@
       { id: 150, name: 'Mewtwo', price: 5000 }
     ];
 
+    // 10+ rare/special Pokémon purchasable with MetaMask
+    const special = [
+      { id: 144, name: 'Articuno',  priceEth: '0.01' },
+      { id: 145, name: 'Zapdos',    priceEth: '0.01' },
+      { id: 146, name: 'Moltres',   priceEth: '0.01' },
+      { id: 150, name: 'Mewtwo',    priceEth: '0.015' },
+      { id: 151, name: 'Mew',       priceEth: '0.015' },
+      { id: 243, name: 'Raikou',    priceEth: '0.012' },
+      { id: 244, name: 'Entei',     priceEth: '0.012' },
+      { id: 245, name: 'Suicune',   priceEth: '0.012' },
+      { id: 249, name: 'Lugia',     priceEth: '0.02' },
+      { id: 250, name: 'Ho-Oh',     priceEth: '0.02' },
+      { id: 251, name: 'Celebi',    priceEth: '0.02' }
+    ];
+
     function img(id){ return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
 
     function loadStarters(){
@@ -132,12 +151,42 @@
         grid.appendChild(div);
       });
     }
+    function loadSpecial(){
+      const grid = document.getElementById('specialGrid'); grid.innerHTML='';
+      special.forEach(p=>{
+        const ownedAlready = owned.some(o=>o.id===p.id);
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">${p.priceEth} ETH</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Buy with MetaMask'}</button>`;
+        if (!ownedAlready) div.querySelector('button').onclick=()=>buySpecial(p);
+        grid.appendChild(div);
+      });
+    }
     async function buy(p){
       const c = getCoins(); if (c < p.price) return alert('Not enough coins');
       setCoins(c - p.price); owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned));
       // Mint on-chain NFT (best-effort, optional)
       try { const signer = getSigner(); if (signer){ const nft=new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer); await nft.mint(await signer.getAddress(), p.id, p.name); } } catch(e){ console.warn('NFT mint failed:', e); }
       loadShop(); loadOwned();
+    }
+
+    async function buySpecial(p){
+      try{
+        if (!window.ethereum) return alert('MetaMask not detected');
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        const signer = provider.getSigner();
+        // send ETH to a treasury address (placeholder). Replace with your shop contract if available.
+        const tx = await signer.sendTransaction({ to: '0x000000000000000000000000000000000000dead', value: ethers.utils.parseEther(p.priceEth) });
+        await tx.wait();
+        // mint NFT to buyer
+        const buyer = await signer.getAddress();
+        const nft = new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer);
+        await nft.mint(buyer, p.id, p.name);
+        // add locally
+        if (!owned.some(o=>o.id===p.id)) { owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
+        loadSpecial(); loadOwned();
+        alert('Purchased and minted successfully!');
+      }catch(e){ console.error(e); alert('On-chain purchase failed'); }
     }
 
     function loadOwned(){
@@ -152,13 +201,18 @@
     function equip(id){ equippedId=id; localStorage.setItem(EQUIPPED_KEY,String(id)); loadOwned(); }
 
     // Theme
-    const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
-    document.body.classList.add(`theme-${theme}`);
-    const style = document.createElement('style');
-    style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
-    document.head.appendChild(style);
+    (function ensureTheme(){
+      const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
+      document.body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
+      document.body.classList.add(`theme-${theme}`);
+      if (!document.getElementById('theme-css')){
+        const style = document.createElement('style'); style.id='theme-css';
+        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+        document.head.appendChild(style);
+      }
+    })();
 
-    loadStarters(); loadShop(); loadOwned();
+    loadStarters(); loadShop(); loadSpecial(); loadOwned();
   </script>
 </body>
 </html>
