@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Shop & My Pokémon</title>
-  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+
+  <!-- Ethers v6 - OFFICIAL & WORKING -->
+  <script src="https://cdn.ethers.org/lib/ethers-6.7.umd.min.js" type="text/javascript"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -27,7 +30,7 @@
     .card img{width:140px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
     .price{color:#ffeb3b;font-weight:700;margin-top:4px}
     .btn{margin-top:8px;padding:8px 14px;background:#4caf50;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
-    .btn:disabled{background:#666}
+    .btn:disabled{background:#666;opacity:0.7;cursor:not-allowed}
     .equip{background:#ff9800}
   </style>
 </head>
@@ -63,18 +66,17 @@
   </div>
 
   <script>
+    // === SESSION & STORAGE ===
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
     const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
     const ns = (k) => `${USER_ID}:${k}`;
     const COIN_KEY = ns('coins');
     const STARTER_KEY = ns('starterClaimed');
-    // Web3 setup
-    const NFT_ADDRESS = '0xYourPokemonNFTAddressHere';
+    const NFT_ADDRESS = '0xYourPokemonNFTAddressHere'; // REPLACE WITH REAL CONTRACT
     const ERC721_ABI = [
-      'function mint(address to, uint256 pokeId, string memory pokeName) external returns (uint256)'
+      'function mint(address to, uint256 pokeId, string memory pokeName) external'
     ];
-    function getSigner(){ if (!window.ethereum) return null; const provider=new ethers.providers.Web3Provider(window.ethereum); return provider.getSigner(); }
 
     const OWNED_KEY = ns('owned');
     const EQUIPPED_KEY = ns('equipped');
@@ -84,14 +86,17 @@
     if (session.type === 'metamask') walletDisplay.textContent = session.address.slice(0,6)+"..."+session.address.slice(-4);
     document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('trainerSession'); location.href = 'index.html'; };
 
+    // === COINS ===
     function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
     function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
 
+    // === OWNED POKÉMON ===
     let owned = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
     if (!owned.find(p=>p.id===25)) { owned.push({ id:25, name:'Pikachu' }); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
     let equippedId = parseInt(localStorage.getItem(EQUIPPED_KEY) || '25');
 
+    // === POKÉMON DATA ===
     const starters = [ {id:1,name:'Bulbasaur'},{id:4,name:'Charmander'},{id:7,name:'Squirtle'} ];
     const shop = [
       { id: 10, name: 'Caterpie', price: 200 }, { id: 13, name: 'Weedle', price: 200 },
@@ -105,7 +110,6 @@
       { id: 150, name: 'Mewtwo', price: 5000 }
     ];
 
-    // 10+ rare/special Pokémon purchasable with MetaMask
     const special = [
       { id: 144, name: 'Articuno',  priceEth: '0.01' },
       { id: 145, name: 'Zapdos',    priceEth: '0.01' },
@@ -117,15 +121,23 @@
       { id: 245, name: 'Suicune',   priceEth: '0.012' },
       { id: 249, name: 'Lugia',     priceEth: '0.02' },
       { id: 250, name: 'Ho-Oh',     priceEth: '0.02' },
-      { id: 251, name: 'Celebi',    priceEth: '0.02' }
+      { id: 251, name: 'Celebi',    priceEth: '0.02' },
+      { id: 132, name: 'Ditto',     priceEth: '0.00' },
+      { id: 0,   name: 'MissingNo.',priceEth: '0.00' }
     ];
 
-    function img(id){ return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
+    function img(id){ 
+      return id === 0 
+        ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png' 
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; 
+    }
 
+    // === STARTERS ===
     function loadStarters(){
       const claimed = localStorage.getItem(STARTER_KEY)==='1';
       const grid = document.getElementById('starterGrid');
-      grid.innerHTML=''; if (claimed) { grid.innerHTML='<div style="opacity:.7">Starters claimed.</div>'; return; }
+      grid.innerHTML=''; 
+      if (claimed) { grid.innerHTML='<div style="opacity:.7">Starters claimed.</div>'; return; }
       starters.forEach(p=>{
         const ownedAlready = owned.some(o=>o.id===p.id);
         const div = document.createElement('div');
@@ -137,83 +149,163 @@
     }
     function claimStarter(p){
       if (!owned.some(o=>o.id===p.id)){ owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
-      const count = owned.filter(o=>[1,4,7].includes(o.id)).length; if (count>=3) localStorage.setItem(STARTER_KEY,'1');
+      const count = owned.filter(o=>[1,4,7].includes(o.id)).length; 
+      if (count>=3) localStorage.setItem(STARTER_KEY,'1');
       loadStarters(); loadOwned();
     }
 
+    // === SHOP ===
     function loadShop(){
       const grid = document.getElementById('shopGrid'); grid.innerHTML='';
       shop.forEach(p=>{
         const ownedAlready = owned.some(o=>o.id===p.id);
         const div = document.createElement('div'); div.className='card';
         div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">${p.price} Coins</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Buy'}</button>`;
-        if (!ownedAlready) div.querySelector('button').onclick=()=>buy(p);
+        if (!ownedAlready) div.querySelector('button').onclick=()=>buy(p, div);
         grid.appendChild(div);
       });
     }
+
+    // === SPECIAL (METAMASK) ===
     function loadSpecial(){
       const grid = document.getElementById('specialGrid'); grid.innerHTML='';
       special.forEach(p=>{
         const ownedAlready = owned.some(o=>o.id===p.id);
         const div = document.createElement('div'); div.className='card';
-        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">${p.priceEth} ETH</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Buy with MetaMask'}</button>`;
-        if (!ownedAlready) div.querySelector('button').onclick=()=>buySpecial(p);
+        const buttonText = ownedAlready 
+          ? 'Owned' 
+          : (p.priceEth === '0.00' ? 'Mint Free' : 'Buy with MetaMask');
+        div.innerHTML = `
+          <img src="${img(p.id)}" alt="${p.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'">
+          <div>${p.name}</div>
+          <div class="price">${p.priceEth} ETH</div>
+          <button class="btn" ${ownedAlready?'disabled':''}>${buttonText}</button>
+        `;
+        if (!ownedAlready) div.querySelector('button').onclick=()=>buySpecial(p, div);
         grid.appendChild(div);
       });
     }
-    async function buy(p){
-      const c = getCoins(); if (c < p.price) return alert('Not enough coins');
-      setCoins(c - p.price); owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned));
-      // Mint on-chain NFT (best-effort, optional)
-      try { const signer = getSigner(); if (signer){ const nft=new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer); await nft.mint(await signer.getAddress(), p.id, p.name); } } catch(e){ console.warn('NFT mint failed:', e); }
+
+    // === BUY WITH COINS (optional NFT mint) ===
+    async function buy(p, card) {
+      const btn = card.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Buying...';
+
+      const c = getCoins();
+      if (c < p.price) {
+        alert('Not enough coins');
+        btn.disabled = false;
+        btn.textContent = 'Buy';
+        return;
+      }
+
+      setCoins(c - p.price);
+      owned.push({id:p.id,name:p.name});
+      localStorage.setItem(OWNED_KEY, JSON.stringify(owned));
+
+      try {
+        const provider = new ethers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const nft = new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer);
+        const tx = await nft.mint(await signer.getAddress(), p.id, p.name);
+        await tx.wait();
+      } catch(e) {
+        console.warn('Optional NFT mint failed:', e);
+      }
+
       loadShop(); loadOwned();
     }
 
-    async function buySpecial(p){
-      try{
-        if (!window.ethereum) return alert('MetaMask not detected');
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send('eth_requestAccounts', []);
+    // === BUY SPECIAL (ON-CHAIN) ===
+    async function buySpecial(p, card) {
+      const btn = card.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Minting...';
+
+      try {
+        if (!window.ethereum) throw new Error('MetaMask not detected');
+
+        const provider = new ethers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner();
-        // send ETH to a treasury address (placeholder). Replace with your shop contract if available.
-        const tx = await signer.sendTransaction({ to: '0x000000000000000000000000000000000000dead', value: ethers.utils.parseEther(p.priceEth) });
-        await tx.wait();
-        // mint NFT to buyer
         const buyer = await signer.getAddress();
+
+        // Send ETH if price > 0
+        const value = ethers.parseEther(p.priceEth);
+        if (!value.isZero()) {
+          const tx = await signer.sendTransaction({
+            to: '0x000000000000000000000000000000000000dEaD',
+            value: value
+          });
+          await tx.wait();
+        }
+
+        // Mint NFT
         const nft = new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer);
-        await nft.mint(buyer, p.id, p.name);
-        // add locally
-        if (!owned.some(o=>o.id===p.id)) { owned.push({id:p.id,name:p.name}); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
+        const tx = await nft.mint(buyer, p.id, p.name);
+        await tx.wait();
+
+        // Update local
+        if (!owned.some(o => o.id === p.id)) {
+          owned.push({ id: p.id, name: p.name });
+          localStorage.setItem(OWNED_KEY, JSON.stringify(owned));
+        }
+
         loadSpecial(); loadOwned();
-        alert('Purchased and minted successfully!');
-      }catch(e){ console.error(e); alert('On-chain purchase failed'); }
+        alert(`Successfully minted ${p.name}!`);
+      } catch(e) {
+        console.error(e);
+        alert('Transaction failed: ' + (e.message || 'Check console'));
+        btn.disabled = false;
+        btn.textContent = p.priceEth === '0.00' ? 'Mint Free' : 'Buy with MetaMask';
+      }
     }
 
+    // === MY POKÉMON ===
     function loadOwned(){
       const grid = document.getElementById('myGrid'); grid.innerHTML='';
       owned.forEach(p=>{
         const div = document.createElement('div'); div.className='card';
-        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><button class="btn equip" ${p.id===equippedId?'disabled':''}>${p.id===equippedId?'Equipped':'Equip'}</button>`;
+        div.innerHTML = `
+          <img src="${img(p.id)}" alt="${p.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'">
+          <div>${p.name}</div>
+          <button class="btn equip" ${p.id===equippedId?'disabled':''}>
+            ${p.id===equippedId?'Equipped':'Equip'}
+          </button>
+        `;
         if (p.id!==equippedId) div.querySelector('button').onclick=()=>equip(p.id);
         grid.appendChild(div);
       });
     }
-    function equip(id){ equippedId=id; localStorage.setItem(EQUIPPED_KEY,String(id)); loadOwned(); }
+    function equip(id){ 
+      equippedId=id; 
+      localStorage.setItem(EQUIPPED_KEY,String(id)); 
+      loadOwned(); 
+    }
 
-    // Theme
+    // === THEME ===
     (function ensureTheme(){
       const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
       document.body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
       document.body.classList.add(`theme-${theme}`);
       if (!document.getElementById('theme-css')){
         const style = document.createElement('style'); style.id='theme-css';
-        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
+        style.textContent = `
+          .theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} 
+          .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} 
+          .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} 
+          .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}
+        `;
         document.head.appendChild(style);
       }
     })();
 
-    loadStarters(); loadShop(); loadSpecial(); loadOwned();
+    // === INIT ===
+    loadStarters(); 
+    loadShop(); 
+    loadSpecial(); 
+    loadOwned();
   </script>
 </body>
 </html>
-

@@ -111,7 +111,6 @@
     <nav>
       <a href="arena.html" id="navArena">Arena</a>
       <a href="shop.html" id="navShop">Shop</a>
-      <a href="#" id="navMyPokemon">My Pokémon</a>
       <a href="history.html" id="navTournaments">History</a>
       <a href="settings.html" id="navSettings" class="settings-btn">Settings</a>
       <span class="coins" id="coinDisplay">∞ Coins</span>
@@ -123,8 +122,8 @@
   <!-- WELCOME -->
   <section class="welcome" id="welcomeSection">
     <h2 id="welcomeMsg">Welcome, Trainer!</h2>
-    <p>Ready to prove your strength? Enter the arena and battle wild Pokémon!</p>
-    <button class="btn-enter" id="enterArenaBtn">Enter Arena</button>
+    <p style="padding-bottom: 20px;">Ready to prove your strength? Enter the arena and battle wild Pokémon!</p>
+    <a href="arena.html" id="enterArenaBtn" class="btn-enter" style="text-decoration: none;">Enter Arena</a>
   </section>
 
   <!-- NAV CARDS -->
@@ -148,7 +147,6 @@
   </div>
 
   
-
   <script>
     // === Session ===
     const session = JSON.parse(localStorage.getItem('trainerSession'));
@@ -176,9 +174,6 @@
     function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
 
-    // This page no longer hosts arena/shop; it's a hub. Still show wallet & coins.
-
-    // No-op functions retained for minimal header logic
 
     // === Shop ===
     function loadStarters(){
@@ -272,7 +267,7 @@
       localStorage.setItem('equippedPokemon', id);
       loadEquipped();
       loadMyPokemon();
-      if (battleActive) startNewBattle(); // Refresh if in battle
+      if (battleActive) startNewBattle(); 
     }
 
     // === Battle Logic ===
@@ -433,8 +428,6 @@
       location.href = 'index.html';
     };
 
-    // History is now its own page
-
     // === Settings ===
     function applyTheme(theme){
       const body = document.body;
@@ -455,8 +448,6 @@
       applyTheme(theme);
     }
 
-    // === Init ===
-    // Ensure theme CSS exists
     (function ensureThemeCss(){
       if (!document.getElementById('theme-css')){
         const style = document.createElement('style');

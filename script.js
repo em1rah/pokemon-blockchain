@@ -1,6 +1,4 @@
-/* ==============================================================
-   Simple client-side storage (replace with real backend later)
-   ============================================================== */
+
 const STORAGE_KEY = 'pokemon_users';
 function getUsers() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -10,9 +8,6 @@ function saveUsers(users) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
 }
 
-/* ==============================================================
-   UI helpers
-   ============================================================== */
 const $ = (s) => document.querySelector(s);
 const loginBox   = $('#login');
 const regBox     = $('#register');
@@ -30,9 +25,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => showTab(btn.dataset.tab));
 });
 
-/* ==============================================================
-   Classic Register / Login
-   ============================================================== */
 $('#register-btn').addEventListener('click', () => {
   const username = $('#reg-username').value.trim();
   const pass     = $('#reg-password').value;
@@ -45,7 +37,6 @@ $('#register-btn').addEventListener('click', () => {
   const users = getUsers();
   if (users[username]) return msg.textContent = 'Username already taken', msg.className = 'msg error';
 
-  // In real life: hash the password!
   users[username] = { password: pass, address: null };
   saveUsers(users);
   msg.textContent = 'Account created! You can now log in.';
@@ -67,19 +58,14 @@ $('#login-classic-btn').addEventListener('click', () => {
   loginSuccess(username, user.address);
 });
 
-/* ==============================================================
-   MetaMask Login
-   ============================================================== */
 let metamaskSDK;
 let provider;
 let accounts = [];
 
 async function initMetaMask() {
   if (typeof window.ethereum !== 'undefined' || typeof window.web3 !== 'undefined') {
-    // Modern dapp browsers or injected provider
     provider = window.ethereum || window.web3.currentProvider;
   } else {
-    // Fallback to SDK (works on mobile & desktop)
     metamaskSDK = new MetaMaskSDK.MetaMaskSDK();
     provider = metamaskSDK.getProvider();
   }
@@ -93,22 +79,16 @@ $('#metamask-login-btn').addEventListener('click', async () => {
   try {
     await initMetaMask();
 
-    // Request accounts
     accounts = await provider.request({ method: 'eth_requestAccounts' });
     if (!accounts || accounts.length === 0) throw new Error('No account returned');
 
     const address = accounts[0].toLowerCase();
 
-    // OPTIONAL: ask user to sign a message to prove ownership
     const signature = await provider.request({
       method: 'personal_sign',
       params: [address, 'Login to Pokémon Battle Arena'],
     });
 
-    // In a real app you would verify the signature on the server.
-    // Here we just trust the address.
-
-    // Check if address is already linked to a username
     const users = getUsers();
     let username = null;
     for (const [u, data] of Object.entries(users)) {
@@ -139,11 +119,7 @@ $('#metamask-login-btn').addEventListener('click', async () => {
   }
 });
 
-/* ==============================================================
-   Login success → show dashboard
-   ============================================================== */
 function loginSuccess(username, address) {
-  // Hide forms
   loginBox.classList.remove('active');
   regBox.classList.remove('active');
 
@@ -187,3 +163,7 @@ $('#play-game').addEventListener('click', (e) => {
   alert('Redirecting to the Pokémon game… (implement your game URL here)');
   // window.location.href = 'game.html';
 });
+
+
+
+
