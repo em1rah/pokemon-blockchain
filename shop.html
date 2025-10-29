@@ -6,32 +6,56 @@
   <title>Shop & My Pokémon</title>
 
   <!-- Ethers v6 - OFFICIAL & WORKING -->
-  <script src="https://cdn.ethers.org/lib/ethers-6.7.umd.min.js" type="text/javascript"></script>
+  <script src="https://cdn.ethers.io/lib/ethers-6.7.umd.min.js" type="text/javascript"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{min-height:100vh;color:white;background:#0b1021}
-    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);} 
-    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
-    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
-    nav a:hover{color:#fff}
-    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
-    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
-    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    body { min-height: 100vh; color: white; background: #0b1021; }
+    header { background: rgba(0,0,0,.5); backdrop-filter: blur(8px); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid rgba(255,255,255,.1); } 
+    header h1 { font-family: 'Press Start 2P', cursive; color: #ffcb05; font-size: 1.1rem; }
+    nav a { margin-left: 1rem; color: #ffcb05; text-decoration: none; font-weight: 600; font-family: 'Inter', system-ui; }
+    nav a:hover { color: #fff; }
+    .coins { display: inline-block; background: #ffeb3b; color: #1a2a6c; padding: 6px 12px; border-radius: 12px; font-weight: 700; margin-left: 10px; font-size: 0.9rem; }
+    .wallet { margin-left: 12px; font-size: .9rem; color: #ddd; }
+    .logout-btn { margin-left: 12px; background: #f44336; color: #fff; border: none; border-radius: 10px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
 
-    .container{padding:1.5rem;font-family:'Inter',system-ui}
-    .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.25rem}
-    .subtitle{color:#ccc;margin-bottom:1rem}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
-    .card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px;text-align:center}
-    .card img{width:140px;height:140px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
-    .price{color:#ffeb3b;font-weight:700;margin-top:4px}
-    .btn{margin-top:8px;padding:8px 14px;background:#4caf50;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
-    .btn:disabled{background:#666;opacity:0.7;cursor:not-allowed}
-    .equip{background:#ff9800}
+    .container { padding: 1.5rem; font-family: 'Inter', system-ui; }
+    .title { color: #ffcb05; font-size: 1.6rem; margin-bottom: .25rem; }
+    .subtitle { color: #ccc; margin-bottom: 1rem; }
+
+    /* ---------- CARD LAYOUT (Compact TCG Style) ---------- */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .card {
+      position: relative; width: 100%; padding: 12px 10px; border-radius: 10px;
+      background: #ffffff; color: #404060; box-shadow: 0 8px 16px rgba(0,0,0,.15);
+      font-size: 0.78rem; line-height: 1.3;
+    }
+    .card img { display: block; width: 110px; max-height: 110px; margin: 8px auto 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+    .hp {
+      position: absolute; top: 8px; right: 8px; width: 48px; background: #fff; text-align: center;
+      padding: 2px 0; border-radius: 20px; border: 1px solid #ccc; font-weight: 600;
+    }
+    .hp span { font-size: 9px; display: block; color: #777; }
+    .poke-name { text-align: center; font-weight: 700; font-size: 1rem; margin: 4px 0; }
+    .types { display: flex; justify-content: center; gap: 4px; margin: 6px 0; }
+    .types span { padding: 2px 8px; border-radius: 12px; color: #fff; font-size: 9px; font-weight: 600; }
+    .ability { margin: 8px 0 4px; border-top: 1px solid #eee; padding-top: 4px; }
+    .ability h3 { font-size: 10px; font-weight: 600; margin-bottom: 2px; }
+    .ability p { font-size: 9px; color: #555; }
+    .attacks { margin: 6px 0; }
+    .attack { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .attack .name { font-weight: 600; font-size: 9px; }
+    .attack .damage { font-weight: 600; color: #c00; font-size: 9px; }
+    .bottom { display: flex; justify-content: space-between; font-size: 8px; border-top: 1px solid #eee; padding-top: 4px; }
+    .price { text-align: center; font-weight: 700; color: #ffeb3b; margin: 4px 0; font-size: 0.85rem; }
+    .btn { margin-top: 6px; padding: 6px 10px; background: #4caf50; border: none; border-radius: 8px;
+            color: #fff; font-weight: 700; cursor: pointer; font-size: 0.8rem; width: 100%; }
+    .btn:disabled { background: #666; opacity: .7; cursor: not-allowed; }
+    .equip { background: #ff9800; }
   </style>
 </head>
 <body>
@@ -96,7 +120,51 @@
     if (!owned.find(p=>p.id===25)) { owned.push({ id:25, name:'Pikachu' }); localStorage.setItem(OWNED_KEY, JSON.stringify(owned)); }
     let equippedId = parseInt(localStorage.getItem(EQUIPPED_KEY) || '25');
 
-    // === POKÉMON DATA ===
+    // === TYPE COLORS ===
+    const typeColor = {
+      bug: "#26de81", dragon: "#ffeaa7", electric: "#fed330", fairy: "#FF0069",
+      fighting: "#30336b", fire: "#f0932b", flying: "#81ecec", grass: "#00b894",
+      ground: "#EFB549", ghost: "#a55eea", ice: "#74b9ff", normal: "#95afc0",
+      poison: "#6c5ce7", psychic: "#a29bfe", rock: "#2d3436", water: "#0190FF",
+    };
+
+    // === POKÉMON DATA WITH TCG-STYLE ATTRIBUTES ===
+    const pokemonData = {
+      1: { hp: '60', types: ['grass'], abilities: [{name: 'Overgrow', text: 'Powers up Grass-type moves when the Pokémon\'s HP is low.'}], attacks: [{name: 'Tackle', cost: ['colorless'], damage: '10', text: ''}, {name: 'Vine Whip', cost: ['grass'], damage: '20', text: ''}], weaknesses: [{type: 'fire', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      4: { hp: '60', types: ['fire'], abilities: [{name: 'Blaze', text: 'Powers up Fire-type moves when the Pokémon\'s HP is low.'}], attacks: [{name: 'Scratch', cost: ['colorless'], damage: '10', text: ''}, {name: 'Ember', cost: ['fire', 'colorless'], damage: '30', text: 'Discard a Fire Energy.'}], weaknesses: [{type: 'water', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      7: { hp: '60', types: ['water'], abilities: [{name: 'Torrent', text: 'Powers up Water-type moves when the Pokémon\'s HP is low.'}], attacks: [{name: 'Tackle', cost: ['colorless'], damage: '10', text: ''}, {name: 'Bubble', cost: ['water'], damage: '10', text: 'Flip a coin. If heads, the Defending Pokémon is now Paralyzed.'}], weaknesses: [{type: 'grass', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      10: { hp: '40', types: ['grass'], abilities: [], attacks: [{name: 'String Shot', cost: ['grass'], damage: '10', text: 'Flip a coin. If heads, the Defending Pokémon is now Paralyzed.'}], weaknesses: [{type: 'fire', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      13: { hp: '50', types: ['grass'], abilities: [], attacks: [{name: 'Multiply', cost: ['grass'], damage: '', text: 'Search your deck for Weedle and put it onto your Bench. Shuffle your deck afterward.'}], weaknesses: [{type: 'fire', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      16: { hp: '40', types: ['normal'], abilities: [], attacks: [{name: 'Gust', cost: ['colorless'], damage: '10', text: ''}], weaknesses: [{type: 'electric', value: 'x2'}], resistances: [{type: 'fighting', value: '-30'}], retreatCost: ['colorless'] },
+      19: { hp: '40', types: ['normal'], abilities: [], attacks: [{name: 'Bite', cost: ['colorless'], damage: '10', text: ''}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [{type: 'psychic', value: '-30'}], retreatCost: [] },
+      23: { hp: '50', types: ['grass'], abilities: [], attacks: [{name: 'Bite', cost: ['colorless'], damage: '20', text: ''}], weaknesses: [{type: 'psychic', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      25: { hp: '60', types: ['electric'], abilities: [{name: 'Static', text: 'Whenever your opponent\'s attack damages Pikachu, flip a coin. If heads, the attacking Pokémon is now Paralyzed.'}], attacks: [{name: 'Thunder Jolt', cost: ['electric'], damage: '20', text: 'Flip a coin. If tails, Pikachu does 10 damage to itself.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      26: { hp: '70', types: ['electric'], abilities: [], attacks: [{name: 'Agility', cost: ['electric'], damage: '20', text: 'Flip a coin. If heads, during your opponent\'s next turn, prevent all effects of attacks, including damage, done to Raichu.'}, {name: 'Thunder', cost: ['electric', 'electric', 'colorless'], damage: '60', text: 'Flip a coin. If tails, Raichu does 30 damage to itself.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      27: { hp: '50', types: ['ground'], abilities: [], attacks: [{name: 'Sand Attack', cost: ['ground'], damage: '10', text: 'If the Defending Pokémon tries to attack during your opponent\'s next turn, your opponent flips a coin. If tails, that attack does nothing.'}], weaknesses: [{type: 'grass', value: 'x2'}], resistances: [{type: 'electric', value: '-30'}], retreatCost: ['colorless'] },
+      37: { hp: '50', types: ['fire'], abilities: [], attacks: [{name: 'Tail Slap', cost: ['colorless'], damage: '10', text: ''}], weaknesses: [{type: 'water', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      39: { hp: '80', types: ['normal'], abilities: [], attacks: [{name: 'Lullaby', cost: ['colorless'], damage: '', text: 'The Defending Pokémon is now Asleep.'}, {name: 'Double Edge', cost: ['colorless', 'colorless', 'colorless'], damage: '40', text: 'Jigglypuff does 20 damage to itself.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [{type: 'psychic', value: '-30'}], retreatCost: ['colorless'] },
+      52: { hp: '40', types: ['normal'], abilities: [], attacks: [{name: 'Pay Day', cost: ['colorless'], damage: '10', text: 'Flip a coin. If heads, draw a card.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [{type: 'psychic', value: '-30'}], retreatCost: ['colorless'] },
+      63: { hp: '30', types: ['psychic'], abilities: [], attacks: [{name: 'Teleport', cost: ['psychic'], damage: '', text: 'Switch Abra with 1 of your Benched Pokémon.'}], weaknesses: [{type: 'psychic', value: 'x2'}], resistances: [], retreatCost: [] },
+      74: { hp: '40', types: ['fighting'], abilities: [], attacks: [{name: 'Stone Barrage', cost: ['fighting'], damage: '10×', text: 'Flip a coin until you get tails. This attack does 10 damage times the number of heads.'}], weaknesses: [{type: 'grass', value: 'x2'}], resistances: [{type: 'electric', value: '-30'}], retreatCost: ['colorless'] },
+      92: { hp: '30', types: ['psychic'], abilities: [], attacks: [{name: 'Hypnosis', cost: ['psychic'], damage: '', text: 'The Defending Pokémon is now Asleep.'}, {name: 'Lick', cost: ['psychic', 'colorless'], damage: '20', text: 'Flip a coin. If heads, the Defending Pokémon is now Paralyzed.'}], weaknesses: [{type: 'dark', value: 'x2'}], resistances: [{type: 'fighting', value: '-30'}], retreatCost: [] },
+      104: { hp: '50', types: ['ground'], abilities: [], attacks: [{name: 'Leer', cost: ['colorless'], damage: '', text: 'Flip a coin. If heads, the Defending Pokémon can\'t attack during your opponent\'s next turn.'}], weaknesses: [{type: 'grass', value: 'x2'}], resistances: [{type: 'electric', value: '-30'}], retreatCost: ['colorless'] },
+      132: { hp: '70', types: ['normal'], abilities: [{name: 'Transform', text: 'Once during your turn (before your attack), you may search your deck for another Ditto and switch it with Ditto.'}], attacks: [{name: 'Pound', cost: ['colorless'], damage: '10', text: ''}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      133: { hp: '60', types: ['normal'], abilities: [{name: 'Adaptability', text: 'Damage from Eevee\'s attacks is affected by Weakness and Resistance for Benched Pokémon.'}], attacks: [{name: 'Tail Whip', cost: ['colorless'], damage: '', text: 'Flip a coin. If heads, the Defending Pokémon can\'t attack during your opponent\'s next turn.'}, {name: 'Bite', cost: ['colorless', 'colorless'], damage: '20', text: ''}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      143: { hp: '120', types: ['normal'], abilities: [{name: 'Thick Fat', text: 'Any damage done to Snorlax by attacks from Fire Pokémon and Water Pokémon is reduced by 30.'}], attacks: [{name: 'Body Slam', cost: ['colorless', 'colorless', 'colorless'], damage: '30', text: 'Flip a coin. If heads, the Defending Pokémon is now Paralyzed.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [{type: 'psychic', value: '-30'}], retreatCost: ['colorless', 'colorless', 'colorless', 'colorless'] },
+      144: { hp: '70', types: ['ice'], abilities: [], attacks: [{name: 'Aurora Beam', cost: ['water', 'colorless', 'colorless'], damage: '50', text: ''}], weaknesses: [{type: 'steel', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      145: { hp: '70', types: ['electric'], abilities: [], attacks: [{name: 'Thunder', cost: ['electric', 'colorless', 'colorless'], damage: '50', text: 'Flip a coin. If tails, Zapdos does 30 damage to itself.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [], retreatCost: ['colorless', 'colorless'] },
+      146: { hp: '70', types: ['fire'], abilities: [], attacks: [{name: 'Fire Spin', cost: ['fire', 'fire', 'colorless'], damage: '100', text: 'Discard 2 Energy cards attached to Moltres or this attack does nothing.'}], weaknesses: [{type: 'water', value: 'x2'}], resistances: [{type: 'fighting', value: '-30'}], retreatCost: ['colorless', 'colorless'] },
+      147: { hp: '40', types: ['dragon'], abilities: [], attacks: [{name: 'Wrath', cost: ['colorless'], damage: '20×', text: 'Flip a coin. If heads, this attack does 20 damage times the number of damage counters on Dratini.'}], weaknesses: [{type: 'fairy', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      150: { hp: '110', types: ['psychic'], abilities: [{name: 'Psychic', text: 'Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pokémon.'}], attacks: [{name: 'Barrier', cost: ['psychic', 'psychic', 'colorless'], damage: '40', text: 'Flip a coin. If heads, during your opponent\'s next turn, prevent all effects of attacks, including damage, done to Mewtwo.'}], weaknesses: [{type: 'psychic', value: 'x2'}], resistances: [], retreatCost: ['colorless', 'colorless'] },
+      151: { hp: '50', types: ['psychic'], abilities: [], attacks: [{name: 'Psywave', cost: ['psychic'], damage: '10×', text: 'This attack does 10 damage times the number of Energy cards attached to the Defending Pokémon.'}], weaknesses: [{type: 'psychic', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      243: { hp: '90', types: ['electric'], abilities: [{name: 'Pressure', text: 'As long as Raikou is your Active Pokémon, attacks by your opponent\'s Pokémon do 20 less damage.'}], attacks: [{name: 'Lightning Tackle', cost: ['electric', 'colorless', 'colorless'], damage: '50', text: 'Flip a coin. If tails, Raikou does 20 damage to itself.'}], weaknesses: [{type: 'fighting', value: 'x2'}], resistances: [{type: 'steel', value: '-30'}], retreatCost: ['colorless'] },
+      244: { hp: '90', types: ['fire'], abilities: [{name: 'Pressure', text: 'As long as Entei is your Active Pokémon, attacks by your opponent\'s Pokémon do 20 less damage.'}], attacks: [{name: 'Burning Tackle', cost: ['fire', 'colorless', 'colorless'], damage: '50', text: 'Flip a coin. If tails, Entei does 20 damage to itself.'}], weaknesses: [{type: 'water', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      245: { hp: '90', types: ['water'], abilities: [{name: 'Pressure', text: 'As long as Suicune is your Active Pokémon, attacks by your opponent\'s Pokémon do 20 less damage.'}], attacks: [{name: 'Bubblebeam', cost: ['water', 'colorless', 'colorless'], damage: '50', text: 'Flip a coin. If heads, the Defending Pokémon is now Paralyzed.'}], weaknesses: [{type: 'electric', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+      249: { hp: '120', types: ['psychic'], abilities: [{name: 'Aerodactyl Fossil', text: 'As long as Lugia is your Active Pokémon, each player\'s Pokémon can\'t attack any Pokémon other than Lugia.'}], attacks: [{name: 'Psychic Blast', cost: ['psychic', 'psychic', 'psychic'], damage: '120', text: 'Discard a Psychic Energy card attached to Lugia or this attack does nothing.'}], weaknesses: [{type: 'psychic', value: 'x2'}], resistances: [{type: 'fighting', value: '-30'}], retreatCost: ['colorless', 'colorless'] },
+      250: { hp: '90', types: ['fire'], abilities: [{name: 'Rebirth', text: 'When Ho-Oh is Knocked Out by damage from an opponent\'s attack, flip a coin. If heads, return Ho-Oh to your hand and remove all damage counters from Ho-Oh.'}], attacks: [{name: 'Sacred Fire', cost: ['fire', 'fire', 'fire'], damage: '70', text: 'Flip a coin. If heads, choose 1 of your opponent\'s Pokémon. This attack does 70 damage to that Pokémon. Don\'t apply Weakness and Resistance.'}], weaknesses: [{type: 'water', value: 'x2'}], resistances: [{type: 'fighting', value: '-30'}], retreatCost: ['colorless', 'colorless'] },
+      251: { hp: '60', types: ['psychic'], abilities: [{name: 'Time Travel', text: 'If an opponent\'s attack would Knock Out Celebi, flip a coin. If heads, Celebi is not Knocked Out and you shuffle it and all cards attached to it into your deck.'}], attacks: [{name: 'Psychic Damage', cost: ['psychic'], damage: '10×', text: 'Flip 3 coins. This attack does 10 damage times the number of heads.'}], weaknesses: [{type: 'dark', value: 'x2'}], resistances: [], retreatCost: ['colorless'] },
+    };
+
     const starters = [ {id:1,name:'Bulbasaur'},{id:4,name:'Charmander'},{id:7,name:'Squirtle'} ];
     const shop = [
       { id: 10, name: 'Caterpie', price: 200 }, { id: 13, name: 'Weedle', price: 200 },
@@ -127,9 +195,34 @@
     ];
 
     function img(id){ 
-      return id === 0 
-        ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png' 
-        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; 
+      return id === 26 ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png' : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; 
+    }
+
+    // === CARD HTML BUILDER ===
+    function buildCardHTML(p, data, themeColor, priceHTML, buttonHTML) {
+      const abilityHTML = data.abilities.length
+        ? `<div class="ability"><h3>${data.abilities[0].name}</h3><p>${data.abilities[0].text}</p></div>`
+        : '';
+      const attacksHTML = data.attacks.map(a =>
+        `<div class="attack"><span class="name">${a.name}</span><span class="damage">${a.damage}</span></div>`
+      ).join('');
+      const onerror = p.id === 26 ? '' : 'onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png\'"';
+
+      return `
+        <p class="hp"><span>HP</span> ${data.hp}</p>
+        <img src="${img(p.id)}" alt="${p.name}" ${onerror}>
+        <h2 class="poke-name">${p.name}</h2>
+        <div class="types">${data.types.map(t=>`<span style="background:${typeColor[t]};">${t.toUpperCase()}</span>`).join('')}</div>
+        ${abilityHTML}
+        <div class="attacks">${attacksHTML}</div>
+        <div class="bottom">
+          <div class="weakness">Weak: ${data.weaknesses.map(w=>w.type).join(', ')}</div>
+          <div class="resistance">Resist: ${data.resistances.map(r=>r.type).join(', ')}</div>
+          <div class="retreat">Retreat: ${data.retreatCost.length}</div>
+        </div>
+        ${priceHTML}
+        ${buttonHTML}
+      `;
     }
 
     // === STARTERS ===
@@ -142,7 +235,12 @@
         const ownedAlready = owned.some(o=>o.id===p.id);
         const div = document.createElement('div');
         div.className='card';
-        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">Free Starter</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Claim'}</button>`;
+        const data = pokemonData[p.id] || {hp: '50', types: ['normal'], abilities: [], attacks: [], weaknesses: [], resistances: [], retreatCost: []};
+        const themeColor = typeColor[data.types[0]] || '#95afc0';
+        div.style.background = `radial-gradient(circle at 50% 0%, ${themeColor} 36%, #ffffff 36%)`;
+        const priceHTML = '<div class="price">Free Starter</div>';
+        const buttonHTML = `<button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Claim'}</button>`;
+        div.innerHTML = buildCardHTML(p, data, themeColor, priceHTML, buttonHTML);
         if (!ownedAlready) div.querySelector('button').onclick=()=>claimStarter(p);
         grid.appendChild(div);
       });
@@ -160,7 +258,12 @@
       shop.forEach(p=>{
         const ownedAlready = owned.some(o=>o.id===p.id);
         const div = document.createElement('div'); div.className='card';
-        div.innerHTML = `<img src="${img(p.id)}" alt="${p.name}"><div>${p.name}</div><div class="price">${p.price} Coins</div><button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Buy'}</button>`;
+        const data = pokemonData[p.id] || {hp: '50', types: ['normal'], abilities: [], attacks: [], weaknesses: [], resistances: [], retreatCost: []};
+        const themeColor = typeColor[data.types[0]] || '#95afc0';
+        div.style.background = `radial-gradient(circle at 50% 0%, ${themeColor} 36%, #ffffff 36%)`;
+        const priceHTML = `<div class="price">${p.price} Coins</div>`;
+        const buttonHTML = `<button class="btn" ${ownedAlready?'disabled':''}>${ownedAlready?'Owned':'Buy'}</button>`;
+        div.innerHTML = buildCardHTML(p, data, themeColor, priceHTML, buttonHTML);
         if (!ownedAlready) div.querySelector('button').onclick=()=>buy(p, div);
         grid.appendChild(div);
       });
@@ -172,21 +275,19 @@
       special.forEach(p=>{
         const ownedAlready = owned.some(o=>o.id===p.id);
         const div = document.createElement('div'); div.className='card';
-        const buttonText = ownedAlready 
-          ? 'Owned' 
-          : (p.priceEth === '0.00' ? 'Mint Free' : 'Buy with MetaMask');
-        div.innerHTML = `
-          <img src="${img(p.id)}" alt="${p.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'">
-          <div>${p.name}</div>
-          <div class="price">${p.priceEth} ETH</div>
-          <button class="btn" ${ownedAlready?'disabled':''}>${buttonText}</button>
-        `;
+        const data = pokemonData[p.id] || {hp: '50', types: ['normal'], abilities: [], attacks: [], weaknesses: [], resistances: [], retreatCost: []};
+        const themeColor = typeColor[data.types[0]] || '#95afc0';
+        div.style.background = `radial-gradient(circle at 50% 0%, ${themeColor} 36%, #ffffff 36%)`;
+        const buttonText = ownedAlready ? 'Owned' : (p.priceEth === '0.00' ? 'Mint Free' : 'Buy with MetaMask');
+        const priceHTML = `<div class="price">${p.priceEth} ETH</div>`;
+        const buttonHTML = `<button class="btn" ${ownedAlready?'disabled':''}>${buttonText}</button>`;
+        div.innerHTML = buildCardHTML(p, data, themeColor, priceHTML, buttonHTML);
         if (!ownedAlready) div.querySelector('button').onclick=()=>buySpecial(p, div);
         grid.appendChild(div);
       });
     }
 
-    // === BUY WITH COINS (optional NFT mint) ===
+    // === BUY WITH COINS ===
     async function buy(p, card) {
       const btn = card.querySelector('button');
       btn.disabled = true;
@@ -231,9 +332,8 @@
         const signer = provider.getSigner();
         const buyer = await signer.getAddress();
 
-        // Send ETH if price > 0
         const value = ethers.parseEther(p.priceEth);
-        if (!value.isZero()) {
+        if (value > 0) {
           const tx = await signer.sendTransaction({
             to: '0x000000000000000000000000000000000000dEaD',
             value: value
@@ -241,12 +341,10 @@
           await tx.wait();
         }
 
-        // Mint NFT
         const nft = new ethers.Contract(NFT_ADDRESS, ERC721_ABI, signer);
         const tx = await nft.mint(buyer, p.id, p.name);
         await tx.wait();
 
-        // Update local
         if (!owned.some(o => o.id === p.id)) {
           owned.push({ id: p.id, name: p.name });
           localStorage.setItem(OWNED_KEY, JSON.stringify(owned));
@@ -267,13 +365,12 @@
       const grid = document.getElementById('myGrid'); grid.innerHTML='';
       owned.forEach(p=>{
         const div = document.createElement('div'); div.className='card';
-        div.innerHTML = `
-          <img src="${img(p.id)}" alt="${p.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'">
-          <div>${p.name}</div>
-          <button class="btn equip" ${p.id===equippedId?'disabled':''}>
-            ${p.id===equippedId?'Equipped':'Equip'}
-          </button>
-        `;
+        const data = pokemonData[p.id] || {hp: '50', types: ['normal'], abilities: [], attacks: [], weaknesses: [], resistances: [], retreatCost: []};
+        const themeColor = typeColor[data.types[0]] || '#95afc0';
+        div.style.background = `radial-gradient(circle at 50% 0%, ${themeColor} 36%, #ffffff 36%)`;
+        const priceHTML = '';
+        const buttonHTML = `<button class="btn equip" ${p.id===equippedId?'disabled':''}>${p.id===equippedId?'Equipped':'Equip'}</button>`;
+        div.innerHTML = buildCardHTML(p, data, themeColor, priceHTML, buttonHTML);
         if (p.id!==equippedId) div.querySelector('button').onclick=()=>equip(p.id);
         grid.appendChild(div);
       });
