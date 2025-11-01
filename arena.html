@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Battle Arena</title>
   <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" 
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -176,7 +179,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:1.2rem;
+      font-size:1.3rem;
       transition:all .3s;
     }
     .sound-btn:hover{
@@ -246,10 +249,14 @@
     </div>
   </div>
 
-  <!-- Sound Controls -->
+  <!-- Sound Controls with Font Awesome Icons -->
   <div class="sound-controls">
-    <button class="sound-btn" id="musicToggle" title="Toggle Music">🎵</button>
-    <button class="sound-btn" id="soundToggle" title="Toggle Sounds">🔊</button>
+    <button class="sound-btn" id="musicToggle" title="Toggle Music">
+      <i class="fas fa-music"></i>
+    </button>
+    <button class="sound-btn" id="soundToggle" title="Toggle Sounds">
+      <i class="fas fa-volume-high"></i>
+    </button>
   </div>
 
   <script>
@@ -286,12 +293,9 @@
     function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
 
-    // Owned & equipped - check both storage locations
     let ownedPokemon = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
-    // Also check shop.html's storage format
     const shopOwned = JSON.parse(localStorage.getItem('owned') || '[]');
     if (shopOwned.length > 0) {
-      // Merge both lists, avoiding duplicates
       shopOwned.forEach(p => {
         if (!ownedPokemon.find(op => op.id === p.id)) {
           ownedPokemon.push(p);
@@ -378,157 +382,80 @@
       run: { name: 'Run Away', power: 0, color: '#ff9800', run: true }
     };
 
-    async function newBattle(){
-      battleActive = true; playerTurn = true; battleLog.innerHTML = ''; moveButtons.forEach(b=>b.disabled=false); loadPlayer();
-      playMusic('battle');
-      const oppId = Math.floor(Math.random() * 150) + 1;
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${oppId}`);
-      const data = await res.json();
-      opponent = { id: oppId, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100 };
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
-      opponentName.textContent = opponent.name; updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-      
-      // Entrance animation
-      opponentSprite.style.opacity = '0';
-      opponentSprite.style.transform = 'scale(0)';
-      setTimeout(() => {
-        opponentSprite.style.transition = 'all 0.5s ease';
-        opponentSprite.style.opacity = '1';
-        opponentSprite.style.transform = 'scale(1)';
-      }, 100);
-      
-      log(`A wild <strong>${opponent.name}</strong> appeared!`, 'system');
-      playSound('appear');
-      document.getElementById('againBtn').disabled = true;
-    }
-
-    moveButtons.forEach(btn=>btn.addEventListener('click',()=>{
-      if (!battleActive || !playerTurn) return;
-      const key = btn.dataset.move; const move = moves[key];
-      if (move.run){ 
-        log(`<strong>${player.name}</strong> ran away.`, 'system'); 
-        playSound('run');
-        return endBattle(false, true); 
-      }
-      
-      // Player attack animation
-      const playerEl = document.getElementById('playerPokemon');
-      playerEl.classList.add('attack');
-      playSound('attack');
-      setTimeout(() => playerEl.classList.remove('attack'), 400);
-      
-      const dmg = Math.floor(Math.random()*8)+move.power; opponent.hp=Math.max(0,opponent.hp-dmg);
-      log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
-      
-      // Opponent hit animation
-      setTimeout(() => {
-        const oppEl = document.getElementById('opponentPokemon');
-        oppEl.classList.add('hit', 'shake');
-        playSound('hit');
-        setTimeout(() => {
-          oppEl.classList.remove('hit', 'shake');
-        }, 500);
-      }, 300);
-      
-      log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
-      updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-      if (opponent.hp===0) {
-        playSound('victory');
-        return setTimeout(()=>endBattle(true), 300);
-      }
-      playerTurn=false; moveButtons.forEach(b=>b.disabled=true);
-      setTimeout(()=>{
-        // Opponent attack animation
-        const oppEl = document.getElementById('opponentPokemon');
-        oppEl.classList.add('attack');
-        playSound('attack');
-        setTimeout(() => oppEl.classList.remove('attack'), 400);
-        
-        const oppDmg = Math.floor(Math.random()*25)+15; player.hp=Math.max(0,player.hp-oppDmg);
-        log(`${opponent.name} attacked! You took <strong>${oppDmg}</strong> damage.`);
-        
-        // Player hit animation
-        setTimeout(() => {
-          playerEl.classList.add('hit', 'shake');
-          playSound('hit');
-          setTimeout(() => {
-            playerEl.classList.remove('hit', 'shake');
-          }, 500);
-        }, 300);
-        
-        updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-        if (player.hp===0) {
-          playSound('defeat');
-          return endBattle(false);
-        }
-        playerTurn=true; moveButtons.forEach(b=>b.disabled=false);
-      }, 900);
-    }));
-
-    function trophySvg(){
-      return '<svg class="trophy" width="18" height="18" viewBox="0 0 24 24" fill="#ffeb3b" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12v3h3v4a5 5 0 0 1-5 5h-1.1A5.002 5.002 0 0 1 12 17a5.002 5.002 0 0 1-2.9-3H8a5 5 0 0 1-5-5V5h3V2Zm12 5V4H6v3H4v2a3 3 0 0 0 3 3h1.18A5.988 5.988 0 0 1 12 10c1.55 0 2.97.59 4.02 1.56L17 12a3 3 0 0 0 3-3V7h-2Zm-6 7a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 14Zm-4 4h8v2H8v-2Z"/></svg>';
-    }
-
-    async function endBattle(won, ran=false){
-      battleActive=false; moveButtons.forEach(b=>b.disabled=true);
-      stopMusic();
-      const history = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      history.push({ player: player.name, opponent: opponent.name, won: won && !ran, date: new Date().toISOString() });
-      localStorage.setItem(HIST_KEY, JSON.stringify(history));
-      if (won && !ran){
-        // Victory animation
-        const playerEl = document.getElementById('playerPokemon');
-        playerEl.classList.add('flash');
-        log(`<strong style=\"color:#4caf50;\">Victory!</strong> ${trophySvg()}`, 'system');
-        const reward=100; setCoins(getCoins()+reward); log(`You earned <strong>${reward}</strong> coins.`);
-        // Mint victory badge NFT
-        try{
-          const signer = getSigner();
-          if (signer) {
-            const badge = new ethers.Contract(BADGE_ADDRESS, BADGE_ABI, signer);
-            await badge.mint(session.address, 1, 1, '0x');
-          }
-        }catch(e){ console.warn('Badge mint failed:', e); }
-      } else if (ran){
-        log(`<strong style=\"color:#ff9800;\">You escaped safely.</strong>`, 'system');
-      } else {
-        log(`<strong style=\"color:#f44336;\">Defeat...</strong>`, 'system');
-      }
-      document.getElementById('againBtn').disabled = false;
-    }
-
-    // Sound system
+    // ———————————————————————————————————————————————
+    // UNIQUE ATTACK SOUNDS + ICON TOGGLES
+    // ———————————————————————————————————————————————
     let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
     let soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
     let currentMusic = null;
 
+    function tone(freq, duration = 0.1, volume = 0.12, type = 'sine') {
+      if (!soundsEnabled) return;
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    }
+
+    function playAttackSound(moveKey) {
+      if (!soundsEnabled) return;
+
+      switch (moveKey) {
+        case 'thunderbolt':
+          tone(800, 0.08, 0.25, 'sawtooth');
+          setTimeout(() => tone(600, 0.08, 0.25, 'sawtooth'), 40);
+          setTimeout(() => tone(400, 0.08, 0.25, 'sawtooth'), 80);
+          break;
+        case 'quickattack':
+          tone(1200, 0.06, 0.18, 'square');
+          setTimeout(() => tone(900, 0.06, 0.18, 'square'), 30);
+          break;
+        case 'irontail':
+          tone(180, 0.12, 0.28, 'square');
+          setTimeout(() => tone(220, 0.10, 0.25, 'square'), 60);
+          setTimeout(() => tone(150, 0.08, 0.22, 'square'), 120);
+          break;
+        case 'run':
+          tone(500, 0.07, 0.15, 'triangle');
+          setTimeout(() => tone(700, 0.07, 0.15, 'triangle'), 50);
+          setTimeout(() => tone(900, 0.07, 0.15, 'triangle'), 100);
+          break;
+      }
+    }
+
     function playSound(type){
       if (!soundsEnabled) return;
-      // Using Web Audio API to generate sounds
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       const frequencies = {
-        'attack': [440, 550],
         'hit': [200, 150],
         'appear': [300, 400, 500],
         'victory': [523.25, 659.25, 783.99],
         'defeat': [200, 180, 160],
-        'run': [350, 300],
         'select': [440],
         'confirm': [523.25, 659.25]
       };
-      
+
       const freq = frequencies[type] || [440];
       if (freq.length === 1) {
         oscillator.frequency.setValueAtTime(freq[0], audioContext.currentTime);
         gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-        oscillator.start(audioContext.currentTime);
+        oscillator.start();
         oscillator.stop(audioContext.currentTime + 0.1);
       } else {
         freq.forEach((f, i) => {
@@ -540,7 +467,7 @@
             osc.frequency.setValueAtTime(f, audioContext.currentTime);
             gain.gain.setValueAtTime(0.1, audioContext.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-            osc.start(audioContext.currentTime);
+            osc.start();
             osc.stop(audioContext.currentTime + 0.15);
           }, i * 100);
         });
@@ -550,7 +477,6 @@
     function playMusic(type){
       if (!musicEnabled) return;
       stopMusic();
-      // Generate battle music using Web Audio API
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const notes = type === 'battle' ? [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] : [];
       let noteIndex = 0;
@@ -564,7 +490,7 @@
         osc.frequency.setValueAtTime(notes[noteIndex % notes.length], audioContext.currentTime);
         gain.gain.setValueAtTime(0.05, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        osc.start(audioContext.currentTime);
+        osc.start();
         osc.stop(audioContext.currentTime + 0.3);
         noteIndex++;
         setTimeout(playNote, 200);
@@ -581,30 +507,149 @@
       }
     }
 
-    document.getElementById('musicToggle').onclick = () => {
+    // ———————————————————————————————————————————————
+    // ICON TOGGLE LOGIC
+    // ———————————————————————————————————————————————
+    const musicBtn = document.getElementById('musicToggle');
+    const soundBtn = document.getElementById('soundToggle');
+
+    function updateIcons() {
+      musicBtn.innerHTML = musicEnabled ? '<i class="fas fa-music"></i>' : '<i class="fas fa-volume-mute"></i>';
+      soundBtn.innerHTML = soundsEnabled ? '<i class="fas fa-volume-high"></i>' : '<i class="fas fa-volume-mute"></i>';
+    }
+
+    musicBtn.onclick = () => {
       musicEnabled = !musicEnabled;
       localStorage.setItem('musicEnabled', musicEnabled);
-      document.getElementById('musicToggle').textContent = musicEnabled ? '🎵' : '🔇';
+      updateIcons();
       if (!musicEnabled) stopMusic();
       else if (battleActive) playMusic('battle');
     };
 
-    document.getElementById('soundToggle').onclick = () => {
+    soundBtn.onclick = () => {
       soundsEnabled = !soundsEnabled;
       localStorage.setItem('soundsEnabled', soundsEnabled);
-      document.getElementById('soundToggle').textContent = soundsEnabled ? '🔊' : '🔇';
+      updateIcons();
     };
 
-    // Update button states
-    document.getElementById('musicToggle').textContent = musicEnabled ? '🎵' : '🔇';
-    document.getElementById('soundToggle').textContent = soundsEnabled ? '🔊' : '🔇';
+    // Initial icon state
+    updateIcons();
 
-    // Uniform dark background applied via CSS above
+    // ———————————————————————————————————————————————
+    // BATTLE LOGIC
+    // ———————————————————————————————————————————————
+    async function newBattle(){
+      battleActive = true; playerTurn = true; battleLog.innerHTML = ''; moveButtons.forEach(b=>b.disabled=false); loadPlayer();
+      playMusic('battle');
+      const oppId = Math.floor(Math.random() * 150) + 1;
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${oppId}`);
+      const data = await res.json();
+      opponent = { id: oppId, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100 };
+      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
+      opponentName.textContent = opponent.name; updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+      
+      opponentSprite.style.opacity = '0';
+      opponentSprite.style.transform = 'scale(0)';
+      setTimeout(() => {
+        opponentSprite.style.transition = 'all 0.5s ease';
+        opponentSprite.style.opacity = '1';
+        opponentSprite.style.transform = 'scale(1)';
+      }, 100);
+      
+      log(`A wild <strong>${opponent.name}</strong> appeared!`, 'system');
+      playSound('appear');
+      document.getElementById('againBtn').disabled = true;
+    }
 
-    // controls
+    moveButtons.forEach(btn => btn.addEventListener('click', () => {
+      if (!battleActive || !playerTurn) return;
+      const key = btn.dataset.move; const move = moves[key];
+      if (move.run){ 
+        log(`<strong>${player.name}</strong> ran away.`, 'system'); 
+        playAttackSound('run');
+        return endBattle(false, true); 
+      }
+      
+      const playerEl = document.getElementById('playerPokemon');
+      playerEl.classList.add('attack');
+      playAttackSound(key);
+      setTimeout(() => playerEl.classList.remove('attack'), 400);
+      
+      const dmg = Math.floor(Math.random()*8)+move.power; 
+      opponent.hp = Math.max(0, opponent.hp - dmg);
+      log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
+      
+      setTimeout(() => {
+        const oppEl = document.getElementById('opponentPokemon');
+        oppEl.classList.add('hit', 'shake');
+        playSound('hit');
+        setTimeout(() => oppEl.classList.remove('hit', 'shake'), 500);
+      }, 300);
+      
+      log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
+      updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+      if (opponent.hp === 0) {
+        playSound('victory');
+        return setTimeout(() => endBattle(true), 300);
+      }
+      playerTurn = false; moveButtons.forEach(b => b.disabled = true);
+      setTimeout(() => {
+        const oppEl = document.getElementById('opponentPokemon');
+        oppEl.classList.add('attack');
+        playSound('attack');
+        setTimeout(() => oppEl.classList.remove('attack'), 400);
+        
+        const oppDmg = Math.floor(Math.random()*25)+15; 
+        player.hp = Math.max(0, player.hp - oppDmg);
+        log(`${opponent.name} attacked! You took <strong>${oppDmg}</strong> damage.`);
+        
+        setTimeout(() => {
+          playerEl.classList.add('hit', 'shake');
+          playSound('hit');
+          setTimeout(() => playerEl.classList.remove('hit', 'shake'), 500);
+        }, 300);
+        
+        updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+        if (player.hp === 0) {
+          playSound('defeat');
+          return endBattle(false);
+        }
+        playerTurn = true; moveButtons.forEach(b => b.disabled = false);
+      }, 900);
+    }));
+
+    function trophySvg(){
+      return '<svg class="trophy" width="18" height="18" viewBox="0 0 24 24" fill="#ffeb3b" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12v3h3v4a5 5 0 0 1-5 5h-1.1A5.002 5.002 0 0 1 12 17a5.002 5.002 0 0 1-2.9-3H8a5 5 0 0 1-5-5V5h3V2Zm12 5V4H6v3H4v2a3 3 0 0 0 3 3h1.18A5.988 5.988 0 0 1 12 10c1.55 0 2.97.59 4.02 1.56L17 12a3 3 0 0 0 3-3V7h-2Zm-6 7a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 14Zm-4 4h8v2H8v-2Z"/></svg>';
+    }
+
+    async function endBattle(won, ran = false){
+      battleActive = false; moveButtons.forEach(b => b.disabled = true);
+      stopMusic();
+      const history = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+      history.push({ player: player.name, opponent: opponent.name, won: won && !ran, date: new Date().toISOString() });
+      localStorage.setItem(HIST_KEY, JSON.stringify(history));
+      if (won && !ran){
+        const playerEl = document.getElementById('playerPokemon');
+        playerEl.classList.add('flash');
+        log(`<strong style="color:#4caf50;">Victory!</strong> ${trophySvg()}`, 'system');
+        const reward = 100; setCoins(getCoins() + reward); log(`You earned <strong>${reward}</strong> coins.`);
+        try{
+          const signer = getSigner();
+          if (signer) {
+            const badge = new ethers.Contract(BADGE_ADDRESS, BADGE_ABI, signer);
+            await badge.mint(session.address, 1, 1, '0x');
+          }
+        }catch(e){ console.warn('Badge mint failed:', e); }
+      } else if (ran){
+        log(`<strong style="color:#ff9800;">You escaped safely.</strong>`, 'system');
+      } else {
+        log(`<strong style="color:#f44336;">Defeat...</strong>`, 'system');
+      }
+      document.getElementById('againBtn').disabled = false;
+    }
+
     document.getElementById('startBtn').onclick = () => { if (!battleActive) newBattle(); };
     document.getElementById('againBtn').onclick = () => { if (!battleActive) newBattle(); };
   </script>
 </body>
 </html>
-
