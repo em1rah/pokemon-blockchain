@@ -3,17 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pokémon Trainer Portal</title>
+  <title>Pokémon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;color:white;background:#0b1021 url('https://images.unsplash.com/photo-1614854262557-2f32a4b3b3e1?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;}
+    
+    /* Full background with local image */
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+      background: #0b1021;
+      overflow: hidden;
+    }
+
+    /* Background Image */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('images/Pokemon-Go-Generic-Resize.webp') center/cover no-repeat;
+      opacity: 0.75; /* Adjust this value: 0.5 = more transparent, 1.0 = full */
+      z-index: -2;
+    }
+
+    /* Dark overlay for text readability */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(11, 16, 33, 0.65); /* Dark blue overlay */
+      z-index: -1;
+    }
+
     .header h1,.header p,label,.tab{font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif}
     .header h1{font-family:'Press Start 2P',cursive}
-    .container{background:rgba(10,10,20,.8);backdrop-filter:blur(12px);border-radius:24px;max-width:420px;width:100%;padding:32px;box-shadow:0 20px 40px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden;}
+    .container{
+      background:rgba(10,10,20,.85);
+      backdrop-filter:blur(12px);
+      border-radius:24px;
+      max-width:420px;
+      width:100%;
+      padding:32px;
+      box-shadow:0 20px 40px rgba(0,0,0,.5);
+      border:1px solid rgba(255,255,255,.1);
+      position:relative;
+      z-index: 1;
+      overflow:hidden;
+    }
     .header{text-align:center;margin-bottom:28px;}
     .header img{width:32px;filter:brightness(0) invert(1);margin-bottom:8px;}
     .header h1{font-size:24px;font-weight:700;color:#ffcb05;text-shadow:0 2px 4px rgba(0,0,0,.3);}
@@ -23,18 +68,28 @@
     .tab.active{background:#ffcb05;color:#1a2a6c;}
     .form-group{margin-bottom:16px;}
     label{display:block;margin-bottom:6px;font-size:14px;color:#ffcb05;font-weight:500;}
-    input[type=email],input[type=password]{width:100%;padding:12px 16px;border:2px solid rgba(255,203,5,.4);border-radius:12px;background:rgba(255,255,255,.1);color:white;font-size:16px;transition:all .3s;}
+    input[type=email],input[type=password]{
+      width:100%;padding:12px 16px;border:2px solid rgba(255,203,5,.4);
+      border-radius:12px;background:rgba(255,255,255,.1);color:white;
+      font-size:16px;transition:all .3s;
+    }
     input::placeholder{color:#aaa;}
     input:focus{outline:none;border-color:#ffcb05;background:rgba(255,255,255,.15);box-shadow:0 0 0 4px rgba(255,203,5,.2);}
     .checkbox{display:flex;align-items:center;gap:8px;font-size:14px;color:#ddd;margin-bottom:20px;}
     .checkbox input{accent-color:#ffcb05;}
-    .btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s;margin-bottom:12px;}
+    .btn{
+      width:100%;padding:14px;border:none;border-radius:12px;
+      font-size:16px;font-weight:600;cursor:pointer;transition:all .3s;margin-bottom:12px;
+    }
     .btn-login{background:#4CAF50;color:white;}
     .btn-login:hover{background:#45a049;transform:translateY(-2px);}
     .divider{text-align:center;margin:20px 0;color:#aaa;position:relative;}
     .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(255,255,255,.2);}
-    .divider span{background:rgba(10,10,20,.8);padding:0 12px;}
-    .btn-metamask{background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;gap:10px;}
+    .divider span{background:rgba(10,10,20,.85);padding:0 12px;}
+    .btn-metamask{
+      background:#1a73e8;color:white;display:flex;align-items:center;
+      justify-content:center;gap:10px;
+    }
     .btn-metamask:hover{background:#1557b0;transform:translateY(-2px);}
     .btn-metamask img{width:20px;height:20px;}
     .links{text-align:center;margin-top:16px;font-size:14px;}
@@ -50,7 +105,7 @@
   <div class="container">
     <div class="header">
       <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffcb05'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>" alt="Pokeball">
-      <h1>Pokémon Trainer Portal</h1>
+      <h1>Pokémon</h1>
       <p>Join the adventure and catch 'em all!</p>
     </div>
 
@@ -61,7 +116,7 @@
 
     <div class="form-container">
       <!-- LOGIN -->
-      <form id="loginForm" class="form active">
+      <form id="loginForm" class="form active" >
         <div class="form-group"><label>Email Address</label><input type="email" placeholder="Enter your email" required></div>
         <div class="form-group"><label>Password</label><input type="password" placeholder="Enter your password" required></div>
         <div class="checkbox"><input type="checkbox" id="remember"><label for="remember">Remember me</label></div>
@@ -92,7 +147,7 @@
   </div>
 
   <script>
-    // ----- Tab switching -----
+    // Tab switching
     document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       t.classList.add('active');
@@ -100,20 +155,26 @@
       document.querySelectorAll('.form').forEach(f=>f.classList.remove('active'));
       document.getElementById(form).classList.add('active');
     }));
-    document.querySelector('.switch-to-login').addEventListener('click',e=>{e.preventDefault();document.querySelector('[data-form=login]').click();});
+    document.querySelector('.switch-to-login').addEventListener('click',e=>{
+      e.preventDefault();
+      document.querySelector('[data-form=login]').click();
+    });
 
-    // ----- Mock email/password -----
+    // Mock email/password
     document.getElementById('loginForm').addEventListener('submit', e=>{
       e.preventDefault();
       goToHome({type:'email', address: e.target[0].value});
     });
     document.getElementById('registerForm').addEventListener('submit', e=>{
       e.preventDefault();
-      if(e.target[1].value !== e.target[2].value){alert('Passwords do not match!');return;}
+      if(e.target[1].value !== e.target[2].value){
+        alert('Passwords do not match!');
+        return;
+      }
       goToHome({type:'email', address: e.target[0].value});
     });
 
-    // ----- MetaMask -----
+    // MetaMask
     async function connectMetaMask(statusEl){
       const eth = window.ethereum;
       if(!eth){
@@ -128,7 +189,6 @@
         const accounts = await eth.request({ method: 'eth_requestAccounts' });
         if(!accounts || accounts.length === 0) throw new Error('No account returned');
         const addr = accounts[0];
-        // Optional: message signing for auth
         try {
           await eth.request({ method: 'personal_sign', params: [addr, 'Login to Pokémon Trainer'] });
         } catch(_) { /* ignore if user skips */ }
@@ -146,7 +206,7 @@
     document.getElementById('metamaskLogin').addEventListener('click',()=>connectMetaMask(document.getElementById('metamaskStatus')));
     document.getElementById('metamaskRegister').addEventListener('click',()=>connectMetaMask(document.getElementById('metamaskStatus')));
 
-    // ----- Redirect -----
+    // Redirect
     function goToHome(user){
       localStorage.setItem('trainerSession', JSON.stringify(user));
       location.href = 'home.html';

@@ -7,257 +7,274 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{
-      min-height:100vh;
-      color:white;
-      display:flex;
-      flex-direction:column;
-      background:#000000;
-      font-family:'Press Start 2P',cursive;
-      position:relative;
-      overflow-x:hidden;
-    }
-    body::before{
-      content:'';
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.05)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">POKÉMON</text></svg>') repeat;
-      opacity:0.3;
-      z-index:0;
-      pointer-events:none;
-    }
-    body > header, body > .container, body > .game-menu{
-      position:relative;
-      z-index:1;
-    }
-    header h1, nav a, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
-    header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
-    header{
-      background:rgba(0,0,0,.5);
-      backdrop-filter:blur(8px);
-      padding:1rem 2rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      position:sticky;
-      top:0;
-      z-index:10;
-      border-bottom:1px solid rgba(255,255,255,.1);
-    }
-    header h1{font-size:1.8rem;color:#ffcb05;}
-    nav a{margin-left:1.5rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:.2s;}
-    nav a:hover{color:#fff;}
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    min-height:100vh;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    background:#000000;
+    font-family:'Press Start 2P',cursive;
+    position:relative;
+    overflow-x:hidden;
+  }
 
-    /* Pokemon Game Menu */
-    .game-menu{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      padding:2rem;
-      position:relative;
-    }
+  /* Main Background Image */
+  body::before{
+    content:'';
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: url('https://comicbook.com/wp-content/uploads/sites/4/2025/08/Pokemon-Go-Generic-Resize.jpg?resize=2000%2C1125') center/cover no-repeat;
+    opacity: 0.35; /* Adjust opacity here (0.1 to 1.0) */
+    z-index:-2;
+    pointer-events:none;
+  }
 
-    .pokemon-logo-large{
-      font-size:4rem;
-      font-weight:bold;
-      background:linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-      text-shadow:0 0 20px rgba(255,215,0,.5);
-      margin-bottom:10px;
-      letter-spacing:8px;
-      animation:glow 2s ease-in-out infinite alternate;
-    }
+  /* Subtle Pokémon Watermark Pattern (on top of background) */
+  body::after{
+    content:'';
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.05)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">POKÉMON</text></svg>') repeat;
+    opacity:0.2;
+    z-index:-1;
+    pointer-events:none;
+  }
 
-    @keyframes glow{
-      from{filter:drop-shadow(0 0 10px rgba(255,215,0,.5));}
-      to{filter:drop-shadow(0 0 20px rgba(255,215,0,.8));}
-    }
+  body > header, body > .container, body > .game-menu{
+    position:relative;
+    z-index:1;
+  }
 
-    .game-subtitle{
-      font-size:1.2rem;
-      color:#ffcb05;
-      margin-bottom:3rem;
-      letter-spacing:4px;
-      text-shadow:2px 2px 4px rgba(0,0,0,.5);
-    }
+  /* Rest of your styles unchanged */
+  header h1, nav a, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
+  header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
+  header{
+    background:rgba(0,0,0,.7);
+    backdrop-filter:blur(12px);
+    padding:1rem 2rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;
+    z-index:10;
+    border-bottom:1px solid rgba(255,255,255,.1);
+  }
+  header h1{font-size:1.8rem;color:#ffcb05;}
+  nav a{margin-left:1.5rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:.2s;}
+  nav a:hover{color:#fff;}
 
-    .main-menu{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-width:320px;
-      margin-bottom:2rem;
-    }
+  /* Pokemon Game Menu */
+  .game-menu{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:2rem;
+    position:relative;
+  }
 
-    .menu-btn{
-      background:rgba(0,0,0,.7);
-      border:3px solid #ffcb05;
-      border-radius:8px;
-      padding:16px 24px;
-      color:#ffcb05;
-      font-family:'Press Start 2P',cursive;
-      font-size:0.9rem;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap:15px;
-      transition:all .3s;
-      text-transform:uppercase;
-      letter-spacing:2px;
-      position:relative;
-      overflow:hidden;
-    }
+  .pokemon-logo-large{
+    font-size:4rem;
+    font-weight:bold;
+    background:linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    text-shadow:0 0 20px rgba(255,215,0,.5);
+    margin-bottom:10px;
+    letter-spacing:8px;
+    animation:glow 2s ease-in-out infinite alternate;
+  }
 
-    .menu-btn::before{
-      content:'';
-      position:absolute;
-      left:0;
-      top:0;
-      height:100%;
-      width:0;
-      background:rgba(255,203,5,.2);
-      transition:width .3s;
-    }
+  @keyframes glow{
+    from{filter:drop-shadow(0 0 10px rgba(255,215,0,.5));}
+    to{filter:drop-shadow(0 0 20px rgba(255,215,0,.8));}
+  }
 
-    .menu-btn:hover::before{
-      width:100%;
-    }
+  .game-subtitle{
+    font-size:1.2rem;
+    color:#ffcb05;
+    margin-bottom:3rem;
+    letter-spacing:4px;
+    text-shadow:2px 2px 4px rgba(0,0,0,.5);
+  }
 
-    .menu-btn:hover{
-      background:rgba(255,203,5,.15);
-      border-color:#fff;
-      transform:translateX(10px);
-      box-shadow:0 0 15px rgba(255,203,5,.5);
-    }
+  .main-menu{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-width:320px;
+    margin-bottom:2rem;
+  }
 
-    .menu-btn:active{
-      transform:translateX(5px);
-    }
+  .menu-btn{
+    background:rgba(0,0,0,.8);
+    border:3px solid #ffcb05;
+    border-radius:8px;
+    padding:16px 24px;
+    color:#ffcb05;
+    font-family:'Press Start 2P',cursive;
+    font-size:0.9rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    transition:all .3s;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    position:relative;
+    overflow:hidden;
+  }
 
-    .menu-icon{
-      font-size:1.2rem;
-      min-width:30px;
-      text-align:center;
-    }
+  .menu-btn::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:0;
+    height:100%;
+    width:0;
+    background:rgba(255,203,5,.2);
+    transition:width .3s;
+  }
 
-    .menu-text{
-      flex:1;
-    }
+  .menu-btn:hover::before{
+    width:100%;
+  }
 
-    .trainer-info{
-      position:absolute;
-      bottom:2rem;
-      right:2rem;
-      background:rgba(0,0,0,.7);
-      border:2px solid #ffcb05;
-      border-radius:12px;
-      padding:15px 20px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      min-width:200px;
-    }
+  .menu-btn:hover{
+    background:rgba(255,203,5,.15);
+    border-color:#fff;
+    transform:translateX(10px);
+    box-shadow:0 0 15px rgba(255,203,5,.5);
+  }
 
-    .info-item{
-      display:flex;
-      justify-content:space-between;
-      font-size:0.7rem;
-      font-family:'Press Start 2P',cursive;
-    }
+  .menu-btn:active{
+    transform:translateX(5px);
+  }
 
-    .info-label{
-      color:#aaa;
-    }
+  .menu-icon{
+    font-size:1.2rem;
+    min-width:30px;
+    text-align:center;
+  }
 
-    .info-value{
-      color:#ffcb05;
-    }
+  .menu-text{
+    flex:1;
+  }
 
-    /* Tabs */
-    .tab-content{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.6);box-shadow:0 15px 35px rgba(0,0,0,.6);}
-    .tab-content.active{display:block;}
+  .trainer-info{
+    position:absolute;
+    bottom:2rem;
+    right:2rem;
+    background:rgba(0,0,0,.8);
+    border:2px solid #ffcb05;
+    border-radius:12px;
+    padding:15px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-width:200px;
+  }
 
-    /* Arena */
-    .arena{background:linear-gradient(to bottom,rgba(0,0,0,.7),rgba(0,0,0,.9));}
-    .battlefield{display:flex;justify-content:space-around;align-items:flex-end;width:100%;max-width:900px;margin:30px 0;position:relative;}
-    .pokemon{position:relative;text-align:center;min-width:180px;}
-    .pokemon img{width:200px;height:200px;object-fit:contain;transition:transform .2s;filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));}
-    .pokemon.hit img{animation:shake .4s;}
-    @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}50%{transform:translateX(8px);}75%{transform:translateX(-8px);}}
-    .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:20px;width:160px;margin:10px auto;position:relative;overflow:hidden;}
-    .hp-fill{height:100%;background:#4caf50;border-radius:8px;transition:width .5s ease,background .3s;}
-    .hp-text{position:absolute;top:0;left:0;right:0;text-align:center;font-weight:600;font-size:13px;color:white;text-shadow:1px 1px 2px #000;}
-    .name{font-weight:700;color:#ffcb05;font-size:1.3rem;text-shadow:1px 1px 3px #000;margin-bottom:4px;}
+  .info-item{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.7rem;
+    font-family:'Press Start 2P',cursive;
+  }
 
-    .moves{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;width:100%;max-width:500px;}
-    .move-btn{padding:14px;background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;color:white;font-weight:600;cursor:pointer;transition:.3s;}
-    .move-btn:hover{background:rgba(255,203,5,.2);}
-    .move-btn:disabled{background:#444;cursor:not-allowed;opacity:.6;}
+  .info-label{
+    color:#aaa;
+  }
 
-    .log{background:rgba(0,0,0,.6);padding:16px;border-radius:12px;max-height:140px;overflow-y:auto;font-size:15px;margin-top:20px;width:100%;max-width:900px;border:1px solid rgba(255,203,5,.3);}
-    .log p{margin:6px 0;opacity:.9;}
-    .log .player{color:#4caf50;}
-    .log .opponent{color:#ff5252;}
-    .log .system{color:#ffcb05;font-weight:600;}
+  .info-value{
+    color:#ffcb05;
+  }
 
-    /* Shop */
-    .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:20px;}
-    .shop-card{background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;padding:14px;text-align:center;transition:.3s;}
-    .shop-card:hover{transform:scale(1.05);background:rgba(255,203,5,.2);}
-    .shop-card img{width:140px;height:140px;object-fit:contain;margin:8px 0;filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));}
-    .shop-card .price{color:#ffeb3b;font-weight:700;font-size:1.1rem;}
-    .shop-card button{margin-top:8px;padding:8px 16px;background:#4caf50;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
-    .shop-card button:disabled{background:#666;cursor:not-allowed;}
-    .shop-card button:hover:not(:disabled){background:#388e3c;}
+  /* Tabs */
+  .tab-content{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.7);box-shadow:0 15px 35px rgba(0,0,0,.6);}
+  .tab-content.active{display:block;}
 
-    /* My Pokémon */
-    .my-pokemon-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:16px;}
-    .my-card{background:rgba(0,0,0,.4);border:2px solid #ffcb05;border-radius:12px;padding:12px;text-align:center;position:relative;}
-    .my-card.equipped::after{content:"★";position:absolute;top:8px;right:8px;color:#ffeb3b;font-size:1.4rem;}
-    .my-card img{width:120px;height:120px;object-fit:contain;}
-    .equip-btn{margin-top:6px;padding:6px 12px;background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;}
-    .equip-btn:hover{background:#f57c00;}
+  /* Arena */
+  .arena{background:linear-gradient(to bottom,rgba(0,0,0,.8),rgba(0,0,0,.95));}
+  .battlefield{display:flex;justify-content:space-around;align-items:flex-end;width:100%;max-width:900px;margin:30px 0;position:relative;}
+  .pokemon{position:relative;text-align:center;min-width:180px;}
+  .pokemon img{width:200px;height:200px;object-fit:contain;transition:transform .2s;filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));}
+  .pokemon.hit img{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}50%{transform:translateX(8px);}75%{transform:translateX(-8px);}}
+  .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:20px;width:160px;margin:10px auto;position:relative;overflow:hidden;}
+  .hp-fill{height:100%;background:#4caf50;border-radius:8px;transition:width .5s ease,background .3s;}
+  .hp-text{position:absolute;top:0;left:0;right:0;text-align:center;font-weight:600;font-size:13px;color:white;text-shadow:1px 1px 2px #000;}
+  .name{font-weight:700;color:#ffcb05;font-size:1.3rem;text-shadow:1px 1px 3px #000;margin-bottom:4px;}
 
-    .tournament-list{margin:1.5rem;padding:1.5rem;background:rgba(100,65,165,.8);border-radius:16px;}
-    .tournament-item{background:rgba(0,0,0,.4);margin:10px 0;padding:14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-size:15px;}
-    .trophy{font-size:1.5rem;}
+  .moves{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;width:100%;max-width:500px;}
+  .move-btn{padding:14px;background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;color:white;font-weight:600;cursor:pointer;transition:.3s;}
+  .move-btn:hover{background:rgba(255,203,5,.2);}
+  .move-btn:disabled{background:#444;cursor:not-allowed;opacity:.6;}
 
-    .logout{margin:2rem auto;display:block;padding:.9rem 2.5rem;background:#f44336;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;}
-    .logout:hover{background:#d32f2f;}
+  .log{background:rgba(0,0,0,.7);padding:16px;border-radius:12px;max-height:140px;overflow-y:auto;font-size:15px;margin-top:20px;width:100%;max-width:900px;border:1px solid rgba(255,203,5,.3);}
+  .log p{margin:6px 0;opacity:.9;}
+  .log .player{color:#4caf50;}
+  .log .opponent{color:#ff5252;}
+  .log .system{color:#ffcb05;font-weight:600;}
 
-    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
-    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
-    .settings-btn{margin-left:12px;color:#ffcb05;text-decoration:none;font-weight:600;}
-    .settings-btn:hover{color:#fff}
-    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+  /* Shop */
+  .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:20px;}
+  .shop-card{background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;padding:14px;text-align:center;transition:.3s;}
+  .shop-card:hover{transform:scale(1.05);background:rgba(255,203,5,.2);}
+  .shop-card img{width:140px;height:140px;object-fit:contain;margin:8px 0;filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));}
+  .shop-card .price{color:#ffeb3b;font-weight:700;font-size:1.1rem;}
+  .shop-card button{margin-top:8px;padding:8px 16px;background:#4caf50;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+  .shop-card button:disabled{background:#666;cursor:not-allowed;}
+  .shop-card button:hover:not(:disabled){background:#388e3c;}
 
-    /* Settings */
-    .settings-panel{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.6);box-shadow:0 15px 35px rgba(0,0,0,.6);}
-    .settings-panel.active{display:block;}
-    .settings-field{margin:10px 0}
-    .settings-field label{display:block;margin-bottom:6px;color:#ffcb05}
-    .settings-field input, .settings-field select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,203,5,.4);background:rgba(255,255,255,.1);color:#fff;width:100%}
-    .save-settings{margin-top:10px;padding:10px 16px;background:#4caf50;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
+  /* My Pokémon */
+  .my-pokemon-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:16px;}
+  .my-card{background:rgba(0,0,0,.5);border:2px solid #ffcb05;border-radius:12px;padding:12px;text-align:center;position:relative;}
+  .my-card.equipped::after{content:"★";position:absolute;top:8px;right:8px;color:#ffeb3b;font-size:1.4rem;}
+  .my-card img{width:120px;height:120px;object-fit:contain;}
+  .equip-btn{margin-top:6px;padding:6px 12px;background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;}
+  .equip-btn:hover{background:#f57c00;}
 
-    /* Themes - will be dynamically generated */
+  .tournament-list{margin:1.5rem;padding:1.5rem;background:rgba(100,65,165,.8);border-radius:16px;}
+  .tournament-item{background:rgba(0,0,0,.4);margin:10px 0;padding:14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-size:15px;}
+  .trophy{font-size:1.5rem;}
 
-    @media(max-width:700px){
-      .battlefield{flex-direction:column;align-items:center;gap:30px;}
-      .pokemon img{width:120px;height:120px;}
-      .hp-bar{width:120px;}
-      .moves{grid-template-columns:1fr;}
-      .shop-grid{grid-template-columns:1fr 1fr;}
-    }
-  </style>
+  .logout{margin:2rem auto;display:block;padding:.9rem 2.5rem;background:#f44336;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;}
+  .logout:hover{background:#d32f2f;}
+
+  .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
+  .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
+  .settings-btn{margin-left:12px;color:#ffcb05;text-decoration:none;font-weight:600;}
+  .settings-btn:hover{color:#fff}
+  .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+
+  /* Settings */
+  .settings-panel{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.7);box-shadow:0 15px 35px rgba(0,0,0,.6);}
+  .settings-panel.active{display:block;}
+  .settings-field{margin:10px 0}
+  .settings-field label{display:block;margin-bottom:6px;color:#ffcb05}
+  .settings-field input, .settings-field select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,203,5,.4);background:rgba(255,255,255,.1);color:#fff;width:100%}
+  .save-settings{margin-top:10px;padding:10px 16px;background:#4caf50;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
+
+  @media(max-width:700px){
+    .battlefield{flex-direction:column;align-items:center;gap:30px;}
+    .pokemon img{width:120px;height:120px;}
+    .hp-bar{width:120px;}
+    .moves{grid-template-columns:1fr;}
+    .shop-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
 </head>
 <body>
   <header>
@@ -277,8 +294,8 @@
 
   <!-- Pokemon Game Welcome Screen -->
   <div class="game-menu" id="gameMenu">
-    <div class="pokemon-logo-large">POKÉMON</div>
-    <div class="game-subtitle">TRAINER PORTAL</div>
+    <div class="pokemon-logo-large"></div>
+    <div class="game-subtitle"></div>
     
     <div class="main-menu">
       <button class="menu-btn" id="continueBtn">
