@@ -54,33 +54,560 @@
     .title{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.3rem;margin:2rem 0 0.5rem;text-shadow:1px 1px 0 #000;}
     .subtitle{color:#aaa;font-size:0.95rem;margin-bottom:1rem;}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.2rem;margin-top:1rem;}
-    .card{
-      background:#1b1f3b;border:3px solid #e2c044;border-radius:16px;padding:1rem;text-align:center;
-      transition:all 0.3s ease;box-shadow:0 4px 8px rgba(0,0,0,0.3);
-      position:relative;overflow:hidden;
-    }
-    .card::before{
-      content:'';position:absolute;top:0;left:0;width:100%;height:4px;
-      background:linear-gradient(90deg,#ffcb05,#4caf50,#2196f3,#e91e63);opacity:0.8;
-    }
-    .card:hover{transform:translateY(-6px);box-shadow:0 8px 16px rgba(0,0,0,0.4);border-color:#fff;}
-    .card img{width:140px;height:140px;image-rendering:pixelated;margin:0.5rem 0;}
-    .card h3{color:#fff;font-size:1rem;margin:0.5rem 0;font-weight:600;}
-    .card .price{color:#ffeb3b;font-weight:700;margin:0.5rem 0;font-size:0.95rem;}
-    .card button{
-      width:100%;padding:10px;border:none;border-radius:10px;font-weight:700;
-      cursor:pointer;transition:0.2s;margin-top:0.5rem;font-size:0.9rem;
-    }
-    .card button.coin-btn{background:#ff9800;color:#fff;}
-    .card button.token-btn{background:#9c27b0;color:#fff;}
-    .card button:disabled{background:#555;color:#aaa;cursor:not-allowed;opacity:0.6;}
-    .card button:hover:not(:disabled){transform:scale(1.03);}
-    .card .owned-tag{position:absolute;top:8px;right:8px;background:#4caf50;color:#fff;padding:4px 8px;border-radius:8px;font-size:0.7rem;font-weight:700;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
 
-    .starter-card{border-color:#4caf50 !important;}
-    .starter-card button{background:#8bc34a;color:#fff;}
-    .starter-card button:disabled{background:#66bb6a;color:#ccc;}
+    /* Enhanced Pokemon Card Style */
+    .card{
+      background:linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border:5px solid #ffcb05;
+      border-radius:24px;
+      padding:0;
+      text-align:left;
+      transition:all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow:
+        0 10px 30px rgba(0,0,0,0.7),
+        inset 0 0 0 2px rgba(255,203,5,0.2),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+      position:relative;
+      overflow:hidden;
+      aspect-ratio:2.5/3.5;
+      display:flex;
+      flex-direction:column;
+      cursor:pointer;
+      perspective:1000px;
+    }
+
+    /* Holographic Foil Effect */
+    .card::before{
+      content:'';
+      position:absolute;
+      top:-50%;
+      left:-50%;
+      width:200%;
+      height:200%;
+      background:linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255,203,5,0.1) 40%,
+        rgba(74,144,226,0.2) 50%,
+        rgba(255,203,5,0.1) 60%,
+        transparent 70%
+      );
+      animation:shimmer 3s infinite;
+      opacity:0;
+      transition:opacity 0.5s;
+      z-index:1;
+      pointer-events:none;
+    }
+
+    .card:hover::before{
+      opacity:1;
+    }
+
+    @keyframes shimmer{
+      0%{transform:translate(-50%,-50%) rotate(0deg);}
+      100%{transform:translate(-50%,-50%) rotate(360deg);}
+    }
+
+    /* 3D Hover Effect */
+    /* .card:hover{
+      transform:translateY(-12px) rotateX(5deg) rotateY(-2deg) scale(1.03);
+      box-shadow:
+        0 20px 50px rgba(255,203,5,0.4),
+        0 0 0 3px rgba(255,203,5,0.6),
+        inset 0 0 30px rgba(255,203,5,0.2);
+      border-color:#fff;
+    } */
+
+    /* Card Header with Gradient - better spacing */
+    .card-header{
+      background:linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
+      padding:40px 12px 10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:3px solid rgba(255,203,5,0.4);
+      position:relative;
+      z-index:2;
+      backdrop-filter:blur(4px);
+      min-height:60px;
+    }
+
+    .card-name{
+      color:#ffcb05;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      text-shadow:
+        0 0 10px rgba(255,203,5,0.8),
+        0 2px 4px rgba(0,0,0,0.8),
+        0 0 20px rgba(255,203,5,0.4);
+      font-family:'Press Start 2P',cursive;
+      font-size:0.65rem;
+      flex:1;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      margin-right:8px;
+    }
+
+    .card-hp{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      color:#fff;
+      font-weight:700;
+      font-size:0.8rem;
+      flex-shrink:0;
+    }
+
+    .hp-value{
+      background:linear-gradient(135deg, #e91e63 0%, #c2185b 50%, #ad1457 100%);
+      padding:4px 10px;
+      border-radius:12px;
+      border:2px solid rgba(255,255,255,0.3);
+      box-shadow:
+        0 3px 6px rgba(0,0,0,0.4),
+        inset 0 1px 2px rgba(255,255,255,0.2);
+      font-size:0.85rem;
+      position:relative;
+      white-space:nowrap;
+    }
+
+    /* Rarity Badge - positioned to not overlap */
+    .rarity-badge{
+      position:absolute;
+      top:8px;
+      left:8px;
+      background:linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color:#1a1a2e;
+      padding:5px 8px;
+      border-radius:16px;
+      font-size:0.6rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      z-index:10;
+      border:2px solid rgba(255,255,255,0.5);
+      box-shadow:0 4px 8px rgba(0,0,0,0.4);
+      display:flex;
+      align-items:center;
+      gap:3px;
+      max-width:calc(100% - 100px);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .rarity-star{
+      font-size:0.75rem;
+      filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+      flex-shrink:0;
+    }
+
+    /* Type Badge Enhanced - positioned to not overlap HP */
+    .card-type{
+      position:absolute;
+      top:8px;
+      right:8px;
+      background:linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+      padding:6px 10px;
+      border-radius:20px;
+      border:2px solid #ffcb05;
+      font-size:0.65rem;
+      font-weight:700;
+      color:#ffcb05;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      z-index:10;
+      backdrop-filter:blur(6px);
+      box-shadow:0 4px 8px rgba(0,0,0,0.5);
+      max-width:80px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* Pokemon Image Area with Frame - better sizing */
+    .card-image-area{
+      flex:1;
+      min-height:160px;
+      max-height:200px;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.3) 100%),
+        radial-gradient(circle at 50% 30%, rgba(255,203,5,0.15) 0%, transparent 60%);
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      z-index:2;
+      border-top:3px solid rgba(255,203,5,0.3);
+      border-bottom:3px solid rgba(255,203,5,0.3);
+      margin:4px 8px;
+      border-radius:12px;
+    }
+
+    .card-image-area::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      border:2px solid rgba(255,203,5,0.2);
+      border-radius:12px;
+      pointer-events:none;
+    }
+
+    .card-image-area::after{
+      content:'';
+      position:absolute;
+      top:8px;
+      left:8px;
+      right:8px;
+      bottom:8px;
+      background:radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.3) 100%);
+      border-radius:8px;
+      pointer-events:none;
+    }
+
+    .card img{
+      width:100%;
+      height:100%;
+      max-width:160px;
+      max-height:160px;
+      object-fit:contain;
+      image-rendering:auto;
+      filter:drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+      position:relative;
+      z-index:1;
+      transition:transform 0.4s;
+    }
+
+    .card:hover img{
+      transform:scale(1.15) translateY(-5px);
+    }
+
+    /* Card Info Section Enhanced - better spacing */
+    .card-info{
+      background:linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
+      padding:12px 14px 50px;
+      border-top:3px solid rgba(255,203,5,0.4);
+      position:relative;
+      z-index:2;
+      backdrop-filter:blur(4px);
+      flex-shrink:0;
+    }
+
+    /* Attack Section - better spacing */
+    .attack-section{
+      margin:8px 0;
+      padding:8px;
+      background:rgba(0,0,0,0.4);
+      border-radius:6px;
+      border-left:3px solid #ffcb05;
+    }
+
+    .attack-name{
+      color:#ffcb05;
+      font-weight:700;
+      font-size:0.75rem;
+      margin-bottom:4px;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .attack-cost{
+      display:flex;
+      gap:3px;
+      margin-bottom:4px;
+      flex-wrap:wrap;
+    }
+
+    .energy-symbol{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:0.65rem;
+      font-weight:700;
+      border:1.5px solid rgba(255,255,255,0.3);
+      box-shadow:0 2px 4px rgba(0,0,0,0.3);
+      flex-shrink:0;
+    }
+
+    .attack-damage{
+      color:#fff;
+      font-weight:700;
+      font-size:0.85rem;
+      margin-left:auto;
+      white-space:nowrap;
+    }
+
+    .card-id{
+      color:rgba(255,255,255,0.6);
+      font-size:0.65rem;
+      font-weight:600;
+      margin-bottom:6px;
+      font-family:monospace;
+      text-transform:uppercase;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .card-price{
+      color:#ffcb05;
+      font-weight:700;
+      font-size:0.95rem;
+      margin-bottom:8px;
+      text-shadow:0 2px 4px rgba(0,0,0,0.5);
+      display:flex;
+      align-items:center;
+      gap:6px;
+      overflow:hidden;
+    }
+    
+    .card-price span:last-child{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .price-icon{
+      font-size:1.2rem;
+      filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      flex-shrink:0;
+      line-height:1;
+    }
+
+    /* Set Symbol - positioned to not overlap button */
+    .set-symbol{
+      position:absolute;
+      bottom:10px;
+      right:10px;
+      width:28px;
+      height:28px;
+      background:rgba(0,0,0,0.7);
+      border:2px solid #ffcb05;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1rem;
+      color:#ffcb05;
+      font-weight:700;
+      z-index:3;
+      flex-shrink:0;
+    }
+
+    /* Card Button Enhanced */
+    .card button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      transition:all 0.3s;
+      font-size:0.95rem;
+      text-transform:uppercase;
+      letter-spacing:1.5px;
+      margin-top:10px;
+      box-shadow:
+        0 6px 12px rgba(0,0,0,0.5),
+        inset 0 1px 2px rgba(255,255,255,0.2);
+      position:relative;
+      z-index:2;
+      overflow:hidden;
+    }
+
+    .card button::before{
+      content:'';
+      position:absolute;
+      top:50%;
+      left:50%;
+      width:0;
+      height:0;
+      border-radius:50%;
+      background:rgba(255,255,255,0.3);
+      transform:translate(-50%,-50%);
+      transition:width 0.5s, height 0.5s;
+    }
+
+    .card button:hover::before{
+      width:300px;
+      height:300px;
+    }
+
+    .card button.coin-btn{
+      background:linear-gradient(135deg, #ff9800 0%, #f57c00 50%, #e65100 100%);
+      color:#fff;
+      border:2px solid rgba(255,255,255,0.3);
+    }
+
+    .card button.token-btn{
+      background:linear-gradient(135deg, #9c27b0 0%, #7b1fa2 50%, #6a1b9a 100%);
+      color:#fff;
+      border:2px solid rgba(255,255,255,0.3);
+    }
+
+    .card button:disabled{
+      background:rgba(85,85,85,0.4);
+      color:#aaa;
+      cursor:not-allowed;
+      opacity:0.6;
+      border-color:rgba(255,255,255,0.1);
+    }
+
+    .card button:hover:not(:disabled){
+      transform:translateY(-3px);
+      box-shadow:
+        0 8px 16px rgba(0,0,0,0.6),
+        inset 0 1px 3px rgba(255,255,255,0.3);
+    }
+
+    .card button:active:not(:disabled){
+      transform:translateY(-1px);
+    }
+
+    /* Owned Tag Enhanced - positioned to not overlap */
+    /* .owned-tag{
+      position:absolute;
+      top:8px;
+      left:8px;
+      background:linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
+      color:#fff;
+      padding:6px 10px;
+      border-radius:20px;
+      font-size:0.65rem;
+      font-weight:700;
+      z-index:11;
+      border:2px solid rgba(255,255,255,0.4);
+      box-shadow:
+        0 4px 12px rgba(76,175,80,0.5),
+        inset 0 1px 2px rgba(255,255,255,0.3);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      max-width:calc(100% - 100px);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+     */
+    /* When owned tag exists, adjust rarity badge position - using class for better compatibility */
+    /* .card.has-owned .rarity-badge{
+      top:42px;
+    } */
+
+    /* Starter Card Special */
+    .starter-card{
+      border-color:#4caf50 !important;
+      background:linear-gradient(135deg, #1a3e1a 0%, #1e4a1e 50%, #162816 100%);
+    }
+
+    .starter-card::before{
+      background:linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(76,175,80,0.2) 40%,
+        rgba(139,195,74,0.25) 50%,
+        rgba(76,175,80,0.2) 60%,
+        transparent 70%
+      );
+    }
+
+    .starter-card button{
+      background:linear-gradient(135deg, #8bc34a 0%, #689f38 50%, #558b2f 100%);
+    }
+
+    .starter-card button:disabled{
+      background:rgba(102,187,106,0.4);
+      color:#ccc;
+    }
+
+    /* Rare Card Special */
+    .rare-card{
+      border-color:#9c27b0 !important;
+      background:linear-gradient(135deg, #2d1b3d 0%, #1a0f26 50%, #0d0513 100%);
+    }
+
+    .rare-card::before{
+      background:linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(156,39,176,0.2) 40%,
+        rgba(123,31,162,0.3) 50%,
+        rgba(156,39,176,0.2) 60%,
+        transparent 70%
+      );
+    }
+
+    .rare-card .rarity-badge{
+      background:linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+      color:#fff;
+    }
+
+    /* Weakness/Resistance - better responsive */
+    .weakness-resistance{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:6px;
+      margin-bottom:6px;
+      font-size:0.65rem;
+      color:rgba(255,255,255,0.7);
+    }
+
+    .weakness-resistance span{
+      display:flex;
+      align-items:center;
+      gap:3px;
+      flex:1;
+      min-width:calc(50% - 4px);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    /* Responsive - comprehensive breakpoints */
+    @media(max-width:1200px){
+      .grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
+    }
+
+    @media(max-width:768px){
+      .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
+      .card{aspect-ratio:2.5/3.5;}
+      .card img{max-width:140px;max-height:140px;}
+      .card-header{padding:38px 10px 8px;}
+      .card-name{font-size:0.6rem;}
+      .hp-value{font-size:0.75rem;padding:3px 8px;}
+      .card-type{font-size:0.6rem;padding:5px 8px;max-width:70px;}
+      .rarity-badge{font-size:0.55rem;padding:4px 6px;}
+      .attack-section{padding:6px;}
+      .attack-name{font-size:0.7rem;}
+      .card-info{padding:10px 12px 45px;}
+      .set-symbol{width:24px;height:24px;font-size:0.9rem;bottom:8px;right:8px;}
+    }
+
+    @media(max-width:480px){
+      .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.8rem;}
+      .card-header{min-height:55px;padding:35px 8px 6px;}
+      .card-image-area{min-height:140px;max-height:160px;padding:10px;}
+      .card img{max-width:120px;max-height:120px;}
+      .weakness-resistance{font-size:0.6rem;gap:6px;}
+      .weakness-resistance span{min-width:100%;}
+      .card button{font-size:0.85rem;padding:12px;}
+    }
   </style>
 </head>
 <body>
@@ -237,27 +764,128 @@
       {id: 898, name: 'Calyrex', price: 6000}, {id: 382, name: 'Kyogre', price: 5800}
     ];
 
+    // Pokemon Type Mapping (simplified - can be expanded)
+    function getPokemonType(id) {
+      const typeMap = {
+        1: 'Grass', 4: 'Fire', 7: 'Water', 25: 'Electric', 144: 'Ice', 145: 'Electric',
+        146: 'Fire', 150: 'Psychic', 151: 'Psychic', 92: 'Ghost', 63: 'Psychic',
+        95: 'Rock', 74: 'Rock', 50: 'Ground', 54: 'Water', 104: 'Ground', 111: 'Ground',
+        116: 'Water', 118: 'Water', 120: 'Water', 147: 'Dragon', 172: 'Electric',
+        175: 'Fairy', 152: 'Grass', 155: 'Fire', 243: 'Electric', 244: 'Fire',
+        245: 'Water', 249: 'Psychic', 250: 'Fire', 380: 'Dragon', 381: 'Dragon',
+        384: 'Dragon', 382: 'Water', 383: 'Ground', 483: 'Steel', 484: 'Water',
+        487: 'Ghost', 643: 'Dragon', 644: 'Dragon', 646: 'Dragon', 716: 'Fairy',
+        717: 'Dark', 789: 'Psychic', 791: 'Psychic', 792: 'Ghost', 800: 'Psychic',
+        888: 'Fairy', 889: 'Fighting', 893: 'Dark', 898: 'Psychic'
+      };
+      return typeMap[id] || 'Normal';
+    }
+
+    // HP Calculation
+    function getPokemonHP(id) {
+      return Math.floor(50 + (id % 50) + (id > 100 ? 50 : 0) + (id > 150 ? 30 : 0));
+    }
+
+    // Get Rarity
+    function getRarity(type, price) {
+      if (type === 'starter') return { level: 'COMMON', stars: '⭐' };
+      if (type === 'token') {
+        if (price >= 7000) return { level: 'LEGENDARY', stars: '⭐⭐⭐⭐⭐' };
+        if (price >= 5000) return { level: 'ULTRA RARE', stars: '⭐⭐⭐⭐' };
+        if (price >= 3000) return { level: 'RARE', stars: '⭐⭐⭐' };
+        return { level: 'UNCOMMON', stars: '⭐⭐' };
+      }
+      if (price >= 400) return { level: 'UNCOMMON', stars: '⭐⭐' };
+      return { level: 'COMMON', stars: '⭐' };
+    }
+
+    // Get Attack
+    function getAttack(pokemonType) {
+      const attacks = {
+        'Fire': { name: 'Flame Thrower', cost: ['🔥'], damage: 80 },
+        'Water': { name: 'Hydro Pump', cost: ['💧'], damage: 90 },
+        'Grass': { name: 'Solar Beam', cost: ['🌿'], damage: 70 },
+        'Electric': { name: 'Thunder', cost: ['⚡'], damage: 100 },
+        'Psychic': { name: 'Psybeam', cost: ['🔮'], damage: 85 },
+        'Ice': { name: 'Blizzard', cost: ['❄️'], damage: 80 },
+        'Ghost': { name: 'Shadow Ball', cost: ['👻'], damage: 75 },
+        'Dragon': { name: 'Dragon Pulse', cost: ['🐉'], damage: 120 },
+        'Fairy': { name: 'Moonblast', cost: ['✨'], damage: 90 },
+        'Rock': { name: 'Stone Edge', cost: ['🪨'], damage: 85 },
+        'Ground': { name: 'Earthquake', cost: ['🌍'], damage: 100 },
+        'Dark': { name: 'Dark Pulse', cost: ['🌑'], damage: 80 },
+        'Fighting': { name: 'Close Combat', cost: ['👊'], damage: 90 },
+        'Normal': { name: 'Tackle', cost: [], damage: 50 }
+      };
+      return attacks[pokemonType] || attacks['Normal'];
+    }
+
     // Render Card
     function createCard(poke, type = 'common') {
       const has = owned.some(o => o.id === poke.id);
       const card = document.createElement('div');
-      card.className = `card ${type === 'starter' ? 'starter-card' : ''}`;
+      const cardType = type === 'starter' ? 'starter-card' : type === 'token' ? 'rare-card' : '';
+      card.className = `card ${cardType}`;
 
       const priceText = type === 'token' ? `${poke.price} FREE` : `${poke.price} Coins`;
-      const btnText = has ? 'Owned' : (type === 'starter' ? 'Claim' : type === 'token' ? 'Buy' : 'Buy');
-      const btnClass = type === 'token' ? 'token-btn' : type === 'starter' ? '' : 'coin-btn';
+      const btnText = has ? 'Owned' : (type === 'starter' ? 'Claim' : type === 'token' ? 'Buy with FREE' : 'Buy');
+      const btnClass = type === 'token' ? 'token-btn' : type === 'starter' ? 'coin-btn' : 'coin-btn';
+      const pokemonType = getPokemonType(poke.id);
+      const hp = getPokemonHP(poke.id);
+      const priceIcon = type === 'token' ? '💎' : '🪙';
+      const rarity = getRarity(type, poke.price);
+      const attack = getAttack(pokemonType);
+      const cardNumber = Math.floor(Math.random() * 100) + 1;
+
+      if (has) {
+        card.classList.add('has-owned');
+      }
 
       card.innerHTML = `
-        <h3>${poke.name}</h3>
-        <img src="${img(poke.id)}" alt="${poke.name}" loading="lazy">
-        <div class="price">${priceText}</div>
+        ${has ? '<div class="owned-tag"></div>' : ''}
+        <div class="rarity-badge">
+          <span class="rarity-star">${rarity.stars}</span>
+          <span>${rarity.level}</span>
+        </div>
+        <div class="card-header">
+          <div class="card-name">${poke.name}</div>
+          <div class="card-hp">
+            <span>HP</span>
+            <span class="hp-value">${hp}</span>
+          </div>
+        </div>
+        <div class="card-type">${pokemonType}</div>
+        <div class="card-image-area">
+          <img src="${img(poke.id)}" alt="${poke.name}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%23ffcb05\'/></svg>'">
+        </div>
+        <div class="card-info">
+          <div class="attack-section">
+            <div class="attack-cost">
+              ${attack.cost.map(emoji => `<span class="energy-symbol">${emoji}</span>`).join('')}
+            </div>
+            <div class="attack-name">${attack.name}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="color:rgba(255,255,255,0.6);font-size:0.75rem;">Deals damage</span>
+              <span class="attack-damage">${attack.damage}</span>
+            </div>
+          </div>
+          <div class="card-id">#${String(poke.id).padStart(3, '0')} | ${poke.name}</div>
+          <div class="weakness-resistance">
+            <span>Weakness: ${pokemonType === 'Fire' ? '💧' : pokemonType === 'Water' ? '⚡' : '⚔️'}</span>
+            <span>Resistance: ${pokemonType === 'Electric' ? '🌿' : pokemonType === 'Grass' ? '🔥' : '🛡️'}</span>
+          </div>
+          <div class="card-price">
+            <span class="price-icon">${priceIcon}</span>
+            <span>${priceText}</span>
+          </div>
         <button class="${btnClass}" ${has ? 'disabled' : ''} 
                 onclick="${type === 'starter' ? `claimStarter(${poke.id}, '${poke.name}')` : 
                           type === 'token' ? `buyRare(${poke.id}, '${poke.name}', ${poke.price})` : 
                           `buyCommon(${poke.id}, '${poke.name}', ${poke.price})`}">
           ${btnText}
         </button>
-        ${has ? '<div class="owned-tag">Owned</div>' : ''}
+          <div class="set-symbol">PK</div>
+        </div>
       `;
       return card;
     }
@@ -294,16 +922,54 @@
       const grid = document.getElementById('myGrid');
       grid.innerHTML = '';
       if (owned.length === 0) {
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;">No Pokémon yet. Start collecting!</p>';
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
         return;
       }
       owned.forEach(p => {
+        const pokemonType = getPokemonType(p.id);
+        const hp = getPokemonHP(p.id);
+        const attack = getAttack(pokemonType);
+        const rarity = { level: 'COLLECTION', stars: '⭐' };
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'card has-owned';
         card.innerHTML = `
-          <h3>${p.name}</h3>
-          <img src="${img(p.id)}" alt="${p.name}">
-          <div class="price">#${p.id}</div>
+          <div class="owned-tag">✓ Owned</div>
+          <div class="rarity-badge">
+            <span class="rarity-star">${rarity.stars}</span>
+            <span>${rarity.level}</span>
+          </div>
+          <div class="card-header">
+            <div class="card-name">${p.name}</div>
+            <div class="card-hp">
+              <span>HP</span>
+              <span class="hp-value">${hp}</span>
+            </div>
+          </div>
+          <div class="card-type">${pokemonType}</div>
+          <div class="card-image-area">
+            <img src="${img(p.id)}" alt="${p.name}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%23ffcb05\'/></svg>'">
+          </div>
+          <div class="card-info">
+            <div class="attack-section">
+              <div class="attack-cost">
+                ${attack.cost.map(emoji => `<span class="energy-symbol">${emoji}</span>`).join('')}
+              </div>
+              <div class="attack-name">${attack.name}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:rgba(255,255,255,0.6);font-size:0.75rem;">Deals damage</span>
+                <span class="attack-damage">${attack.damage}</span>
+              </div>
+            </div>
+            <div class="card-id">#${String(p.id).padStart(3, '0')} | ${p.name}</div>
+            <div class="weakness-resistance">
+              <span>Weakness: ${pokemonType === 'Fire' ? '💧' : pokemonType === 'Water' ? '⚡' : '⚔️'}</span>
+              <span>Resistance: ${pokemonType === 'Electric' ? '🌿' : pokemonType === 'Grass' ? '🔥' : '🛡️'}</span>
+            </div>
+            <div style="color:#4caf50;font-weight:700;padding:10px;text-align:center;border:2px solid rgba(76,175,80,0.5);border-radius:8px;margin-top:8px;background:rgba(76,175,80,0.1);">
+              ✓ In Collection
+            </div>
+            <div class="set-symbol">PK</div>
+          </div>
         `;
         grid.appendChild(card);
       });
