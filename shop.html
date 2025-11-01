@@ -619,7 +619,7 @@
       <a href="history.html">History</a>
       <a href="settings.html">Settings</a>
       <span class="coins" id="coinDisplay">500 Coins</span>
-      <span class="free-balance" id="freeDisplay">0 FREE</span>
+      <span class="free-balance" id="freeDisplay">0 TOKEN</span>
       <span class="wallet" id="walletDisplay"></span>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
       <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -639,7 +639,7 @@
 
     <!-- Rare Shop (FREE Token) -->
     <div class="title">Rare Shop</div>
-    <div class="subtitle">Buy rare Pokémon using FREE tokens</div>
+    <div class="subtitle">Buy rare Pokémon using tokens</div>
     <div class="grid" id="rareGrid"></div>
 
     <!-- My Pokémon -->
@@ -711,7 +711,7 @@
       try {
         const bal = await token.balanceOf(userAddress);
         const formatted = ethers.utils.formatUnits(bal, 18).split('.')[0];
-        document.getElementById('freeDisplay').textContent = `${formatted} FREE`;
+        document.getElementById('freeDisplay').textContent = `${formatted} TOKEN`;
       } catch (e) {
         console.error(e);
       }
@@ -827,8 +827,8 @@
       const cardType = type === 'starter' ? 'starter-card' : type === 'token' ? 'rare-card' : '';
       card.className = `card ${cardType}`;
 
-      const priceText = type === 'token' ? `${poke.price} FREE` : `${poke.price} Coins`;
-      const btnText = has ? 'Owned' : (type === 'starter' ? 'Claim' : type === 'token' ? 'Buy with FREE' : 'Buy');
+      const priceText = type === 'token' ? `${poke.price} TOKEN` : `${poke.price} Coins`;
+      const btnText = has ? 'Owned' : (type === 'starter' ? 'Claim' : type === 'token' ? 'Buy with TOKEN' : 'Buy');
       const btnClass = type === 'token' ? 'token-btn' : type === 'starter' ? 'coin-btn' : 'coin-btn';
       const pokemonType = getPokemonType(poke.id);
       const hp = getPokemonHP(poke.id);
@@ -1014,7 +1014,7 @@
       try {
         const amount = ethers.utils.parseUnits(price.toString(), 18);
         const bal = await token.balanceOf(userAddress);
-        if (bal.lt(amount)) return alert('Not enough FREE tokens!');
+        if (bal.lt(amount)) return alert('Not enough tokens!');
 
         const allow = await token.allowance(userAddress, NFT_ADDRESS);
         if (allow.lt(amount)) {
@@ -1030,7 +1030,7 @@
         localStorage.setItem('owned', JSON.stringify(owned));
         await updateBalance();
         loadAll();
-        alert(`Minted ${name} with ${price} FREE!`);
+        alert(`Minted ${name} with ${price} TOKEN!`);
       } catch (e) {
         alert('Transaction failed: ' + (e.message || e));
       }
