@@ -10,7 +10,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{min-height:100vh;color:white;display:flex;flex-direction:column;background:#0b1021;}
+    body{
+      min-height:100vh;
+      color:white;
+      display:flex;
+      flex-direction:column;
+      background:#000000;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:'';
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.05)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">POKÉMON</text></svg>') repeat;
+      opacity:0.3;
+      z-index:0;
+      pointer-events:none;
+    }
+    body > header, body > .container{
+      position:relative;
+      z-index:1;
+    }
     header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);} 
     header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
     nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
@@ -40,6 +64,125 @@
     .log p{margin:6px 0;opacity:.9;}
     .system{color:#ffcb05;font-weight:600}
     .trophy{vertical-align:middle;margin-left:6px}
+
+    /* Pokemon Selection Modal */
+    .pokemon-select-modal{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,.8);
+      z-index:1000;
+      justify-content:center;
+      align-items:center;
+    }
+    .pokemon-select-modal.active{display:flex;}
+    .select-panel{
+      background:#1a1a2e;
+      border:3px solid #ffcb05;
+      border-radius:20px;
+      padding:30px;
+      max-width:600px;
+      width:90%;
+      max-height:80vh;
+      overflow-y:auto;
+    }
+    .select-title{
+      color:#ffcb05;
+      font-size:1.5rem;
+      margin-bottom:20px;
+      text-align:center;
+    }
+    .pokemon-select-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+      gap:15px;
+      margin-bottom:20px;
+    }
+    .pokemon-select-card{
+      background:rgba(255,255,255,.1);
+      border:2px solid rgba(255,203,5,.3);
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+      cursor:pointer;
+      transition:all .3s;
+    }
+    .pokemon-select-card:hover{
+      border-color:#ffcb05;
+      transform:scale(1.05);
+      background:rgba(255,203,5,.2);
+    }
+    .pokemon-select-card.selected{
+      border-color:#4caf50;
+      background:rgba(76,175,80,.3);
+      box-shadow:0 0 15px rgba(76,175,80,.5);
+    }
+    .pokemon-select-card img{
+      width:80px;
+      height:80px;
+      object-fit:contain;
+    }
+    .pokemon-select-card .name{
+      font-size:0.85rem;
+      margin-top:5px;
+      color:#fff;
+    }
+
+    /* Battle Animations */
+    @keyframes shake{
+      0%,100%{transform:translateX(0);}
+      25%{transform:translateX(-10px);}
+      75%{transform:translateX(10px);}
+    }
+    @keyframes flash{
+      0%,100%{opacity:1;filter:brightness(1);}
+      50%{opacity:0.7;filter:brightness(1.5);}
+    }
+    @keyframes hit{
+      0%{transform:scale(1);}
+      50%{transform:scale(0.9);}
+      100%{transform:scale(1);}
+    }
+    @keyframes attack{
+      0%{transform:translateX(0);}
+      50%{transform:translateX(20px);}
+      100%{transform:translateX(0);}
+    }
+    .pokemon.shake{animation:shake 0.5s ease-in-out;}
+    .pokemon.flash{animation:flash 0.3s ease-in-out 3;}
+    .pokemon.hit{animation:hit 0.3s ease-in-out;}
+    .pokemon.attack{animation:attack 0.4s ease-in-out;}
+
+    /* Sound controls */
+    .sound-controls{
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      z-index:100;
+      display:flex;
+      gap:10px;
+    }
+    .sound-btn{
+      background:rgba(0,0,0,.7);
+      border:2px solid #ffcb05;
+      border-radius:50%;
+      width:50px;
+      height:50px;
+      color:#ffcb05;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      transition:all .3s;
+    }
+    .sound-btn:hover{
+      background:rgba(255,203,5,.2);
+      transform:scale(1.1);
+    }
   </style>
 </head>
 <body>
@@ -85,9 +228,28 @@
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
+      <button class="move-btn" id="selectPokemonBtn">Select Pokemon</button>
       <button class="move-btn" id="startBtn">Start Battle</button>
       <button class="move-btn" id="againBtn" disabled>Play Again</button>
     </div>
+  </div>
+
+  <!-- Pokemon Selection Modal -->
+  <div class="pokemon-select-modal" id="pokemonSelectModal">
+    <div class="select-panel">
+      <div class="select-title">Choose Your Pokemon</div>
+      <div class="pokemon-select-grid" id="pokemonSelectGrid"></div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="move-btn" id="confirmSelectBtn" style="max-width:200px;">Confirm Selection</button>
+        <button class="move-btn" id="cancelSelectBtn" style="max-width:200px;background:#666;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sound Controls -->
+  <div class="sound-controls">
+    <button class="sound-btn" id="musicToggle" title="Toggle Music">🎵</button>
+    <button class="sound-btn" id="soundToggle" title="Toggle Sounds">🔊</button>
   </div>
 
   <script>
@@ -124,13 +286,24 @@
     function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
 
-    // Owned & equipped
+    // Owned & equipped - check both storage locations
     let ownedPokemon = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
-    if (!ownedPokemon.find(p => p.id === 25)) {
+    // Also check shop.html's storage format
+    const shopOwned = JSON.parse(localStorage.getItem('owned') || '[]');
+    if (shopOwned.length > 0) {
+      // Merge both lists, avoiding duplicates
+      shopOwned.forEach(p => {
+        if (!ownedPokemon.find(op => op.id === p.id)) {
+          ownedPokemon.push(p);
+        }
+      });
+    }
+    if (ownedPokemon.length === 0 || !ownedPokemon.find(p => p.id === 25)) {
       ownedPokemon.push({ id: 25, name: 'Pikachu' });
       localStorage.setItem(OWNED_KEY, JSON.stringify(ownedPokemon));
     }
     let equippedId = parseInt(localStorage.getItem(EQUIPPED_KEY) || '25');
+    let selectedPokemonId = equippedId;
 
     const player = { id: equippedId, name: (ownedPokemon.find(p=>p.id===equippedId)||{name:'Pikachu'}).name, hp:100, maxHp:100 };
     const playerSprite = document.getElementById('playerSprite');
@@ -155,12 +328,47 @@
     }
 
     function loadPlayer(){
-      const p = ownedPokemon.find(p=>p.id===equippedId) || ownedPokemon[0];
+      const p = ownedPokemon.find(p=>p.id===selectedPokemonId) || ownedPokemon.find(p=>p.id===equippedId) || ownedPokemon[0];
       player.id = p.id; player.name = p.name; player.hp = player.maxHp;
       playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
       playerName.textContent = p.name;
       updateHP(playerHP, playerHPText, player.hp, player.maxHp);
     }
+
+    // Pokemon Selection UI
+    function showPokemonSelection(){
+      const grid = document.getElementById('pokemonSelectGrid');
+      grid.innerHTML = '';
+      ownedPokemon.forEach(p => {
+        const card = document.createElement('div');
+        card.className = `pokemon-select-card ${p.id === selectedPokemonId ? 'selected' : ''}`;
+        card.innerHTML = `
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" alt="${p.name}">
+          <div class="name">${p.name}</div>
+        `;
+        card.onclick = () => {
+          document.querySelectorAll('.pokemon-select-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedPokemonId = p.id;
+          playSound('select');
+        };
+        grid.appendChild(card);
+      });
+      document.getElementById('pokemonSelectModal').classList.add('active');
+    }
+
+    document.getElementById('selectPokemonBtn').onclick = showPokemonSelection;
+    document.getElementById('confirmSelectBtn').onclick = () => {
+      equippedId = selectedPokemonId;
+      localStorage.setItem(EQUIPPED_KEY, String(equippedId));
+      loadPlayer();
+      document.getElementById('pokemonSelectModal').classList.remove('active');
+      playSound('confirm');
+    };
+    document.getElementById('cancelSelectBtn').onclick = () => {
+      selectedPokemonId = equippedId;
+      document.getElementById('pokemonSelectModal').classList.remove('active');
+    };
 
     let opponent = null; let battleActive = false; let playerTurn = true;
     const moves = {
@@ -172,31 +380,87 @@
 
     async function newBattle(){
       battleActive = true; playerTurn = true; battleLog.innerHTML = ''; moveButtons.forEach(b=>b.disabled=false); loadPlayer();
+      playMusic('battle');
       const oppId = Math.floor(Math.random() * 150) + 1;
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${oppId}`);
       const data = await res.json();
       opponent = { id: oppId, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100 };
       opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
       opponentName.textContent = opponent.name; updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+      
+      // Entrance animation
+      opponentSprite.style.opacity = '0';
+      opponentSprite.style.transform = 'scale(0)';
+      setTimeout(() => {
+        opponentSprite.style.transition = 'all 0.5s ease';
+        opponentSprite.style.opacity = '1';
+        opponentSprite.style.transform = 'scale(1)';
+      }, 100);
+      
       log(`A wild <strong>${opponent.name}</strong> appeared!`, 'system');
+      playSound('appear');
       document.getElementById('againBtn').disabled = true;
     }
 
     moveButtons.forEach(btn=>btn.addEventListener('click',()=>{
       if (!battleActive || !playerTurn) return;
       const key = btn.dataset.move; const move = moves[key];
-      if (move.run){ log(`<strong>${player.name}</strong> ran away.`, 'system'); return endBattle(false, true); }
+      if (move.run){ 
+        log(`<strong>${player.name}</strong> ran away.`, 'system'); 
+        playSound('run');
+        return endBattle(false, true); 
+      }
+      
+      // Player attack animation
+      const playerEl = document.getElementById('playerPokemon');
+      playerEl.classList.add('attack');
+      playSound('attack');
+      setTimeout(() => playerEl.classList.remove('attack'), 400);
+      
       const dmg = Math.floor(Math.random()*8)+move.power; opponent.hp=Math.max(0,opponent.hp-dmg);
       log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
+      
+      // Opponent hit animation
+      setTimeout(() => {
+        const oppEl = document.getElementById('opponentPokemon');
+        oppEl.classList.add('hit', 'shake');
+        playSound('hit');
+        setTimeout(() => {
+          oppEl.classList.remove('hit', 'shake');
+        }, 500);
+      }, 300);
+      
       log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
       updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-      if (opponent.hp===0) return setTimeout(()=>endBattle(true), 300);
+      if (opponent.hp===0) {
+        playSound('victory');
+        return setTimeout(()=>endBattle(true), 300);
+      }
       playerTurn=false; moveButtons.forEach(b=>b.disabled=true);
       setTimeout(()=>{
+        // Opponent attack animation
+        const oppEl = document.getElementById('opponentPokemon');
+        oppEl.classList.add('attack');
+        playSound('attack');
+        setTimeout(() => oppEl.classList.remove('attack'), 400);
+        
         const oppDmg = Math.floor(Math.random()*25)+15; player.hp=Math.max(0,player.hp-oppDmg);
         log(`${opponent.name} attacked! You took <strong>${oppDmg}</strong> damage.`);
+        
+        // Player hit animation
+        setTimeout(() => {
+          playerEl.classList.add('hit', 'shake');
+          playSound('hit');
+          setTimeout(() => {
+            playerEl.classList.remove('hit', 'shake');
+          }, 500);
+        }, 300);
+        
         updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-        if (player.hp===0) return endBattle(false);
+        if (player.hp===0) {
+          playSound('defeat');
+          return endBattle(false);
+        }
         playerTurn=true; moveButtons.forEach(b=>b.disabled=false);
       }, 900);
     }));
@@ -207,10 +471,14 @@
 
     async function endBattle(won, ran=false){
       battleActive=false; moveButtons.forEach(b=>b.disabled=true);
+      stopMusic();
       const history = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
       history.push({ player: player.name, opponent: opponent.name, won: won && !ran, date: new Date().toISOString() });
       localStorage.setItem(HIST_KEY, JSON.stringify(history));
       if (won && !ran){
+        // Victory animation
+        const playerEl = document.getElementById('playerPokemon');
+        playerEl.classList.add('flash');
         log(`<strong style=\"color:#4caf50;\">Victory!</strong> ${trophySvg()}`, 'system');
         const reward=100; setCoins(getCoins()+reward); log(`You earned <strong>${reward}</strong> coins.`);
         // Mint victory badge NFT
@@ -229,17 +497,109 @@
       document.getElementById('againBtn').disabled = false;
     }
 
-    // Apply theme
-    (function ensureTheme(){
-      const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
-      document.body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
-      document.body.classList.add(`theme-${theme}`);
-      if (!document.getElementById('theme-css')){
-        const style = document.createElement('style'); style.id='theme-css';
-        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
-        document.head.appendChild(style);
+    // Sound system
+    let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
+    let soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
+    let currentMusic = null;
+
+    function playSound(type){
+      if (!soundsEnabled) return;
+      // Using Web Audio API to generate sounds
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      const frequencies = {
+        'attack': [440, 550],
+        'hit': [200, 150],
+        'appear': [300, 400, 500],
+        'victory': [523.25, 659.25, 783.99],
+        'defeat': [200, 180, 160],
+        'run': [350, 300],
+        'select': [440],
+        'confirm': [523.25, 659.25]
+      };
+      
+      const freq = frequencies[type] || [440];
+      if (freq.length === 1) {
+        oscillator.frequency.setValueAtTime(freq[0], audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+      } else {
+        freq.forEach((f, i) => {
+          setTimeout(() => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(f, audioContext.currentTime);
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.15);
+          }, i * 100);
+        });
       }
-    })();
+    }
+
+    function playMusic(type){
+      if (!musicEnabled) return;
+      stopMusic();
+      // Generate battle music using Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const notes = type === 'battle' ? [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] : [];
+      let noteIndex = 0;
+      
+      function playNote(){
+        if (!musicEnabled || !battleActive) return;
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.frequency.setValueAtTime(notes[noteIndex % notes.length], audioContext.currentTime);
+        gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + 0.3);
+        noteIndex++;
+        setTimeout(playNote, 200);
+      }
+      playNote();
+      currentMusic = { audioContext, interval: setInterval(() => {}, 100) };
+    }
+
+    function stopMusic(){
+      if (currentMusic) {
+        if (currentMusic.audioContext) currentMusic.audioContext.close();
+        if (currentMusic.interval) clearInterval(currentMusic.interval);
+        currentMusic = null;
+      }
+    }
+
+    document.getElementById('musicToggle').onclick = () => {
+      musicEnabled = !musicEnabled;
+      localStorage.setItem('musicEnabled', musicEnabled);
+      document.getElementById('musicToggle').textContent = musicEnabled ? '🎵' : '🔇';
+      if (!musicEnabled) stopMusic();
+      else if (battleActive) playMusic('battle');
+    };
+
+    document.getElementById('soundToggle').onclick = () => {
+      soundsEnabled = !soundsEnabled;
+      localStorage.setItem('soundsEnabled', soundsEnabled);
+      document.getElementById('soundToggle').textContent = soundsEnabled ? '🔊' : '🔇';
+    };
+
+    // Update button states
+    document.getElementById('musicToggle').textContent = musicEnabled ? '🎵' : '🔇';
+    document.getElementById('soundToggle').textContent = soundsEnabled ? '🔊' : '🔇';
+
+    // Uniform dark background applied via CSS above
 
     // controls
     document.getElementById('startBtn').onclick = () => { if (!battleActive) newBattle(); };

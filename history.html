@@ -7,7 +7,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{min-height:100vh;color:white;background:#0b1021}
+    body{
+      min-height:100vh;
+      color:white;
+      background:#000000;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:'';
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.05)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">POKÉMON</text></svg>') repeat;
+      opacity:0.3;
+      z-index:0;
+      pointer-events:none;
+    }
+    body > header, body > .container{
+      position:relative;
+      z-index:1;
+    }
     header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1);} 
     header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
     nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
@@ -76,16 +98,7 @@
       });
     }
 
-    (function ensureTheme(){
-      const theme = (JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}').theme) || 'kanto';
-      document.body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
-      document.body.classList.add(`theme-${theme}`);
-      if (!document.getElementById('theme-css')){
-        const style = document.createElement('style'); style.id='theme-css';
-        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
-        document.head.appendChild(style);
-      }
-    })();
+    // Uniform dark background applied via CSS above
 
     load();
   </script>

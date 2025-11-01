@@ -9,18 +9,178 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{min-height:100vh;color:white;display:flex;flex-direction:column;background:#0b1021 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="%230b1021"/><circle cx="16" cy="16" r="6" fill="none" stroke="%23ffcb05" stroke-width="2" opacity="0.15"/><circle cx="48" cy="48" r="6" fill="none" stroke="%23ffcb05" stroke-width="2" opacity="0.15"/></svg>') repeat;}
-    header h1, nav a, .welcome h2, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
+    body{
+      min-height:100vh;
+      color:white;
+      display:flex;
+      flex-direction:column;
+      background:#000000;
+      font-family:'Press Start 2P',cursive;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:'';
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.05)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">POKÉMON</text></svg>') repeat;
+      opacity:0.3;
+      z-index:0;
+      pointer-events:none;
+    }
+    body > header, body > .container, body > .game-menu{
+      position:relative;
+      z-index:1;
+    }
+    header h1, nav a, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
     header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
-    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);}
+    header{
+      background:rgba(0,0,0,.5);
+      backdrop-filter:blur(8px);
+      padding:1rem 2rem;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:10;
+      border-bottom:1px solid rgba(255,255,255,.1);
+    }
     header h1{font-size:1.8rem;color:#ffcb05;}
     nav a{margin-left:1.5rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:.2s;}
     nav a:hover{color:#fff;}
-    .welcome{background:rgba(100,65,165,.9);padding:3rem 2rem;text-align:center;margin:2rem 1rem;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.4);}
-    .welcome h2{font-size:2.5rem;margin-bottom:.5rem;}
-    .welcome p{font-size:1.2rem;color:#ddd;margin:1rem 0;}
-    .btn-enter{padding:16px 40px;background:#ffcb05;color:#1a2a6c;border:none;border-radius:16px;font-size:1.3rem;font-weight:700;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.4);transition:.3s;}
-    .btn-enter:hover{background:#ffb300;transform:scale(1.05);}
+
+    /* Pokemon Game Menu */
+    .game-menu{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      padding:2rem;
+      position:relative;
+    }
+
+    .pokemon-logo-large{
+      font-size:4rem;
+      font-weight:bold;
+      background:linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      text-shadow:0 0 20px rgba(255,215,0,.5);
+      margin-bottom:10px;
+      letter-spacing:8px;
+      animation:glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow{
+      from{filter:drop-shadow(0 0 10px rgba(255,215,0,.5));}
+      to{filter:drop-shadow(0 0 20px rgba(255,215,0,.8));}
+    }
+
+    .game-subtitle{
+      font-size:1.2rem;
+      color:#ffcb05;
+      margin-bottom:3rem;
+      letter-spacing:4px;
+      text-shadow:2px 2px 4px rgba(0,0,0,.5);
+    }
+
+    .main-menu{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:320px;
+      margin-bottom:2rem;
+    }
+
+    .menu-btn{
+      background:rgba(0,0,0,.7);
+      border:3px solid #ffcb05;
+      border-radius:8px;
+      padding:16px 24px;
+      color:#ffcb05;
+      font-family:'Press Start 2P',cursive;
+      font-size:0.9rem;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:15px;
+      transition:all .3s;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .menu-btn::before{
+      content:'';
+      position:absolute;
+      left:0;
+      top:0;
+      height:100%;
+      width:0;
+      background:rgba(255,203,5,.2);
+      transition:width .3s;
+    }
+
+    .menu-btn:hover::before{
+      width:100%;
+    }
+
+    .menu-btn:hover{
+      background:rgba(255,203,5,.15);
+      border-color:#fff;
+      transform:translateX(10px);
+      box-shadow:0 0 15px rgba(255,203,5,.5);
+    }
+
+    .menu-btn:active{
+      transform:translateX(5px);
+    }
+
+    .menu-icon{
+      font-size:1.2rem;
+      min-width:30px;
+      text-align:center;
+    }
+
+    .menu-text{
+      flex:1;
+    }
+
+    .trainer-info{
+      position:absolute;
+      bottom:2rem;
+      right:2rem;
+      background:rgba(0,0,0,.7);
+      border:2px solid #ffcb05;
+      border-radius:12px;
+      padding:15px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-width:200px;
+    }
+
+    .info-item{
+      display:flex;
+      justify-content:space-between;
+      font-size:0.7rem;
+      font-family:'Press Start 2P',cursive;
+    }
+
+    .info-label{
+      color:#aaa;
+    }
+
+    .info-value{
+      color:#ffcb05;
+    }
 
     /* Tabs */
     .tab-content{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.6);box-shadow:0 15px 35px rgba(0,0,0,.6);}
@@ -88,11 +248,7 @@
     .settings-field input, .settings-field select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,203,5,.4);background:rgba(255,255,255,.1);color:#fff;width:100%}
     .save-settings{margin-top:10px;padding:10px 16px;background:#4caf50;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
 
-    /* Themes (game-inspired) */
-    .theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed;}
-    .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed;}
-    .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed;}
-    .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed;}
+    /* Themes - will be dynamically generated */
 
     @media(max-width:700px){
       .battlefield{flex-direction:column;align-items:center;gap:30px;}
@@ -119,31 +275,44 @@
     </nav>
   </header>
 
-  <!-- WELCOME -->
-  <section class="welcome" id="welcomeSection">
-    <h2 id="welcomeMsg">Welcome, Trainer!</h2>
-    <p style="padding-bottom: 20px;">Ready to prove your strength? Enter the arena and battle wild Pokémon!</p>
-    <a href="arena.html" id="enterArenaBtn" class="btn-enter" style="text-decoration: none;">Enter Arena</a>
-  </section>
+  <!-- Pokemon Game Welcome Screen -->
+  <div class="game-menu" id="gameMenu">
+    <div class="pokemon-logo-large">POKÉMON</div>
+    <div class="game-subtitle">TRAINER PORTAL</div>
+    
+    <div class="main-menu">
+      <button class="menu-btn" id="continueBtn">
+        <span class="menu-icon">▶</span>
+        <span class="menu-text">CONTINUE</span>
+      </button>
+      <button class="menu-btn" id="arenaBtn">
+        <span class="menu-icon">⚔</span>
+        <span class="menu-text">BATTLE ARENA</span>
+      </button>
+      <button class="menu-btn" id="shopBtn">
+        <span class="menu-icon">🛒</span>
+        <span class="menu-text">POKÉMON SHOP</span>
+      </button>
+      <button class="menu-btn" id="historyBtn">
+        <span class="menu-icon">📜</span>
+        <span class="menu-text">BATTLE HISTORY</span>
+      </button>
+      <button class="menu-btn" id="settingsBtn">
+        <span class="menu-icon">⚙</span>
+        <span class="menu-text">SETTINGS</span>
+      </button>
+    </div>
 
-  <!-- NAV CARDS -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:1rem;">
-    <a href="arena.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
-      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">Battle Arena</div>
-      <div style="color:#ccc;">Fight and earn trophies & coins</div>
-    </a>
-    <a href="shop.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
-      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">Shop & My Pokémon</div>
-      <div style="color:#ccc;">Buy and manage your team</div>
-    </a>
-    <a href="history.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
-      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">History</div>
-      <div style="color:#ccc;">See your latest battles</div>
-    </a>
-    <a href="settings.html" style="display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-decoration:none;color:#fff;">
-      <div style="font-weight:700;color:#ffcb05;margin-bottom:6px;">Settings</div>
-      <div style="color:#ccc;">Theme and profile</div>
-    </a>
+    <div class="trainer-info">
+      <div class="info-item">
+        <span class="info-label">Trainer:</span>
+        <span class="info-value" id="trainerName">---</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Coins:</span>
+        <span class="info-value" id="trainerCoins">0</span>
+      </div>
+    </div>
   </div>
 
   
@@ -151,13 +320,13 @@
     // === Session ===
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
-    document.getElementById('welcomeMsg').textContent = session.type === 'metamask' 
-      ? `Welcome, Trainer ${session.address.slice(0,6)}...${session.address.slice(-4)}!`
-      : `Welcome back, ${session.address.split('@')[0]}!`;
+    // Update trainer info
+    const trainerName = document.getElementById('trainerName');
+    trainerName.textContent = session.type === 'metamask' 
+      ? `${session.address.slice(0,6)}...${session.address.slice(-4)}`
+      : session.address.split('@')[0];
 
     // === DOM ===
-    const welcomeSection = document.getElementById('welcomeSection');
-    const enterArenaBtn = document.getElementById('enterArenaBtn');
     const walletDisplay = document.getElementById('walletDisplay');
 
     // === Player & Coins ===
@@ -171,7 +340,11 @@
     if (WALLET) walletDisplay.textContent = WALLET.slice(0,6)+"..."+WALLET.slice(-4);
 
     function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
-    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    function setCoins(v){ 
+      localStorage.setItem(COIN_KEY, String(v)); 
+      document.getElementById('coinDisplay').textContent = v + ' Coins';
+      document.getElementById('trainerCoins').textContent = v;
+    }
     if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
 
 
@@ -428,35 +601,27 @@
       location.href = 'index.html';
     };
 
-    // === Settings ===
-    function applyTheme(theme){
-      const body = document.body;
-      body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
-      if (theme === 'johto') body.classList.add('theme-johto');
-      else if (theme === 'gym') body.classList.add('theme-gym');
-      else if (theme === 'champion') body.classList.add('theme-champion');
-      else body.classList.add('theme-kanto');
-    }
-    function applyTheme(theme){
-      const body = document.body;
-      body.classList.remove('theme-kanto','theme-johto','theme-gym','theme-champion');
-      body.classList.add(`theme-${theme}`);
-    }
-    function loadSettings(){
-      const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      const theme = s.theme || 'kanto';
-      applyTheme(theme);
-    }
+    // === Game Menu Buttons ===
+    document.getElementById('continueBtn').onclick = () => {
+      location.href = 'arena.html';
+    };
+    document.getElementById('arenaBtn').onclick = () => {
+      location.href = 'arena.html';
+    };
+    document.getElementById('shopBtn').onclick = () => {
+      location.href = 'shop.html';
+    };
+    document.getElementById('historyBtn').onclick = () => {
+      location.href = 'history.html';
+    };
+    document.getElementById('settingsBtn').onclick = () => {
+      location.href = 'settings.html';
+    };
 
-    (function ensureThemeCss(){
-      if (!document.getElementById('theme-css')){
-        const style = document.createElement('style');
-        style.id = 'theme-css';
-        style.textContent = `.theme-kanto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/kanto-bg.jpg') center/cover fixed} .theme-johto{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/johto-bg.jpg') center/cover fixed} .theme-gym{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/gym-bg.jpg') center/cover fixed} .theme-champion{background:#0b1021 url('https://raw.githubusercontent.com/iamspruce/hosted-assets/main/pokemon/champion-bg.jpg') center/cover fixed}`;
-        document.head.appendChild(style);
-      }
-    })();
-    loadSettings();
+    // === Settings ===
+    function loadSettings(){
+      // Settings loading if needed
+    }
   </script>
 </body>
 </html>
