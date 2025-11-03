@@ -458,6 +458,12 @@
       border:2px solid rgba(255,255,255,0.3);
     }
 
+    .card button.sell-btn{
+      background:linear-gradient(135deg, #f44336 0%, #d32f2f 50%, #b71c1c 100%);
+      color:#fff;
+      border:2px solid rgba(255,255,255,0.3);
+    }
+
     .card button:disabled{
       background:rgba(85,85,85,0.4);
       color:#aaa;
@@ -655,8 +661,8 @@
     }
 
     // Contracts
-    const NFT_ADDRESS = '0x4D510C689f7B74Fe3130E7FbB7f659DFa11D8AfC';
-    const TOKEN_ADDRESS = '0xC1CaeF1974a35913e795cf3aD1D8bFfCA66B9205';
+    const NFT_ADDRESS = '0x11cb564709E29893740984b4Da185dc30E1Ac3Ac';
+    const TOKEN_ADDRESS = '0xA6c456935909BAe20B272458C34fB7E2Bb902602';
 
     const ERC20_ABI = [
       'function balanceOf(address) view returns (uint256)',
@@ -665,7 +671,8 @@
     ];
 
     const NFT_ABI = [
-      'function mintWithToken(address to,uint256 pokeId,string name,uint256 amount) external returns (uint256)'
+      'function mintWithToken(address to,uint256 pokeId,string name,uint256 amount) external returns (uint256)',
+      'function sell(uint256 pokeId) external'
     ];
 
     let signer, token, nft, userAddress;
@@ -820,6 +827,17 @@
       return attacks[pokemonType] || attacks['Normal'];
     }
 
+    // Get Purchase Details
+    function getPurchaseDetails(id) {
+      const starter = starters.find(s => s.id === id);
+      if (starter) return { price: 0, currency: 'free' };
+      const comm = common.find(c => c.id === id);
+      if (comm) return { price: comm.price, currency: 'coins' };
+      const rar = rare.find(r => r.id === id);
+      if (rar) return { price: rar.price, currency: 'tokens' };
+      return null;
+    }
+
     // Render Card
     function createCard(poke, type = 'common') {
       const has = owned.some(o => o.id === poke.id);
@@ -965,9 +983,7 @@
               <span>Weakness: ${pokemonType === 'Fire' ? '💧' : pokemonType === 'Water' ? '⚡' : '⚔️'}</span>
               <span>Resistance: ${pokemonType === 'Electric' ? '🌿' : pokemonType === 'Grass' ? '🔥' : '🛡️'}</span>
             </div>
-            <div style="color:#4caf50;font-weight:700;padding:10px;text-align:center;border:2px solid rgba(76,175,80,0.5);border-radius:8px;margin-top:8px;background:rgba(76,175,80,0.1);">
-              ✓ In Collection
-            </div>
+            <button class="sell-btn" onclick="sellPokemon(${p.id}, '${p.name}')">Sell</button>
             <div class="set-symbol">PK</div>
           </div>
         `;
@@ -1034,6 +1050,47 @@
       } catch (e) {
         alert('Transaction failed: ' + (e.message || e));
       }
+    };
+
+    window.sellPokemon = async (id, name) => {
+      if (!confirm(`Are you sure you want to sell ${name}?`)) return;
+
+      const details = getPurchaseDetails(id);
+      if (!details) return alert('Unknown Pokémon!');
+
+      let sellPrice;
+      let sellCurrency = details.currency === 'tokens' ? 'TOKEN' : 'Coins';
+
+      if (details.currency === 'free') {
+        sellPrice = 100; // Arbitrary sell price for starters
+        coins += sellPrice;
+        claimedStarters = claimedStarters.filter(c => c !== id);
+        localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
+      } else if (details.currency === 'coins') {
+        sellPrice = Math.floor(details.price * 0.5);
+        coins += sellPrice;
+      } else if (details.currency === 'tokens') {
+        if (!userAddress) return alert('Connect wallet first!');
+        try {
+          const sellTx = await nft.sell(id);
+          await sellTx.wait();
+          await updateBalance();
+          sellPrice = Math.floor(details.price * 0.5); // Assume contract refunds half
+          alert(`Sold ${name} for ${sellPrice} ${sellCurrency}!`);
+        } catch (e) {
+          return alert('Sell failed: ' + (e.message || e));
+        }
+      }
+
+      owned = owned.filter(o => o.id !== id);
+      localStorage.setItem('owned', JSON.stringify(owned));
+
+      if (details.currency !== 'tokens') {
+        updateCoinDisplay();
+        alert(`Sold ${name} for ${sellPrice} ${sellCurrency}!`);
+      }
+
+      loadAll();
     };
 
     // Init
