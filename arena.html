@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Battle Arena</title>
   <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,7 +54,7 @@
       border-radius: 20px;
       background: rgba(10, 15, 29, 0.95);
       border: 3px solid #ffcb05;
-      box-shadow: 0 0 30px rgba(255, 203, 5, 0.2);
+      box-shadow: 0 0 30px rgba(255,203, 5, 0.2);
       position: relative;
     }
 
@@ -364,6 +364,9 @@
       background:rgba(255,203,5,.2);
       transform:scale(1.1);
     }
+
+    /* NEW: center start button in step 3 */
+    #slide-start .wizard-actions { display:flex; justify-content:center; }
   </style>
 </head>
 <body>
@@ -432,7 +435,9 @@
           <div><strong>Opponents:</strong> <span id="finalOpponentCount">0</span></div>
         </div>
         <div class="start-countdown" id="startCountdown">3</div>
-        <button class="move-btn pulse" id="startTournamentBtn">START BATTLE</button>
+        <div class="wizard-actions">
+          <button class="move-btn pulse" id="startTournamentBtn">START BATTLE</button>
+        </div>
       </div>
     </div>
 
@@ -485,10 +490,9 @@
     <button class="sound-btn" id="soundToggle" title="Toggle Sounds"><i class="fas fa-volume-high"></i></button>
   </div>
 
-  <!-- [SCRIPT SECTION UNCHANGED - FULLY FUNCTIONAL] -->
   <script>
     /* ==============================================================
-       FULL TOURNAMENT WIZARD + BATTLE ENGINE (unchanged)
+       FULL TOURNAMENT WIZARD + BATTLE ENGINE (updated)
        ============================================================== */
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
@@ -537,10 +541,10 @@
     let carouselIndex = 0;
     let selectedPokemon = null;
     let opponentCount = 5;
-    let opponents = [];
+    let opponents = [];               // <-- now holds the real opponent objects
     let pokemonDetails = [];
 
-    // Sound System
+    // Sound System (unchanged)
     let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
     let soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
     let currentMusic = null;
@@ -650,7 +654,9 @@
     soundBtn.onclick = () => { soundsEnabled = !soundsEnabled; localStorage.setItem('soundsEnabled', soundsEnabled); updateIcons(); };
     updateIcons();
 
-    // Load Pokémon into Carousel
+    // --------------------------------------------------------------
+    // 1. Load owned Pokémon into carousel (unchanged)
+    // --------------------------------------------------------------
     async function loadPokemonCarousel() {
       carousel.innerHTML = '';
       pokemonDetails = [];
@@ -740,21 +746,45 @@
       document.getElementById(id).classList.add('active');
     }
 
+    // --------------------------------------------------------------
+    // 2. Opponent slider + preview (now stores real opponent objects)
+    // --------------------------------------------------------------
     opponentSlider.oninput = () => {
       const n = parseInt(opponentSlider.value);
       sliderValue.textContent = n;
       opponentCount = n;
       finalOpponentCount.textContent = n;
-      updateOpponentPreview(n);
+      generateOpponentPreview(n);
     };
 
-    function updateOpponentPreview(count) {
+    async function generateOpponentPreview(count) {
       opponentPreview.innerHTML = '';
+      opponents = [];                 // reset
+      const used = new Set([equippedId]);
+
       for (let i = 0; i < count; i++) {
+        let id;
+        do { id = Math.floor(Math.random()*150)+1; } while (used.has(id));
+        used.add(id);
+
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        const data = await res.json();
+
+        const opp = {
+          id,
+          name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
+          hp: 100,
+          maxHp: 100,
+          wins: 0,
+          losses: 0
+        };
+        opponents.push(opp);
+
         const card = document.createElement('div');
         card.className = 'preview-card';
-        card.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${Math.floor(Math.random()*150)+1}.png">`;
-        card.style.animationDelay = `${i * 0.1}s`;
+        // Use animated GIF (dream-world) for preview as well
+        card.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif" alt="${opp.name}">`;
+        card.style.animationDelay = `${i * 0.08}s`;
         opponentPreview.appendChild(card);
       }
     }
@@ -763,6 +793,10 @@
       showSlide('slide-start');
       playSound('confirm');
     };
+
+    // --------------------------------------------------------------
+    // 3. Start button centered (CSS already added)
+    // --------------------------------------------------------------
 
     startTournamentBtn.onclick = async () => {
       startTournamentBtn.disabled = true;
@@ -783,7 +817,9 @@
       }, 800);
     };
 
-    // === BATTLE ENGINE ===
+    // ==============================================================
+    // BATTLE ENGINE
+    // ==============================================================
     let player = {id:0, name:'', hp:100, maxHp:100};
     let opponent = null;
     let battleActive = false;
@@ -791,7 +827,6 @@
     let tournamentActive = false;
     let currentMatch = 0;
     let playerStats = {wins:0, losses:0};
-    let aiOrder = [];
 
     const moves = {
       thunderbolt: { name: 'Thunderbolt', power: 30, color: '#ffeb3b' },
@@ -821,22 +856,7 @@
     }
     function log(msg,cls=''){ const p=document.createElement('p'); p.innerHTML=msg; if(cls)p.className=cls; battleLog.appendChild(p); battleLog.scrollTop=battleLog.scrollHeight; }
 
-    async function generateOpponents(count){
-      const used = new Set([equippedId]);
-      opponents = [];
-      while(opponents.length < count){
-        const id = Math.floor(Math.random()*150)+1;
-        if(used.has(id)) continue;
-        used.add(id);
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-        const data = await res.json();
-        opponents.push({id, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100, wins:0, losses:0});
-      }
-      aiOrder = [...opponents.keys()];
-    }
-
     async function startTournament(){
-      await generateOpponents(opponentCount);
       tournamentActive = true;
       battleActive = false;
       currentMatch = 0;
@@ -861,11 +881,12 @@
       playSound('appear');
     }
 
+    // ----- AI matches (unchanged) -----
     async function simulateAIMatch(roundIndex){
       if (opponents.length < 2) return;
-      const len = aiOrder.length;
-      const aIdx = aiOrder[(roundIndex+1) % len];
-      const bIdx = aiOrder[(roundIndex+2) % len];
+      const len = opponents.length;
+      const aIdx = (roundIndex+1) % len;
+      const bIdx = (roundIndex+2) % len;
       const a = opponents[aIdx];
       const b = opponents[bIdx];
       if (!a || !b || a === b) return;
@@ -874,8 +895,9 @@
       log(`<span class="system">AI Match:</span> <strong>${a.name}</strong> vs <strong>${b.name}</strong>`);
 
       playerName.textContent = a.name; opponentName.textContent = b.name;
-      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${a.id}.png`;
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${b.id}.png`;
+      // Use animated GIFs for AI battles too
+      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${a.id}.gif`;
+      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${b.id}.gif`;
       let aHp = 100, bHp = 100;
       updateHP(playerHP, playerHPText, aHp, 100);
       updateHP(opponentHP, opponentHPText, bHp, 100);
@@ -922,13 +944,15 @@
     function loadPlayer(){
       const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
       player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
-      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
+      // *** Animated GIF for the player ***
+      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
       playerName.textContent = p.name;
       updateHP(playerHP, playerHPText, player.hp, player.maxHp);
     }
 
     function loadOpponent(o){
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${o.id}.png`;
+      // *** Animated GIF for the opponent ***
+      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${o.id}.gif`;
       opponentName.textContent = o.name;
       opponent.hp = opponent.maxHp = 100;
       updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
