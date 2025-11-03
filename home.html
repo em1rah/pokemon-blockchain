@@ -56,21 +56,17 @@
   /* Rest of your styles unchanged */
   header h1, nav a, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
   header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
-  header{
-    background:rgba(0,0,0,.7);
-    backdrop-filter:blur(12px);
-    padding:1rem 2rem;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    position:sticky;
-    top:0;
-    z-index:10;
-    border-bottom:1px solid rgba(255,255,255,.1);
-  }
-  header h1{font-size:1.8rem;color:#ffcb05;}
-  nav a{margin-left:1.5rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:.2s;}
-  nav a:hover{color:#fff;}
+  /* Sidebar */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
+  .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .sidebar .brand h1{font-size:1.3rem;color:#ffcb05;margin:0}
+  .menu{padding:12px}
+  .menu a{display:block;color:#ffcb05;text-decoration:none;font-weight:700;padding:10px 12px;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin-bottom:10px;transition:.2s}
+  .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(4px)}
+  .sidebar .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
+  .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;text-align:center}
+  .wallet{text-align:center;color:#ddd}
+  .logout-btn{background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
 
   /* Pokemon Game Menu */
   .game-menu{
@@ -82,6 +78,7 @@
     padding:2rem;
     position:relative;
   }
+  .container-shift{margin-left:240px}
 
   .pokemon-logo-large{
     font-size:4rem;
@@ -277,22 +274,22 @@
 </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>Pokémon Trainer</h1>
+  <aside class="sidebar">
+    <div class="brand"><h1>Pokémon Trainer</h1></div>
+    <div class="menu">
+      <a href="arena.html">⚔ Arena</a>
+      <a href="shop.html">🛒 Shop</a>
+      <a href="settings.html">⚙ Settings</a>
     </div>
-    <nav>
-      <a href="arena.html" id="navArena">Arena</a>
-      <a href="shop.html" id="navShop">Shop</a>
-      <a href="settings.html" id="navSettings" class="settings-btn">Settings</a>
+    <div class="status">
       <span class="coins" id="coinDisplay">∞ Coins</span>
       <span class="wallet" id="walletDisplay"></span>
       <button class="logout-btn" id="logoutBtn">Logout</button>
-    </nav>
-  </header>
+    </div>
+  </aside>
 
   <!-- Pokemon Game Welcome Screen -->
-  <div class="game-menu" id="gameMenu">
+  <div class="game-menu container-shift" id="gameMenu">
     <div class="pokemon-logo-large"></div>
     <div class="game-subtitle"></div>
     

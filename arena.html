@@ -38,16 +38,19 @@
       position:relative;
       z-index:1;
     }
-    /* Unified Navbar (matches shop) */
-    header{background:rgba(0,0,0,.6);backdrop-filter:blur(10px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);}
-    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;text-shadow: 2px 2px 0 #000;}
-    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:0.2s}
-    nav a:hover{color:#fff;transform:translateY(-1px)}
-    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
-    .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
-    .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+    /* Sidebar (Adventure UI) */
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
+    .sidebar .brand{display:flex;align-items:center;gap:8px;padding:16px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .sidebar .brand h1{margin:0;font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1rem;text-shadow:2px 2px 0 #000}
+    .menu{padding:12px}
+    .menu a{display:flex;align-items:center;gap:10px;color:#ffcb05;text-decoration:none;font-weight:700;padding:10px 12px;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin-bottom:10px;transition:.2s;letter-spacing:.5px}
+    .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(4px)}
+    .sidebar .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
+    .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;font-size:0.9rem;text-align:center}
+    .wallet{font-size:.9rem;color:#ddd;text-align:center}
+    .logout-btn{background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
 
-    .container{padding:.5rem;max-width:1200px;margin:0 auto;}
+    .container{padding:.5rem;max-width:1200px;margin:0 auto;margin-left:240px}
     /* Layout: main + sidebar */
     .arena-layout{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start}
     .side-col{position:sticky;top:72px;height:fit-content}
@@ -230,18 +233,20 @@
   </style>
 </head>
 <body>
-  <header>
-    <div><h1>Pokémon Arena</h1></div>
-    <nav>
-      <a href="home.html">Home</a>
-      <a href="arena.html">Arena</a>
-      <a href="shop.html">Shop</a>
-      <a href="settings.html">Settings</a>
+  <aside class="sidebar">
+    <div class="brand"><h1>Pokémon Arena</h1></div>
+    <div class="menu">
+      <a href="home.html">🏠 Home</a>
+      <a href="arena.html">⚔ Arena</a>
+      <a href="shop.html">🛒 Shop</a>
+      <a href="settings.html">⚙ Settings</a>
+    </div>
+    <div class="status">
       <span class="coins" id="coinDisplay">0 Coins</span>
       <span class="wallet" id="walletDisplay"></span>
       <button class="logout-btn" id="logoutBtn">Logout</button>
-    </nav>
-  </header>
+    </div>
+  </aside>
 
   <div class="container">
     <div class="title">Round-Robin Battle Arena</div>
