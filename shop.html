@@ -54,89 +54,12 @@
     .title{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.3rem;margin:2rem 0 0.5rem;text-shadow:1px 1px 0 #000;}
     .subtitle{color:#aaa;font-size:0.95rem;margin-bottom:1rem;}
 
-    .section-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .search-bar {
-      background: rgba(0,0,0,0.5);
-      border: 2px solid #ffcb05;
-      border-radius: 12px;
-      padding: 10px 16px;
-      color: white;
-      font-size: 0.95rem;
-      width: 280px;
-      max-width: 100%;
-      outline: none;
-      backdrop-filter: blur(4px);
-      transition: all 0.3s;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .search-bar::placeholder {
-      color: rgba(255,203,5,0.6);
-    }
-
-    .search-bar:focus {
-      border-color: #fff;
-      box-shadow: 0 0 15px rgba(255,203,5,0.4);
-    }
-
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
-
-    /* Pagination Styling - Matches Card Theme */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin: 1.5rem 0;
-      flex-wrap: wrap;
-    }
-
-    .page-btn {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: #ffcb05;
-      border: 2px solid #ffcb05;
-      border-radius: 12px;
-      padding: 8px 14px;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.75rem;
-      min-width: 40px;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    }
-
-    .page-btn:hover:not(.active):not(:disabled) {
-      background: #ffcb05;
-      color: #000;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(255,203,5,0.4);
-    }
-
-    .page-btn.active {
-      background: #ffcb05;
-      color: #000;
-      font-weight: 700;
-      box-shadow: 0 0 15px rgba(255,203,5,0.6);
-    }
-
-    .page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      border-color: #666;
-      color: #666;
-    }
 
     /* Enhanced Pokemon Card Style */
     .card{
       background:linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      border:3px solid #ffcb05;
+      border:5px solid #ffcb05;
       border-radius:24px;
       padding:0;
       text-align:left;
@@ -185,6 +108,16 @@
       0%{transform:translate(-50%,-50%) rotate(0deg);}
       100%{transform:translate(-50%,-50%) rotate(360deg);}
     }
+
+    /* 3D Hover Effect */
+    /* .card:hover{
+      transform:translateY(-12px) rotateX(5deg) rotateY(-2deg) scale(1.03);
+      box-shadow:
+        0 20px 50px rgba(255,203,5,0.4),
+        0 0 0 3px rgba(255,203,5,0.6),
+        inset 0 0 30px rgba(255,203,5,0.2);
+      border-color:#fff;
+    } */
 
     /* Card Header with Gradient - better spacing */
     .card-header{
@@ -241,7 +174,7 @@
       white-space:nowrap;
     }
 
-    /* Rarity Badge */
+    /* Rarity Badge - positioned to not overlap */
     .rarity-badge{
       position:absolute;
       top:8px;
@@ -272,7 +205,7 @@
       flex-shrink:0;
     }
 
-    /* Type Badge */
+    /* Type Badge Enhanced - positioned to not overlap HP */
     .card-type{
       position:absolute;
       top:8px;
@@ -280,7 +213,7 @@
       background:linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
       padding:6px 10px;
       border-radius:20px;
-      border:1px solid #ffcb05;
+      border:2px solid #ffcb05;
       font-size:0.65rem;
       font-weight:700;
       color:#ffcb05;
@@ -295,7 +228,7 @@
       text-overflow:ellipsis;
     }
 
-    /* Image Area */
+    /* Pokemon Image Area with Frame - better sizing */
     .card-image-area{
       flex:1;
       min-height:160px;
@@ -356,7 +289,7 @@
       transform:scale(1.15) translateY(-5px);
     }
 
-    /* Card Info */
+    /* Card Info Section Enhanced - better spacing */
     .card-info{
       background:linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
       padding:12px 14px 50px;
@@ -367,6 +300,7 @@
       flex-shrink:0;
     }
 
+    /* Attack Section - better spacing */
     .attack-section{
       margin:8px 0;
       padding:8px;
@@ -453,6 +387,7 @@
       line-height:1;
     }
 
+    /* Set Symbol - positioned to not overlap button */
     .set-symbol{
       position:absolute;
       bottom:10px;
@@ -472,6 +407,7 @@
       flex-shrink:0;
     }
 
+    /* Card Button Enhanced */
     .card button{
       width:100%;
       padding:14px;
@@ -547,6 +483,39 @@
       transform:translateY(-1px);
     }
 
+    /* Owned Tag Enhanced - positioned to not overlap */
+    /* .owned-tag{
+      position:absolute;
+      top:8px;
+      left:8px;
+      background:linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
+      color:#fff;
+      padding:6px 10px;
+      border-radius:20px;
+      font-size:0.65rem;
+      font-weight:700;
+      z-index:11;
+      border:2px solid rgba(255,255,255,0.4);
+      box-shadow:
+        0 4px 12px rgba(76,175,80,0.5),
+        inset 0 1px 2px rgba(255,255,255,0.3);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      max-width:calc(100% - 100px);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+     */
+    /* When owned tag exists, adjust rarity badge position - using class for better compatibility */
+    /* .card.has-owned .rarity-badge{
+      top:42px;
+    } */
+
+    /* Starter Card Special */
     .starter-card{
       border-color:#4caf50 !important;
       background:linear-gradient(135deg, #1a3e1a 0%, #1e4a1e 50%, #162816 100%);
@@ -572,6 +541,7 @@
       color:#ccc;
     }
 
+    /* Rare Card Special */
     .rare-card{
       border-color:#9c27b0 !important;
       background:linear-gradient(135deg, #2d1b3d 0%, #1a0f26 50%, #0d0513 100%);
@@ -593,6 +563,7 @@
       color:#fff;
     }
 
+    /* Weakness/Resistance - better responsive */
     .weakness-resistance{
       display:flex;
       flex-wrap:wrap;
@@ -614,6 +585,7 @@
       white-space:nowrap;
     }
 
+    /* Responsive - comprehensive breakpoints */
     @media(max-width:1200px){
       .grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
     }
@@ -631,8 +603,6 @@
       .attack-name{font-size:0.7rem;}
       .card-info{padding:10px 12px 45px;}
       .set-symbol{width:24px;height:24px;font-size:0.9rem;bottom:8px;right:8px;}
-      .search-bar{width: 100%;}
-      .section-controls{flex-direction:column;align-items:stretch;}
     }
 
     @media(max-width:480px){
@@ -666,37 +636,21 @@
     <!-- Starters -->
     <div class="title">Starters</div>
     <div class="subtitle">Claim up to three free starters</div>
-    <div class="section-controls">
-      <input type="text" class="search-bar" id="searchStarter" placeholder="Search starters..." />
-    </div>
     <div class="grid" id="starterGrid"></div>
-    <div class="pagination" id="starterPagination"></div>
 
-    <!-- Common Shop -->
+    <!-- Common Shop (Coins) -->
     <div class="title">Common Shop</div>
     <div class="subtitle">Spend coins to expand your team</div>
-    <div class="section-controls">
-      <input type="text" class="search-bar" id="searchCommon" placeholder="Search common Pokémon..." />
-    </div>
     <div class="grid" id="shopGrid"></div>
-    <div class="pagination" id="commonPagination"></div>
 
-    <!-- Rare Shop -->
+    <!-- Rare Shop (FREE Token) -->
     <div class="title">Rare Shop</div>
     <div class="subtitle">Buy rare Pokémon using tokens</div>
-    <div class="section-controls">
-      <input type="text" class="search-bar" id="searchRare" placeholder="Search rare Pokémon..." />
-    </div>
     <div class="grid" id="rareGrid"></div>
-    <div class="pagination" id="rarePagination"></div>
 
     <!-- My Pokémon -->
     <div class="title">My Pokémon</div>
-    <div class="section-controls">
-      <input type="text" class="search-bar" id="searchMy" placeholder="Search your Pokémon..." />
-    </div>
     <div class="grid" id="myGrid"></div>
-    <div class="pagination" id="myPagination"></div>
   </div>
 
   <script>
@@ -725,16 +679,6 @@
     let coins = parseInt(localStorage.getItem('coins') || '500');
     let owned = JSON.parse(localStorage.getItem('owned') || '[]');
     let claimedStarters = JSON.parse(localStorage.getItem('claimedStarters') || '[]');
-
-    const ITEMS_PER_PAGE = 6;
-
-    // Pagination & Search State
-    const state = {
-      starter: { page: 1, search: '' },
-      common: { page: 1, search: '' },
-      rare: { page: 1, search: '' },
-      my: { page: 1, search: '' }
-    };
 
     // Update UI
     function updateCoinDisplay() {
@@ -827,7 +771,7 @@
       {id: 898, name: 'Calyrex', price: 6000}, {id: 382, name: 'Kyogre', price: 5800}
     ];
 
-    // Type, HP, Rarity, Attack (unchanged)
+    // Pokemon Type Mapping (simplified - can be expanded)
     function getPokemonType(id) {
       const typeMap = {
         1: 'Grass', 4: 'Fire', 7: 'Water', 25: 'Electric', 144: 'Ice', 145: 'Electric',
@@ -844,10 +788,12 @@
       return typeMap[id] || 'Normal';
     }
 
+    // HP Calculation
     function getPokemonHP(id) {
       return Math.floor(50 + (id % 50) + (id > 100 ? 50 : 0) + (id > 150 ? 30 : 0));
     }
 
+    // Get Rarity
     function getRarity(type, price) {
       if (type === 'starter') return { level: 'COMMON', stars: '⭐' };
       if (type === 'token') {
@@ -860,6 +806,7 @@
       return { level: 'COMMON', stars: '⭐' };
     }
 
+    // Get Attack
     function getAttack(pokemonType) {
       const attacks = {
         'Fire': { name: 'Flame Thrower', cost: ['🔥'], damage: 80 },
@@ -880,6 +827,7 @@
       return attacks[pokemonType] || attacks['Normal'];
     }
 
+    // Get Purchase Details
     function getPurchaseDetails(id) {
       const starter = starters.find(s => s.id === id);
       if (starter) return { price: 0, currency: 'free' };
@@ -890,7 +838,7 @@
       return null;
     }
 
-    // Render Card (unchanged)
+    // Render Card
     function createCard(poke, type = 'common') {
       const has = owned.some(o => o.id === poke.id);
       const card = document.createElement('div');
@@ -905,13 +853,14 @@
       const priceIcon = type === 'token' ? '💎' : '🪙';
       const rarity = getRarity(type, poke.price);
       const attack = getAttack(pokemonType);
+      const cardNumber = Math.floor(Math.random() * 100) + 1;
 
       if (has) {
         card.classList.add('has-owned');
       }
 
       card.innerHTML = `
-        ${has ? '<div class="owned-tag">✓ Owned</div>' : ''}
+        ${has ? '<div class="owned-tag"></div>' : ''}
         <div class="rarity-badge">
           <span class="rarity-star">${rarity.stars}</span>
           <span>${rarity.level}</span>
@@ -959,69 +908,87 @@
       return card;
     }
 
-    // Pagination & Search Rendering
-    function renderSection(data, gridId, paginationId, type, sectionKey) {
-      const grid = document.getElementById(gridId);
-      const pagination = document.getElementById(paginationId);
-      const search = state[sectionKey].search.toLowerCase();
-      const page = state[sectionKey].page;
-
-      const filtered = data.filter(p => p.name.toLowerCase().includes(search));
-      const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-      const start = (page - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE;
-      const pageItems = filtered.slice(start, end);
-
-      grid.innerHTML = '';
-      if (pageItems.length === 0) {
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon found.</p>';
-      } else {
-        pageItems.forEach(p => grid.appendChild(createCard(p, type)));
-      }
-
-      // Pagination
-      pagination.innerHTML = '';
-      if (totalPages <= 1) return;
-
-      const prev = document.createElement('button');
-      prev.className = 'page-btn';
-      prev.textContent = '◀';
-      prev.disabled = page === 1;
-      prev.onclick = () => { state[sectionKey].page--; renderSection(data, gridId, paginationId, type, sectionKey); };
-      pagination.appendChild(prev);
-
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'page-btn';
-        if (i === page) btn.classList.add('active');
-        btn.textContent = i;
-        btn.onclick = () => { state[sectionKey].page = i; renderSection(data, gridId, paginationId, type, sectionKey); };
-        pagination.appendChild(btn);
-      }
-
-      const next = document.createElement('button');
-      next.className = 'page-btn';
-      next.textContent = '▶';
-      next.disabled = page === totalPages;
-      next.onclick = () => { state[sectionKey].page++; renderSection(data, gridId, paginationId, type, sectionKey); };
-      pagination.appendChild(next);
-    }
-
-    // Load Sections with Pagination & Search
+    // Load Sections
     function loadStarters() {
-      renderSection(starters.map(p => ({...p, claimed: claimedStarters.includes(p.id)})), 'starterGrid', 'starterPagination', 'starter', 'starter');
+      const grid = document.getElementById('starterGrid');
+      grid.innerHTML = '';
+      starters.forEach(p => {
+        if (claimedStarters.includes(p.id) || claimedStarters.length >= 3) {
+          const card = createCard(p, 'starter');
+          card.querySelector('button').disabled = true;
+          card.querySelector('button').textContent = 'Claimed';
+          grid.appendChild(card);
+        } else {
+          grid.appendChild(createCard(p, 'starter'));
+        }
+      });
     }
 
     function loadCommon() {
-      renderSection(common, 'shopGrid', 'commonPagination', 'common', 'common');
+      const grid = document.getElementById('shopGrid');
+      grid.innerHTML = '';
+      common.forEach(p => grid.appendChild(createCard(p, 'common')));
     }
 
     function loadRare() {
-      renderSection(rare, 'rareGrid', 'rarePagination', 'token', 'rare');
+      const grid = document.getElementById('rareGrid');
+      grid.innerHTML = '';
+      rare.forEach(p => grid.appendChild(createCard(p, 'token')));
     }
 
     function loadOwned() {
-      renderSection(owned, 'myGrid', 'myPagination', 'common', 'my');
+      const grid = document.getElementById('myGrid');
+      grid.innerHTML = '';
+      if (owned.length === 0) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
+        return;
+      }
+      owned.forEach(p => {
+        const pokemonType = getPokemonType(p.id);
+        const hp = getPokemonHP(p.id);
+        const attack = getAttack(pokemonType);
+        const rarity = { level: 'COLLECTION', stars: '⭐' };
+        const card = document.createElement('div');
+        card.className = 'card has-owned';
+        card.innerHTML = `
+          <div class="owned-tag">✓ Owned</div>
+          <div class="rarity-badge">
+            <span class="rarity-star">${rarity.stars}</span>
+            <span>${rarity.level}</span>
+          </div>
+          <div class="card-header">
+            <div class="card-name">${p.name}</div>
+            <div class="card-hp">
+              <span>HP</span>
+              <span class="hp-value">${hp}</span>
+            </div>
+          </div>
+          <div class="card-type">${pokemonType}</div>
+          <div class="card-image-area">
+            <img src="${img(p.id)}" alt="${p.name}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'40\' fill=\'%23ffcb05\'/></svg>'">
+          </div>
+          <div class="card-info">
+            <div class="attack-section">
+              <div class="attack-cost">
+                ${attack.cost.map(emoji => `<span class="energy-symbol">${emoji}</span>`).join('')}
+              </div>
+              <div class="attack-name">${attack.name}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:rgba(255,255,255,0.6);font-size:0.75rem;">Deals damage</span>
+                <span class="attack-damage">${attack.damage}</span>
+              </div>
+            </div>
+            <div class="card-id">#${String(p.id).padStart(3, '0')} | ${p.name}</div>
+            <div class="weakness-resistance">
+              <span>Weakness: ${pokemonType === 'Fire' ? '💧' : pokemonType === 'Water' ? '⚡' : '⚔️'}</span>
+              <span>Resistance: ${pokemonType === 'Electric' ? '🌿' : pokemonType === 'Grass' ? '🔥' : '🛡️'}</span>
+            </div>
+            <button class="sell-btn" onclick="sellPokemon(${p.id}, '${p.name}')">Sell</button>
+            <div class="set-symbol">PK</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
     }
 
     function loadAll() {
@@ -1031,20 +998,7 @@
       loadOwned();
     }
 
-    // Search Input Listeners
-    ['starter', 'common', 'rare', 'my'].forEach(section => {
-      const input = document.getElementById(`search${section.charAt(0).toUpperCase() + section.slice(1)}`);
-      input.addEventListener('input', (e) => {
-        state[section].search = e.target.value;
-        state[section].page = 1;
-        if (section === 'starter') loadStarters();
-        else if (section === 'common') loadCommon();
-        else if (section === 'rare') loadRare();
-        else loadOwned();
-      });
-    });
-
-    // Actions (unchanged)
+    // Actions
     window.claimStarter = (id, name) => {
       if (claimedStarters.length >= 3) return alert('You can only claim 3 starters!');
       if (claimedStarters.includes(id)) return;
@@ -1108,7 +1062,7 @@
       let sellCurrency = details.currency === 'tokens' ? 'TOKEN' : 'Coins';
 
       if (details.currency === 'free') {
-        sellPrice = 100;
+        sellPrice = 100; // Arbitrary sell price for starters
         coins += sellPrice;
         claimedStarters = claimedStarters.filter(c => c !== id);
         localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
@@ -1121,7 +1075,7 @@
           const sellTx = await nft.sell(id);
           await sellTx.wait();
           await updateBalance();
-          sellPrice = Math.floor(details.price * 0.5);
+          sellPrice = Math.floor(details.price * 0.5); // Assume contract refunds half
           alert(`Sold ${name} for ${sellPrice} ${sellCurrency}!`);
         } catch (e) {
           return alert('Sell failed: ' + (e.message || e));
@@ -1143,7 +1097,7 @@
     updateCoinDisplay();
     loadAll();
 
-    // Auto-reload on storage change
+    // Auto-reload on storage change (for multi-tab)
     window.addEventListener('storage', (e) => {
       if (e.key === 'owned' || e.key === 'coins' || e.key === 'claimedStarters') {
         owned = JSON.parse(localStorage.getItem('owned') || '[]');
@@ -1153,6 +1107,8 @@
         loadAll();
       }
     });
+
+    // Uniform dark background applied via CSS above
   </script>
 </body>
 </html>
