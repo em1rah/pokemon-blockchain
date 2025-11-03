@@ -622,7 +622,6 @@
     <nav>
       <a href="home.html">Home</a>
       <a href="arena.html">Arena</a>
-      <a href="history.html">History</a>
       <a href="settings.html">Settings</a>
       <span class="coins" id="coinDisplay">500 Coins</span>
       <span class="free-balance" id="freeDisplay">0 TOKEN</span>
@@ -654,6 +653,12 @@
   </div>
 
   <script>
+    // Session & namespaced coin key shared with arena/home
+    const session = JSON.parse(localStorage.getItem('trainerSession') || 'null');
+    const USER_ID = session ? (session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase()) : 'guest';
+    const ns = (k) => `${USER_ID}:${k}`;
+    const COIN_KEY = ns('coins');
+
     // Check ethers
     if (typeof ethers === 'undefined') {
       alert('Ethers.js failed to load! Check internet connection.');
@@ -676,14 +681,15 @@
     ];
 
     let signer, token, nft, userAddress;
-    let coins = parseInt(localStorage.getItem('coins') || '500');
+    let coins = parseInt(localStorage.getItem(COIN_KEY) || localStorage.getItem('coins') || '500');
     let owned = JSON.parse(localStorage.getItem('owned') || '[]');
     let claimedStarters = JSON.parse(localStorage.getItem('claimedStarters') || '[]');
 
     // Update UI
     function updateCoinDisplay() {
       document.getElementById('coinDisplay').textContent = `${coins} Coins`;
-      localStorage.setItem('coins', coins);
+      localStorage.setItem(COIN_KEY, String(coins)); // namespaced for this user
+      localStorage.setItem('coins', String(coins));  // legacy/global for compatibility
     }
 
     // Connect Wallet
@@ -1099,9 +1105,9 @@
 
     // Auto-reload on storage change (for multi-tab)
     window.addEventListener('storage', (e) => {
-      if (e.key === 'owned' || e.key === 'coins' || e.key === 'claimedStarters') {
+      if (e.key === 'owned' || e.key === 'claimedStarters' || e.key === 'coins' || e.key === COIN_KEY) {
         owned = JSON.parse(localStorage.getItem('owned') || '[]');
-        coins = parseInt(localStorage.getItem('coins') || '500');
+        coins = parseInt(localStorage.getItem(COIN_KEY) || localStorage.getItem('coins') || '500');
         claimedStarters = JSON.parse(localStorage.getItem('claimedStarters') || '[]');
         updateCoinDisplay();
         loadAll();

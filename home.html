@@ -284,7 +284,6 @@
     <nav>
       <a href="arena.html" id="navArena">Arena</a>
       <a href="shop.html" id="navShop">Shop</a>
-      <a href="history.html" id="navTournaments">History</a>
       <a href="settings.html" id="navSettings" class="settings-btn">Settings</a>
       <span class="coins" id="coinDisplay">∞ Coins</span>
       <span class="wallet" id="walletDisplay"></span>
@@ -313,10 +312,7 @@
         <span class="menu-icon">🛒</span>
         <span class="menu-text">POKÉMON SHOP</span>
       </button>
-      <button class="menu-btn" id="historyBtn">
-        <span class="menu-icon">📜</span>
-        <span class="menu-text">BATTLE HISTORY</span>
-      </button>
+      
       <button class="menu-btn" id="settingsBtn">
         <span class="menu-icon">⚙</span>
         <span class="menu-text">SETTINGS</span>
@@ -361,7 +357,8 @@
 
     function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
     function setCoins(v){ 
-      localStorage.setItem(COIN_KEY, String(v)); 
+      localStorage.setItem(COIN_KEY, String(v));
+      localStorage.setItem('coins', String(v));
       document.getElementById('coinDisplay').textContent = v + ' Coins';
       document.getElementById('trainerCoins').textContent = v;
     }
@@ -613,8 +610,6 @@
     // === Navigation ===
     document.getElementById('navArena').setAttribute('href','arena.html');
     document.getElementById('navShop').setAttribute('href','shop.html');
-    document.getElementById('navMyPokemon').setAttribute('href','shop.html#my');
-    document.getElementById('navTournaments').setAttribute('href','history.html');
     document.getElementById('navSettings').setAttribute('href','settings.html');
     document.getElementById('logoutBtn').onclick = () => {
       localStorage.removeItem('trainerSession');
@@ -631,9 +626,7 @@
     document.getElementById('shopBtn').onclick = () => {
       location.href = 'shop.html';
     };
-    document.getElementById('historyBtn').onclick = () => {
-      location.href = 'history.html';
-    };
+    
     document.getElementById('settingsBtn').onclick = () => {
       location.href = 'settings.html';
     };

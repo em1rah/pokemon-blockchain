@@ -38,42 +38,67 @@
       position:relative;
       z-index:1;
     }
-    header{background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);} 
-    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem}
-    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;font-family:'Inter',system-ui}
-    nav a:hover{color:#fff}
+    /* Unified Navbar (matches shop) */
+    header{background:rgba(0,0,0,.6);backdrop-filter:blur(10px);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.1);}
+    header h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;text-shadow: 2px 2px 0 #000;}
+    nav a{margin-left:1rem;color:#ffcb05;text-decoration:none;font-weight:600;transition:0.2s}
+    nav a:hover{color:#fff;transform:translateY(-1px)}
     .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
     .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
     .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
 
-    .container{padding:1.5rem;max-width:900px;margin:0 auto;}
-    .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.25rem;font-family:'Inter',system-ui}
-    .subtitle{color:#ccc;margin-bottom:1rem;font-family:'Inter',system-ui}
+    .container{padding:.5rem;max-width:1200px;margin:0 auto;}
+    /* Layout: main + sidebar */
+    .arena-layout{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start}
+    .side-col{position:sticky;top:72px;height:fit-content}
+    .title{color:#ffcb05;font-size:1.5rem;margin-bottom:.2rem;font-family:'Inter',system-ui}
+    .subtitle{color:#ccc;margin-bottom:.6rem;font-family:'Inter',system-ui}
 
-    .battlefield{display:flex;justify-content:space-around;align-items:flex-end;width:100%;max-width:900px;margin:20px auto;position:relative;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px}
-    .pokemon{position:relative;text-align:center;min-width:200px}
-    .pokemon img{width:200px;height:200px;object-fit:contain;filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));}
-    .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:20px;width:200px;margin:10px auto;position:relative;overflow:hidden;}
+    /* Arena look */
+    .battlefield{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:1300px;min-height:400px;margin:8px auto;position:relative;border-radius:20px;padding:16px;background:radial-gradient(circle at 50% 120%, rgba(30,30,30,.92) 0%, rgba(0,0,0,.75) 48%, rgba(0,0,0,.5) 70%, rgba(0,0,0,0) 73%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 2px, transparent 2px 6px);
+      box-shadow:0 20px 60px rgba(0,0,0,.6), inset 0 -12px 30px rgba(0,0,0,.6);
+    }
+    .battlefield::after{content:'';position:absolute;left:50%;top:58%;width:520px;height:220px;transform:translate(-50%,-20%);border-radius:50%;background:radial-gradient(ellipse at center, rgba(0,0,0,.9) 0%, rgba(0,0,0,.45) 60%, rgba(0,0,0,0) 72%);filter:blur(2px);z-index:0}
+    .pokemon{position:relative;text-align:center;min-width:260px;z-index:1}
+    .pokemon .platform{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:260px;height:36px;border-radius:50%;background:radial-gradient(ellipse at center, rgba(0,0,0,.8) 0%, rgba(0,0,0,.2) 70%, rgba(0,0,0,0) 75%);filter:blur(1px);z-index:-1}
+    .pokemon img{width:260px;height:260px;object-fit:contain;filter: drop-shadow(0 10px 20px rgba(0,0,0,.7));}
+    .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:22px;width:240px;margin:10px auto;position:relative;overflow:hidden;}
     .hp-fill{height:100%;background:#4caf50;border-radius:8px;transition:width .5s ease,background .3s;}
     .hp-text{position:absolute;top:0;left:0;right:0;text-align:center;font-weight:600;font-size:13px;color:white;text-shadow:1px 1px 2px #000;}
-    .name{font-weight:700;color:#ffcb05;font-size:1.1rem;text-shadow:1px 1px 3px #000;margin-bottom:4px;font-family:'Inter',system-ui}
+    .name{font-weight:700;color:#ffcb05;font-size:1.2rem;text-shadow:1px 1px 3px #000;margin-bottom:4px;font-family:'Inter',system-ui}
 
-    .moves{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:0 auto;max-width:700px;padding:0 1rem}
-    .move-btn{padding:14px;background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;color:white;font-weight:600;cursor:pointer;transition:.2s;font-family:'Inter',system-ui}
-    .move-btn:hover{background:rgba(255,203,5,.2);} 
-    .move-btn:disabled{background:#444;cursor:not-allowed;opacity:.6;}
+    /* Command bar */
+    .command-bar{margin:8px auto 0;max-width:1000px;background:rgba(0,0,0,.55);border:2px solid rgba(255,203,5,.35);border-radius:14px;padding:10px 10px 12px;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+    .command-title{color:#ffcb05;font-weight:800;letter-spacing:1px;margin:2px 6px 10px}
+    .moves{display:grid;grid-template-columns:repeat(2,minmax(200px,1fr));gap:10px;margin:0 auto;max-width:960px;padding:0 2px}
+    .move-btn{position:relative;isolation:isolate;padding:16px 18px;background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));border:2.5px solid #ffcb05;border-radius:14px;color:white;font-weight:800;cursor:pointer;transition:.18s;font-family:'Inter',system-ui;text-transform:uppercase;letter-spacing:1px;box-shadow:0 6px 16px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08)}
+    .move-btn:hover{background:linear-gradient(180deg, rgba(255,203,5,.25), rgba(255,203,5,.12));transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.55), 0 0 18px rgba(255,203,5,.25)} 
+    .move-btn:active{transform:translateY(0);filter:saturate(1.2)}
+    .move-btn:disabled{background:rgba(80,80,80,.35);cursor:not-allowed;opacity:.65;border-color:rgba(255,255,255,.15);box-shadow:none}
+    .move-btn .glow{position:absolute;inset:-2px;border-radius:14px;background:radial-gradient(120px 40px at var(--mx,50%) -10%, rgba(255,203,5,.35), transparent 70%);opacity:.8;pointer-events:none;transition:opacity .2s}
+    .move-btn .ripple{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+    .move-btn .ripple::after{content:'';position:absolute;width:10px;height:10px;left:var(--rx,50%);top:var(--ry,50%);background:rgba(255,255,255,.35);border-radius:50%;transform:translate(-50%,-50%) scale(0);animation:ripple .6s ease-out}
+    @keyframes ripple{to{transform:translate(-50%,-50%) scale(18);opacity:0}}
 
-    .log{background:rgba(0,0,0,.6);padding:16px;border-radius:12px;max-height:160px;overflow-y:auto;font-size:15px;margin:16px auto 0;max-width:900px;border:1px solid rgba(255,203,5,.3);font-family:'Inter',system-ui}
+    .log{background:rgba(0,0,0,.6);padding:12px;border-radius:12px;max-height:220px;overflow-y:auto;font-size:14px;margin:0 0 12px 0;border:1px solid rgba(255,203,5,.3);font-family:'Inter',system-ui}
     .log p{margin:6px 0;opacity:.9;}
     .system{color:#ffcb05;font-weight:600}
     .trophy{vertical-align:middle;margin-left:6px}
 
     /* Tournament Setup */
-    #tournamentSetup{display:flex;gap:12px;justify-content:center;margin:1.5rem 0;flex-wrap:wrap;}
+    #tournamentSetup{display:flex;gap:10px;justify-content:center;margin:.8rem 0;flex-wrap:wrap;}
     #tournamentSetup .move-btn{min-width:180px;}
 
     /* Scoreboard */
-    #scoreboard{margin:1.5rem auto;display:none;}
+    #scoreboard{margin:0;display:none;max-width:100%}
+    @media(max-width:900px){
+      .battlefield{flex-direction:column;align-items:center;gap:30px;min-height:360px}
+      .pokemon img{width:200px;height:200px}
+      .pokemon .platform{width:200px;height:28px}
+      .hp-bar{width:200px;height:20px}
+      .moves{grid-template-columns:1fr}
+    }
     #scoreboard table{width:100%;border-collapse:collapse;}
     #scoreboard th, #scoreboard td{padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);}
     #scoreboard thead{background:rgba(255,203,5,.2);}
@@ -209,8 +234,8 @@
     <div><h1>Pokémon Arena</h1></div>
     <nav>
       <a href="home.html">Home</a>
+      <a href="arena.html">Arena</a>
       <a href="shop.html">Shop</a>
-      <a href="history.html">History</a>
       <a href="settings.html">Settings</a>
       <span class="coins" id="coinDisplay">0 Coins</span>
       <span class="wallet" id="walletDisplay"></span>
@@ -229,39 +254,48 @@
       <button class="move-btn" id="startTournamentBtn" disabled>3. Start Tournament</button>
     </div>
 
-    <div class="battlefield">
+    <div class="arena-layout">
+      <div class="main-col">
+        <div class="battlefield">
       <div class="pokemon" id="playerPokemon">
         <div class="name" id="playerName">Pikachu</div>
         <img id="playerSprite" src="" alt="You">
         <div class="hp-bar"><div class="hp-fill" id="playerHP"></div><div class="hp-text" id="playerHPText">100/100</div></div>
+        <div class="platform"></div>
       </div>
       <div class="pokemon" id="opponentPokemon">
         <div class="name" id="opponentName">???</div>
         <img id="opponentSprite" src="" alt="Opponent">
         <div class="hp-bar"><div class="hp-fill" id="opponentHP"></div><div class="hp-text" id="opponentHPText">100/100</div></div>
+        <div class="platform"></div>
       </div>
-    </div>
+        </div>
 
-    <div class="moves">
-      <button class="move-btn" data-move="thunderbolt">Thunderbolt</button>
-      <button class="move-btn" data-move="quickattack">Quick Attack</button>
-      <button class="move-btn" data-move="irontail">Iron Tail</button>
-      <button class="move-btn" data-move="run">Run Away</button>
-    </div>
+        <div class="command-bar">
+          <div class="command-title">Choose your move</div>
+          <div class="moves">
+            <button class="move-btn" data-move="thunderbolt"><span class="glow"></span><span class="ripple"></span>Thunderbolt</button>
+            <button class="move-btn" data-move="quickattack"><span class="glow"></span><span class="ripple"></span>Quick Attack</button>
+            <button class="move-btn" data-move="irontail"><span class="glow"></span><span class="ripple"></span>Iron Tail</button>
+            <button class="move-btn" data-move="run"><span class="glow"></span><span class="ripple"></span>Run Away</button>
+          </div>
+        </div>
+      </div>
 
-    <div class="log" id="battleLog">
-      <p class="system">Set up your tournament to begin...</p>
-    </div>
-
-    <!-- Scoreboard -->
-    <div id="scoreboard">
-      <div class="title" style="text-align:center;">Tournament Standings</div>
-      <table>
-        <thead>
-          <tr><th>Rank</th><th>Trainer</th><th>W</th><th>L</th><th>Pts</th></tr>
-        </thead>
-        <tbody id="scoreboardBody"></tbody>
-      </table>
+      <aside class="side-col">
+        <div class="log" id="battleLog">
+          <p class="system">Set up your tournament to begin...</p>
+        </div>
+        <div id="scoreboard">
+          <div class="title" style="text-align:center;">Tournament Standings</div>
+          <table>
+            <thead>
+              <tr><th>Rank</th><th>Trainer</th><th>W</th><th>L</th><th>Pts</th></tr>
+            </thead>
+            <tbody id="scoreboardBody"></tbody>
+          </table>
+        </div>
+      </aside>
     </div>
   </div>
 
@@ -314,12 +348,13 @@
     const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
     const ns = k => `${USER_ID}:${k}`;
     const COIN_KEY = ns('coins');
+    const HIST_KEY = ns('tournaments');
     const OWNED_KEY = ns('owned');
     const EQUIPPED_KEY = ns('equipped');
 
     /* ---------- BASIC HELPERS ---------- */
     function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
-    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); localStorage.setItem('coins', String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY)===null) setCoins(500); else setCoins(getCoins());
 
     const walletDisplay = document.getElementById('walletDisplay');
@@ -540,6 +575,8 @@
     let opponents = [];
     let currentMatch = 0;
     let playerStats = {wins:0, losses:0};
+    // Precomputed simple AI schedule: in round r, AI fights two rotating opponents
+    let aiOrder = [];
 
     /* ---------- OPPONENT COUNT ---------- */
     chooseOpponentsBtn.onclick = () => opponentCountModal.classList.add('active');
@@ -564,6 +601,8 @@
         const data = await res.json();
         opponents.push({id, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100, wins:0, losses:0});
       }
+      // initialize rotating order for AI matches
+      aiOrder = [...opponents.keys()];
     }
 
     /* ---------- START TOURNAMENT ---------- */
@@ -592,6 +631,70 @@
       loadOpponent(opponent);
       log(`<span class="system">Match ${currentMatch+1}/${opponents.length}: <strong>${player.name}</strong> vs <strong>${opponent.name}</strong></span>`);
       playSound('appear');
+    }
+
+    // ---------- AI VS AI MATCH (visual simulation) ----------
+    async function simulateAIMatch(roundIndex){
+      try{
+        if (opponents.length < 2) return;
+        // choose two indices based on simple rotation so it alternates fairly
+        const len = aiOrder.length;
+        const aIdx = aiOrder[(roundIndex+1) % len];
+        const bIdx = aiOrder[(roundIndex+2) % len];
+        const a = opponents[aIdx];
+        const b = opponents[bIdx];
+        if (!a || !b || a === b) return;
+
+        // Disable all inputs and show matchup
+        moveButtons.forEach(bn => bn.disabled = true);
+        log(`<span class=\"system\">AI Match:</span> <strong>${a.name}</strong> vs <strong>${b.name}</strong>`);
+
+        // Put AI contestants on the field
+        playerName.textContent = a.name; opponentName.textContent = b.name;
+        playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${a.id}.png`;
+        opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${b.id}.png`;
+        let aHp = 100, bHp = 100;
+        updateHP(playerHP, playerHPText, aHp, 100);
+        updateHP(opponentHP, opponentHPText, bHp, 100);
+
+        await new Promise(r=>setTimeout(r, 400));
+        let turnA = true;
+        while(aHp > 0 && bHp > 0){
+          if (turnA){
+            document.getElementById('playerPokemon').classList.add('attack');
+            playAttackSound('quickattack');
+            await new Promise(r=>setTimeout(r, 280));
+            document.getElementById('playerPokemon').classList.remove('attack');
+            const dmg = Math.floor(Math.random()*20)+15;
+            bHp = Math.max(0, bHp - dmg);
+            const oppEl = document.getElementById('opponentPokemon');
+            oppEl.classList.add('hit','shake'); playSound('hit');
+            setTimeout(()=>oppEl.classList.remove('hit','shake'), 400);
+            updateHP(opponentHP, opponentHPText, bHp, 100);
+            log(`<strong>${a.name}</strong> dealt <strong>${dmg}</strong> to ${b.name}.`);
+          } else {
+            document.getElementById('opponentPokemon').classList.add('attack');
+            playAttackSound('quickattack');
+            await new Promise(r=>setTimeout(r, 280));
+            document.getElementById('opponentPokemon').classList.remove('attack');
+            const dmg2 = Math.floor(Math.random()*20)+15;
+            aHp = Math.max(0, aHp - dmg2);
+            const pEl = document.getElementById('playerPokemon');
+            pEl.classList.add('hit','shake'); playSound('hit');
+            setTimeout(()=>pEl.classList.remove('hit','shake'), 400);
+            updateHP(playerHP, playerHPText, aHp, 100);
+            log(`${b.name} dealt <strong>${dmg2}</strong> to <strong>${a.name}</strong>.`);
+          }
+          turnA = !turnA;
+          await new Promise(r=>setTimeout(r, 520));
+        }
+
+        const aWins = bHp === 0 && aHp > 0;
+        if (aWins){ a.wins++; b.losses++; playSound('victory'); log(`<span class=\"system\"><strong style=\"color:#4caf50;\">${a.name} wins!</strong></span>`); }
+        else { b.wins++; a.losses++; playSound('victory'); log(`<span class=\"system\"><strong style=\"color:#4caf50;\">${b.name} wins!</strong></span>`); }
+
+        await new Promise(r=>setTimeout(r, 600));
+      }catch(e){ console.error(e); }
     }
 
     function loadPlayer(){
@@ -658,6 +761,23 @@
         playerTurn = true;
         moveButtons.forEach(b => b.disabled = false);
       });
+      // hover glow follow
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        btn.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+        btn.style.setProperty('--rx', `${e.clientX - rect.left}px`);
+        btn.style.setProperty('--ry', `${e.clientY - rect.top}px`);
+      });
+      // ripple on click
+      btn.addEventListener('mousedown', () => {
+        const r = btn.querySelector('.ripple');
+        if (!r) return;
+        r.classList.remove('pulse');
+        // force reflow
+        void r.offsetWidth;
+        r.classList.add('pulse');
+        setTimeout(() => r.classList.remove('pulse'), 600);
+      });
     });
 
     /* ---------- END MATCH ---------- */
@@ -679,7 +799,11 @@
         opponents[currentMatch].wins++;
         log(`<strong style="color:#f44336;">Defeat…</strong>`);
       }
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 800));
+      // Alternate with one AI match between your rounds
+      if (currentMatch < opponents.length - 1){
+        await simulateAIMatch(currentMatch);
+      }
       currentMatch++;
       if (currentMatch < opponents.length) await startNextMatch();
       else endTournament();
