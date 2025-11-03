@@ -46,7 +46,7 @@
     .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
     .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
 
-    .container{padding:1.5rem;}
+    .container{padding:1.5rem;max-width:900px;margin:0 auto;}
     .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.25rem;font-family:'Inter',system-ui}
     .subtitle{color:#ccc;margin-bottom:1rem;font-family:'Inter',system-ui}
 
@@ -67,6 +67,17 @@
     .log p{margin:6px 0;opacity:.9;}
     .system{color:#ffcb05;font-weight:600}
     .trophy{vertical-align:middle;margin-left:6px}
+
+    /* Tournament Setup */
+    #tournamentSetup{display:flex;gap:12px;justify-content:center;margin:1.5rem 0;flex-wrap:wrap;}
+    #tournamentSetup .move-btn{min-width:180px;}
+
+    /* Scoreboard */
+    #scoreboard{margin:1.5rem auto;display:none;}
+    #scoreboard table{width:100%;border-collapse:collapse;}
+    #scoreboard th, #scoreboard td{padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);}
+    #scoreboard thead{background:rgba(255,203,5,.2);}
+    #scoreboard tbody tr:nth-child(even){background:rgba(255,255,255,.05);}
 
     /* Pokemon Selection Modal */
     .pokemon-select-modal{
@@ -133,6 +144,11 @@
       margin-top:5px;
       color:#fff;
     }
+
+    /* Opponent Count Modal */
+    #opponentCountModal .select-panel{max-width:400px;}
+    #opponentSlider{width:80%;margin:1rem auto;display:block;}
+    #sliderValue{font-size:1.4rem;font-weight:700;color:#ffcb05;}
 
     /* Battle Animations */
     @keyframes shake{
@@ -203,8 +219,15 @@
   </header>
 
   <div class="container">
-    <div class="title">Battle Arena</div>
-    <div class="subtitle">Defeat your opponent to earn coins and a trophy</div>
+    <div class="title">Round-Robin Battle Arena</div>
+    <div class="subtitle">Choose your Pokémon, select opponents, and compete in a full tournament!</div>
+
+    <!-- Tournament Setup Buttons -->
+    <div id="tournamentSetup">
+      <button class="move-btn" id="choosePokemonBtn">1. Choose Your Pokémon</button>
+      <button class="move-btn" id="chooseOpponentsBtn" disabled>2. Choose # Opponents</button>
+      <button class="move-btn" id="startTournamentBtn" disabled>3. Start Tournament</button>
+    </div>
 
     <div class="battlefield">
       <div class="pokemon" id="playerPokemon">
@@ -227,13 +250,18 @@
     </div>
 
     <div class="log" id="battleLog">
-      <p class="system">Click any move to begin...</p>
+      <p class="system">Set up your tournament to begin...</p>
     </div>
 
-    <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
-      <button class="move-btn" id="selectPokemonBtn">Select Pokemon</button>
-      <button class="move-btn" id="startBtn">Start Battle</button>
-      <button class="move-btn" id="againBtn" disabled>Play Again</button>
+    <!-- Scoreboard -->
+    <div id="scoreboard">
+      <div class="title" style="text-align:center;">Tournament Standings</div>
+      <table>
+        <thead>
+          <tr><th>Rank</th><th>Trainer</th><th>W</th><th>L</th><th>Pts</th></tr>
+        </thead>
+        <tbody id="scoreboardBody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -249,6 +277,19 @@
     </div>
   </div>
 
+  <!-- Opponent Count Modal -->
+  <div class="pokemon-select-modal" id="opponentCountModal">
+    <div class="select-panel">
+      <div class="select-title">How many opponents? (3-12)</div>
+      <input type="range" id="opponentSlider" min="3" max="12" value="5">
+      <div id="sliderValue">5</div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:1rem;">
+        <button class="move-btn" id="confirmCountBtn">OK</button>
+        <button class="move-btn" style="background:#666;" id="cancelCountBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Sound Controls with Font Awesome Icons -->
   <div class="sound-controls">
     <button class="sound-btn" id="musicToggle" title="Toggle Music">
@@ -260,131 +301,71 @@
   </div>
 
   <script>
+    /* ==============================================================
+       ROUND-ROBIN TOURNAMENT ENGINE + UI FIXES
+       ============================================================== */
     const session = JSON.parse(localStorage.getItem('trainerSession'));
-    // Web3 setup
+    if (!session) location.href = 'index.html';
+
+    // Web3 placeholders (keep if needed, but not used in tournament)
     const NFT_ADDRESS = '0xYourPokemonNFTAddressHere';
     const BADGE_ADDRESS = '0xYourBadgeAddressHere';
-    const ERC721_ABI = [
-      'function mint(address to, uint256 pokeId, string memory pokeName) external returns (uint256)',
-      'function ownerOf(uint256 tokenId) view returns (address)'
-    ];
-    const BADGE_ABI = [
-      'function mint(address to, uint256 id, uint256 amount, bytes memory data) external'
-    ];
-    function getSigner(){
-      if (!window.ethereum) return null;
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      return provider.getSigner();
-    }
-    if (!session) location.href = 'index.html';
+
     const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
-    const ns = (k) => `${USER_ID}:${k}`;
+    const ns = k => `${USER_ID}:${k}`;
     const COIN_KEY = ns('coins');
     const OWNED_KEY = ns('owned');
     const EQUIPPED_KEY = ns('equipped');
-    const HIST_KEY = ns('tournaments');
-    const SETTINGS_KEY = ns('settings');
+
+    /* ---------- BASIC HELPERS ---------- */
+    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
+    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
+    if (localStorage.getItem(COIN_KEY)===null) setCoins(500); else setCoins(getCoins());
 
     const walletDisplay = document.getElementById('walletDisplay');
     if (session.type === 'metamask') walletDisplay.textContent = session.address.slice(0,6)+"..."+session.address.slice(-4);
     document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('trainerSession'); location.href = 'index.html'; };
 
-    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
-    function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
-    if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
-
+    /* ---------- POKÉMON OWNERSHIP ---------- */
     let ownedPokemon = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
-    const shopOwned = JSON.parse(localStorage.getItem('owned') || '[]');
+    const shopOwned = JSON.parse(localStorage.getItem('owned') || '[]'); // legacy
     if (shopOwned.length > 0) {
-      shopOwned.forEach(p => {
-        if (!ownedPokemon.find(op => op.id === p.id)) {
-          ownedPokemon.push(p);
-        }
-      });
+      shopOwned.forEach(p => { if (!ownedPokemon.find(op => op.id === p.id)) ownedPokemon.push(p); });
     }
-    if (ownedPokemon.length === 0 || !ownedPokemon.find(p => p.id === 25)) {
-      ownedPokemon.push({ id: 25, name: 'Pikachu' });
+    if (ownedPokemon.length===0 || !ownedPokemon.find(p=>p.id===25)){
+      ownedPokemon.push({id:25, name:'Pikachu'});
       localStorage.setItem(OWNED_KEY, JSON.stringify(ownedPokemon));
     }
     let equippedId = parseInt(localStorage.getItem(EQUIPPED_KEY) || '25');
-    let selectedPokemonId = equippedId;
 
-    const player = { id: equippedId, name: (ownedPokemon.find(p=>p.id===equippedId)||{name:'Pikachu'}).name, hp:100, maxHp:100 };
+    /* ---------- UI ELEMENTS ---------- */
     const playerSprite = document.getElementById('playerSprite');
-    const playerName = document.getElementById('playerName');
-    const playerHP = document.getElementById('playerHP');
+    const playerName   = document.getElementById('playerName');
+    const playerHP     = document.getElementById('playerHP');
     const playerHPText = document.getElementById('playerHPText');
+
     const opponentSprite = document.getElementById('opponentSprite');
-    const opponentName = document.getElementById('opponentName');
-    const opponentHP = document.getElementById('opponentHP');
+    const opponentName   = document.getElementById('opponentName');
+    const opponentHP     = document.getElementById('opponentHP');
     const opponentHPText = document.getElementById('opponentHPText');
+
     const battleLog = document.getElementById('battleLog');
-    const moveButtons = document.querySelectorAll('.move-btn');
+    const moveButtons = document.querySelectorAll('.move-btn[data-move]');
 
-    function updateHP(bar, textEl, hp, max) {
-      const percent = (hp / max) * 100;
-      bar.style.width = percent + '%';
-      textEl.textContent = `${hp}/${max}`;
-      bar.style.background = percent > 50 ? '#4caf50' : percent > 25 ? '#ff9800' : '#f44336';
-    }
-    function log(msg, cls=''){
-      const p = document.createElement('p'); p.innerHTML = msg; if (cls) p.className = cls; battleLog.appendChild(p); battleLog.scrollTop = battleLog.scrollHeight;
-    }
+    const choosePokemonBtn   = document.getElementById('choosePokemonBtn');
+    const chooseOpponentsBtn = document.getElementById('chooseOpponentsBtn');
+    const startTournamentBtn = document.getElementById('startTournamentBtn');
 
-    function loadPlayer(){
-      const p = ownedPokemon.find(p=>p.id===selectedPokemonId) || ownedPokemon.find(p=>p.id===equippedId) || ownedPokemon[0];
-      player.id = p.id; player.name = p.name; player.hp = player.maxHp;
-      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
-      playerName.textContent = p.name;
-      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-    }
+    const opponentCountModal = document.getElementById('opponentCountModal');
+    const opponentSlider     = document.getElementById('opponentSlider');
+    const sliderValue        = document.getElementById('sliderValue');
+    const confirmCountBtn    = document.getElementById('confirmCountBtn');
+    const cancelCountBtn     = document.getElementById('cancelCountBtn');
 
-    // Pokemon Selection UI
-    function showPokemonSelection(){
-      const grid = document.getElementById('pokemonSelectGrid');
-      grid.innerHTML = '';
-      ownedPokemon.forEach(p => {
-        const card = document.createElement('div');
-        card.className = `pokemon-select-card ${p.id === selectedPokemonId ? 'selected' : ''}`;
-        card.innerHTML = `
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" alt="${p.name}">
-          <div class="name">${p.name}</div>
-        `;
-        card.onclick = () => {
-          document.querySelectorAll('.pokemon-select-card').forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          selectedPokemonId = p.id;
-          playSound('select');
-        };
-        grid.appendChild(card);
-      });
-      document.getElementById('pokemonSelectModal').classList.add('active');
-    }
+    const scoreboard     = document.getElementById('scoreboard');
+    const scoreboardBody = document.getElementById('scoreboardBody');
 
-    document.getElementById('selectPokemonBtn').onclick = showPokemonSelection;
-    document.getElementById('confirmSelectBtn').onclick = () => {
-      equippedId = selectedPokemonId;
-      localStorage.setItem(EQUIPPED_KEY, String(equippedId));
-      loadPlayer();
-      document.getElementById('pokemonSelectModal').classList.remove('active');
-      playSound('confirm');
-    };
-    document.getElementById('cancelSelectBtn').onclick = () => {
-      selectedPokemonId = equippedId;
-      document.getElementById('pokemonSelectModal').classList.remove('active');
-    };
-
-    let opponent = null; let battleActive = false; let playerTurn = true;
-    const moves = {
-      thunderbolt: { name: 'Thunderbolt', power: 30, color: '#ffeb3b' },
-      quickattack: { name: 'Quick Attack', power: 20, color: '#81c784' },
-      irontail: { name: 'Iron Tail', power: 40, color: '#9e9e9e' },
-      run: { name: 'Run Away', power: 0, color: '#ff9800', run: true }
-    };
-
-    // ———————————————————————————————————————————————
-    // UNIQUE ATTACK SOUNDS + ICON TOGGLES
-    // ———————————————————————————————————————————————
+    /* ---------- SOUND SYSTEM (unchanged from original) ---------- */
     let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
     let soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
     let currentMusic = null;
@@ -394,12 +375,10 @@
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-
       osc.type = type;
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
       gain.gain.setValueAtTime(volume, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
@@ -408,7 +387,6 @@
 
     function playAttackSound(moveKey) {
       if (!soundsEnabled) return;
-
       switch (moveKey) {
         case 'thunderbolt':
           tone(800, 0.08, 0.25, 'sawtooth');
@@ -437,10 +415,8 @@
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-
       const frequencies = {
         'hit': [200, 150],
         'appear': [300, 400, 500],
@@ -449,7 +425,6 @@
         'select': [440],
         'confirm': [523.25, 659.25]
       };
-
       const freq = frequencies[type] || [440];
       if (freq.length === 1) {
         oscillator.frequency.setValueAtTime(freq[0], audioContext.currentTime);
@@ -480,9 +455,8 @@
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const notes = type === 'battle' ? [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] : [];
       let noteIndex = 0;
-      
       function playNote(){
-        if (!musicEnabled || !battleActive) return;
+        if (!musicEnabled || !tournamentActive) return;
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.connect(gain);
@@ -502,154 +476,251 @@
     function stopMusic(){
       if (currentMusic) {
         if (currentMusic.audioContext) currentMusic.audioContext.close();
-        if (currentMusic.interval) clearInterval(currentMusic.interval);
         currentMusic = null;
       }
     }
 
-    // ———————————————————————————————————————————————
-    // ICON TOGGLE LOGIC
-    // ———————————————————————————————————————————————
     const musicBtn = document.getElementById('musicToggle');
     const soundBtn = document.getElementById('soundToggle');
-
     function updateIcons() {
       musicBtn.innerHTML = musicEnabled ? '<i class="fas fa-music"></i>' : '<i class="fas fa-volume-mute"></i>';
       soundBtn.innerHTML = soundsEnabled ? '<i class="fas fa-volume-high"></i>' : '<i class="fas fa-volume-mute"></i>';
     }
-
-    musicBtn.onclick = () => {
-      musicEnabled = !musicEnabled;
-      localStorage.setItem('musicEnabled', musicEnabled);
-      updateIcons();
-      if (!musicEnabled) stopMusic();
-      else if (battleActive) playMusic('battle');
-    };
-
-    soundBtn.onclick = () => {
-      soundsEnabled = !soundsEnabled;
-      localStorage.setItem('soundsEnabled', soundsEnabled);
-      updateIcons();
-    };
-
-    // Initial icon state
+    musicBtn.onclick = () => { musicEnabled = !musicEnabled; localStorage.setItem('musicEnabled', musicEnabled); updateIcons(); if (!musicEnabled) stopMusic(); else if (tournamentActive) playMusic('battle'); };
+    soundBtn.onclick = () => { soundsEnabled = !soundsEnabled; localStorage.setItem('soundsEnabled', soundsEnabled); updateIcons(); };
     updateIcons();
 
-    // ———————————————————————————————————————————————
-    // BATTLE LOGIC
-    // ———————————————————————————————————————————————
-    async function newBattle(){
-      battleActive = true; playerTurn = true; battleLog.innerHTML = ''; moveButtons.forEach(b=>b.disabled=false); loadPlayer();
-      playMusic('battle');
-      const oppId = Math.floor(Math.random() * 150) + 1;
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${oppId}`);
-      const data = await res.json();
-      opponent = { id: oppId, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100 };
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
-      opponentName.textContent = opponent.name; updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-      
-      opponentSprite.style.opacity = '0';
-      opponentSprite.style.transform = 'scale(0)';
-      setTimeout(() => {
-        opponentSprite.style.transition = 'all 0.5s ease';
-        opponentSprite.style.opacity = '1';
-        opponentSprite.style.transform = 'scale(1)';
-      }, 100);
-      
-      log(`A wild <strong>${opponent.name}</strong> appeared!`, 'system');
-      playSound('appear');
-      document.getElementById('againBtn').disabled = true;
+    /* ---------- BATTLE STATE ---------- */
+    let player = {id:0, name:'', hp:100, maxHp:100};
+    let opponent = null;
+    let battleActive = false;
+    let playerTurn = true;
+    let tournamentActive = false;
+
+    const moves = {
+      thunderbolt: { name: 'Thunderbolt', power: 30, color: '#ffeb3b' },
+      quickattack: { name: 'Quick Attack', power: 20, color: '#81c784' },
+      irontail: { name: 'Iron Tail', power: 40, color: '#9e9e9e' },
+      run: { name: 'Run Away', power: 0, color: '#ff9800', run: true }
+    };
+
+    /* ---------- HP & LOG ---------- */
+    function updateHP(bar, txt, hp, max){
+      const pct = (hp/max)*100;
+      bar.style.width = pct+'%';
+      txt.textContent = `${hp}/${max}`;
+      bar.style.background = pct>50?'#4caf50':pct>25?'#ff9800':'#f44336';
+    }
+    function log(msg,cls=''){ const p=document.createElement('p'); p.innerHTML=msg; if(cls)p.className=cls; battleLog.appendChild(p); battleLog.scrollTop=battleLog.scrollHeight; }
+
+    /* ---------- POKÉMON SELECTION ---------- */
+    let selectedPokemonId = equippedId;
+    function showPokemonSelection(){
+      const grid = document.getElementById('pokemonSelectGrid');
+      grid.innerHTML='';
+      ownedPokemon.forEach(p=>{
+        const card=document.createElement('div');
+        card.className=`pokemon-select-card ${p.id===selectedPokemonId?'selected':''}`;
+        card.innerHTML=`<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" alt="${p.name}">
+                        <div class="name">${p.name}</div>`;
+        card.onclick=()=>{ document.querySelectorAll('.pokemon-select-card').forEach(c=>c.classList.remove('selected')); card.classList.add('selected'); selectedPokemonId=p.id; playSound('select'); };
+        grid.appendChild(card);
+      });
+      document.getElementById('pokemonSelectModal').classList.add('active');
+    }
+    choosePokemonBtn.onclick = showPokemonSelection;
+    document.getElementById('confirmSelectBtn').onclick = ()=>{ 
+      equippedId=selectedPokemonId; localStorage.setItem(EQUIPPED_KEY,String(equippedId)); 
+      loadPlayer(); document.getElementById('pokemonSelectModal').classList.remove('active'); 
+      playSound('confirm'); chooseOpponentsBtn.disabled = false;
+    };
+    document.getElementById('cancelSelectBtn').onclick = ()=>{ selectedPokemonId=equippedId; document.getElementById('pokemonSelectModal').classList.remove('active'); };
+
+    /* ---------- TOURNAMENT STATE ---------- */
+    let opponents = [];
+    let currentMatch = 0;
+    let playerStats = {wins:0, losses:0};
+
+    /* ---------- OPPONENT COUNT ---------- */
+    chooseOpponentsBtn.onclick = () => opponentCountModal.classList.add('active');
+    opponentSlider.oninput = () => sliderValue.textContent = opponentSlider.value;
+    confirmCountBtn.onclick = () => {
+      const n = parseInt(opponentSlider.value);
+      opponentCountModal.classList.remove('active');
+      generateOpponents(n);
+      startTournamentBtn.disabled = false;
+      log(`<span class="system">Generated ${n} opponents. Ready to start!</span>`);
+    };
+    cancelCountBtn.onclick = () => opponentCountModal.classList.remove('active');
+
+    async function generateOpponents(count){
+      const used = new Set([equippedId]);
+      opponents = [];
+      while(opponents.length < count){
+        const id = Math.floor(Math.random()*150)+1;
+        if(used.has(id)) continue;
+        used.add(id);
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        const data = await res.json();
+        opponents.push({id, name: data.name.charAt(0).toUpperCase()+data.name.slice(1), hp:100, maxHp:100, wins:0, losses:0});
+      }
     }
 
-    moveButtons.forEach(btn => btn.addEventListener('click', () => {
-      if (!battleActive || !playerTurn) return;
-      const key = btn.dataset.move; const move = moves[key];
-      if (move.run){ 
-        log(`<strong>${player.name}</strong> ran away.`, 'system'); 
-        playAttackSound('run');
-        return endBattle(false, true); 
-      }
-      
-      const playerEl = document.getElementById('playerPokemon');
-      playerEl.classList.add('attack');
-      playAttackSound(key);
-      setTimeout(() => playerEl.classList.remove('attack'), 400);
-      
-      const dmg = Math.floor(Math.random()*8)+move.power; 
-      opponent.hp = Math.max(0, opponent.hp - dmg);
-      log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
-      
-      setTimeout(() => {
-        const oppEl = document.getElementById('opponentPokemon');
-        oppEl.classList.add('hit', 'shake');
-        playSound('hit');
-        setTimeout(() => oppEl.classList.remove('hit', 'shake'), 500);
-      }, 300);
-      
-      log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
+    /* ---------- START TOURNAMENT ---------- */
+    startTournamentBtn.onclick = async () => {
+      if(opponents.length===0) return;
+      tournamentActive = true;
+      battleActive = false;
+      currentMatch = 0;
+      playerStats = {wins:0, losses:0};
+      scoreboard.style.display = 'none';
+      document.getElementById('tournamentSetup').style.display = 'none';
+      moveButtons.forEach(b=>b.disabled=true);
+      battleLog.innerHTML = '';
+      log(`<span class="system">=== ROUND-ROBIN TOURNAMENT BEGIN ===</span>`);
+      playMusic('battle');
+      await startNextMatch();
+    };
+
+    async function startNextMatch(){
+      if(currentMatch >= opponents.length){ endTournament(); return; }
+      opponent = opponents[currentMatch];
+      battleActive = true;
+      playerTurn = true;
+      moveButtons.forEach(b=>b.disabled=false);
+      loadPlayer();
+      loadOpponent(opponent);
+      log(`<span class="system">Match ${currentMatch+1}/${opponents.length}: <strong>${player.name}</strong> vs <strong>${opponent.name}</strong></span>`);
+      playSound('appear');
+    }
+
+    function loadPlayer(){
+      const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
+      player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
+      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
+      playerName.textContent = p.name;
+      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+    }
+
+    function loadOpponent(o){
+      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${o.id}.png`;
+      opponentName.textContent = o.name;
+      opponent.hp = opponent.maxHp = 100;
       updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-      if (opponent.hp === 0) {
-        playSound('victory');
-        return setTimeout(() => endBattle(true), 300);
-      }
-      playerTurn = false; moveButtons.forEach(b => b.disabled = true);
-      setTimeout(() => {
+      opponentSprite.style.opacity = '0'; opponentSprite.style.transform = 'scale(0)';
+      setTimeout(() => { opponentSprite.style.transition = 'all 0.5s ease'; opponentSprite.style.opacity = '1'; opponentSprite.style.transform = 'scale(1)'; }, 100);
+    }
+
+    /* ---------- BATTLE MOVES ---------- */
+    moveButtons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!battleActive || !playerTurn) return;
+        const key = btn.dataset.move;
+        const move = moves[key];
+        if (move.run) {
+          log(`<strong>${player.name}</strong> ran away.`, 'system');
+          playAttackSound('run');
+          await endMatch(false, true);
+          return;
+        }
+        document.getElementById('playerPokemon').classList.add('attack');
+        playAttackSound(key);
+        setTimeout(() => document.getElementById('playerPokemon').classList.remove('attack'), 400);
+
+        const dmg = Math.floor(Math.random()*8) + move.power;
+        opponent.hp = Math.max(0, opponent.hp - dmg);
+        log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
+        await new Promise(r => setTimeout(r, 300));
         const oppEl = document.getElementById('opponentPokemon');
-        oppEl.classList.add('attack');
-        playSound('attack');
-        setTimeout(() => oppEl.classList.remove('attack'), 400);
-        
-        const oppDmg = Math.floor(Math.random()*25)+15; 
+        oppEl.classList.add('hit', 'shake'); playSound('hit');
+        setTimeout(() => oppEl.classList.remove('hit', 'shake'), 500);
+        log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
+        updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+        if (opponent.hp === 0) { playSound('victory'); await new Promise(r => setTimeout(r, 400)); await endMatch(true); return; }
+
+        playerTurn = false;
+        moveButtons.forEach(b => b.disabled = true);
+        await new Promise(r => setTimeout(r, 900));
+
+        document.getElementById('opponentPokemon').classList.add('attack');
+        setTimeout(() => document.getElementById('opponentPokemon').classList.remove('attack'), 400);
+
+        const oppDmg = Math.floor(Math.random()*25) + 15;
         player.hp = Math.max(0, player.hp - oppDmg);
         log(`${opponent.name} attacked! You took <strong>${oppDmg}</strong> damage.`);
-        
-        setTimeout(() => {
-          playerEl.classList.add('hit', 'shake');
-          playSound('hit');
-          setTimeout(() => playerEl.classList.remove('hit', 'shake'), 500);
-        }, 300);
-        
+        await new Promise(r => setTimeout(r, 300));
+        const playerEl = document.getElementById('playerPokemon');
+        playerEl.classList.add('hit', 'shake'); playSound('hit');
+        setTimeout(() => playerEl.classList.remove('hit', 'shake'), 500);
         updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-        if (player.hp === 0) {
-          playSound('defeat');
-          return endBattle(false);
-        }
-        playerTurn = true; moveButtons.forEach(b => b.disabled = false);
-      }, 900);
-    }));
+        if (player.hp === 0) { playSound('defeat'); await new Promise(r => setTimeout(r, 400)); await endMatch(false); return; }
+
+        playerTurn = true;
+        moveButtons.forEach(b => b.disabled = false);
+      });
+    });
+
+    /* ---------- END MATCH ---------- */
+    async function endMatch(playerWon, ran = false){
+      battleActive = false;
+      moveButtons.forEach(b => b.disabled = true);
+      if (playerWon && !ran){
+        playerStats.wins++;
+        opponents[currentMatch].losses++;
+        const reward = 100;
+        setCoins(getCoins() + reward);
+        log(`<strong style="color:#4caf50;">Victory!</strong> ${trophySvg()} +${reward} coins`);
+      } else if (ran){
+        playerStats.losses++;
+        opponents[currentMatch].wins++;
+        log(`<strong style="color:#ff9800;">You escaped.</strong>`);
+      } else {
+        playerStats.losses++;
+        opponents[currentMatch].wins++;
+        log(`<strong style="color:#f44336;">Defeat…</strong>`);
+      }
+      await new Promise(r => setTimeout(r, 1500));
+      currentMatch++;
+      if (currentMatch < opponents.length) await startNextMatch();
+      else endTournament();
+    }
+
+    /* ---------- END TOURNAMENT ---------- */
+    function endTournament(){
+      tournamentActive = false;
+      stopMusic();
+      log(`<span class="system">=== TOURNAMENT COMPLETE ===</span>`);
+      const standings = [
+        {name: player.name, wins: playerStats.wins, losses: playerStats.losses, pts: playerStats.wins * 3},
+        ...opponents.map(o => ({name: o.name, wins: o.wins, losses: o.losses, pts: o.wins * 3}))
+      ];
+      standings.sort((a,b) => b.pts - a.pts || b.wins - a.wins);
+      scoreboardBody.innerHTML = '';
+      standings.forEach((s,i) => {
+        const tr = document.createElement('tr');
+        tr.style.background = i===0 ? 'rgba(255,203,5,.3)' : i%2 ? 'rgba(255,255,255,.05)' : 'transparent';
+        tr.innerHTML = `<td>${i+1}</td><td>${s.name}${i===0?' (You)':''}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.pts}</td>`;
+        scoreboardBody.appendChild(tr);
+      });
+      scoreboard.style.display = 'block';
+      if (standings[0].name === player.name){
+        const champReward = 500;
+        setCoins(getCoins() + champReward);
+        log(`<strong style="color:#ffeb3b;">Champion! +${champReward} coins ${trophySvg()}</strong>`);
+      }
+      document.getElementById('tournamentSetup').style.display = 'flex';
+      chooseOpponentsBtn.disabled = false;
+      startTournamentBtn.disabled = true;
+    }
 
     function trophySvg(){
       return '<svg class="trophy" width="18" height="18" viewBox="0 0 24 24" fill="#ffeb3b" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12v3h3v4a5 5 0 0 1-5 5h-1.1A5.002 5.002 0 0 1 12 17a5.002 5.002 0 0 1-2.9-3H8a5 5 0 0 1-5-5V5h3V2Zm12 5V4H6v3H4v2a3 3 0 0 0 3 3h1.18A5.988 5.988 0 0 1 12 10c1.55 0 2.97.59 4.02 1.56L17 12a3 3 0 0 0 3-3V7h-2Zm-6 7a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 14Zm-4 4h8v2H8v-2Z"/></svg>';
     }
 
-    async function endBattle(won, ran = false){
-      battleActive = false; moveButtons.forEach(b => b.disabled = true);
-      stopMusic();
-      const history = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-      history.push({ player: player.name, opponent: opponent.name, won: won && !ran, date: new Date().toISOString() });
-      localStorage.setItem(HIST_KEY, JSON.stringify(history));
-      if (won && !ran){
-        const playerEl = document.getElementById('playerPokemon');
-        playerEl.classList.add('flash');
-        log(`<strong style="color:#4caf50;">Victory!</strong> ${trophySvg()}`, 'system');
-        const reward = 100; setCoins(getCoins() + reward); log(`You earned <strong>${reward}</strong> coins.`);
-        try{
-          const signer = getSigner();
-          if (signer) {
-            const badge = new ethers.Contract(BADGE_ADDRESS, BADGE_ABI, signer);
-            await badge.mint(session.address, 1, 1, '0x');
-          }
-        }catch(e){ console.warn('Badge mint failed:', e); }
-      } else if (ran){
-        log(`<strong style="color:#ff9800;">You escaped safely.</strong>`, 'system');
-      } else {
-        log(`<strong style="color:#f44336;">Defeat...</strong>`, 'system');
-      }
-      document.getElementById('againBtn').disabled = false;
-    }
-
-    document.getElementById('startBtn').onclick = () => { if (!battleActive) newBattle(); };
-    document.getElementById('againBtn').onclick = () => { if (!battleActive) newBattle(); };
+    /* ---------- INITIAL STATE ---------- */
+    loadPlayer(); // show default Pokémon
+    chooseOpponentsBtn.disabled = true;
+    startTournamentBtn.disabled = true;
   </script>
 </body>
 </html>
