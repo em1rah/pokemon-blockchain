@@ -33,7 +33,7 @@
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, rgba(11,16,33,0.8), rgba(0,0,0,0.4));
+      background: linear-gradient(135deg, rgba(11,16,33,0.85), rgba(0,0,0,0.5));
       z-index: 1;
     }
     .bg-overlay {
@@ -45,49 +45,75 @@
     }
     .bg-overlay h1 {
       font-family: 'Press Start 2P', cursive;
-      font-size: 3.5rem;
+      font-size: 3.8rem;
       color: #ffcb05;
-      text-shadow: 0 4px 8px rgba(0,0,0,0.6);
+      text-shadow: 0 4px 12px rgba(0,0,0,0.7);
       margin-bottom: 1rem;
       line-height: 1.2;
     }
     .bg-overlay p {
-      font-size: 1.3rem;
-      color: #eee;
+      font-size: 1.35rem;
+      color: #f0f0f0;
       max-width: 80%;
       margin: 0 auto;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
 
-    /* ===== RIGHT: FORM PANEL (1/3) ===== */
+    /* ===== RIGHT: FORM PANEL (1/3) WITH POKÉMON SPRITE ===== */
     .form-panel {
       flex: 1;
       min-width: 360px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem;
-      background: rgba(10, 10, 20, 0.9);
+      background: rgba(10, 10, 20, 0.92);
       backdrop-filter: blur(16px);
       position: relative;
       z-index: 10;
       animation: fadeInRight 1s ease-out;
+      overflow: hidden;
     }
+
+    /* Floating Pokémon Sprite */
+    .pokemon-sprite {
+      position: absolute;
+      top: 15%;
+      right: -10%;
+      width: 180px;
+      height: auto;
+      animation: floatPokemon 4s ease-in-out infinite, swing 2s ease-in-out infinite alternate;
+      z-index: 5;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+    }
+
+    @keyframes floatPokemon {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+    @keyframes swing {
+      from { transform: rotate(-5deg); }
+      to { transform: rotate(5deg); }
+    }
+
     .container {
       width: 100%;
       max-width: 400px;
-      background: rgba(20, 25, 50, 0.7);
-      padding: 2.5rem;
+      background: rgba(20, 25, 50, 0.8);
+      padding: 2.8rem 2.2rem;
       border-radius: 20px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 203, 5, 0.3);
+      border: 1px solid rgba(255, 203, 5, 0.4);
       animation: float 6s ease-in-out infinite;
+      position: relative;
+      z-index: 10;
     }
 
-    /* Floating animation */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+      50% { transform: translateY(-8px); }
     }
 
     .header {
@@ -95,36 +121,36 @@
       margin-bottom: 2rem;
     }
     .header img {
-      width: 40px;
+      width: 42px;
       filter: brightness(0) invert(1);
       margin-bottom: 0.5rem;
     }
     .header h1 {
       font-family: 'Press Start 2P', cursive;
-      font-size: 1.8rem;
+      font-size: 1.9rem;
       color: #ffcb05;
       text-shadow: 0 2px 4px rgba(0,0,0,0.4);
     }
     .header p {
-      font-size: 0.95rem;
-      color: #ccc;
-      margin-top: 0.5rem;
+      font-size: 0.98rem;
+      color: #ddd;
+      margin-top: 0.6rem;
     }
 
     .toggle-tabs {
       display: flex;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.35);
       border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 1.5rem;
+      padding: 5px;
+      margin-bottom: 2rem;
     }
     .tab {
       flex: 1;
-      padding: 0.75rem;
+      padding: 0.8rem;
       text-align: center;
       border-radius: 10px;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       cursor: pointer;
       transition: all 0.3s ease;
     }
@@ -132,147 +158,107 @@
       background: #ffcb05;
       color: #1a2a6c;
       font-weight: 700;
+      box-shadow: 0 4px 10px rgba(255, 203, 5, 0.4);
     }
 
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      color: #ffcb05;
-      font-weight: 500;
-    }
-    input[type="email"], input[type="password"] {
+    .metamask-btn {
       width: 100%;
-      padding: 0.9rem 1rem;
-      border: 2px solid rgba(255,203,5,0.4);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-    input::placeholder { color: #aaa; }
-    input:focus {
-      outline: none;
-      border-color: #ffcb05;
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 0 0 4px rgba(255,203,5,0.2);
-    }
-
-    .checkbox {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: #ddd;
-      margin-bottom: 1.2rem;
-    }
-    .checkbox input { accent-color: #ffcb05; }
-
-    .btn {
-      width: 100%;
-      padding: 0.9rem;
+      padding: 1.1rem;
       border: none;
       border-radius: 12px;
-      font-size: 1rem;
+      font-size: 1.12rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      margin-bottom: 0.75rem;
-    }
-    .btn-login {
-      background: #4CAF50;
-      color: white;
-    }
-    .btn-login:hover {
-      background: #45a049;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
-    }
-
-    .divider {
-      text-align: center;
-      margin: 1.2rem 0;
-      color: #aaa;
-      position: relative;
-    }
-    .divider::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0; right: 0;
-      height: 1px;
-      background: rgba(255,255,255,0.2);
-    }
-    .divider span {
-      background: rgba(20, 25, 50, 0.7);
-      padding: 0 1rem;
-    }
-
-    .btn-metamask {
       background: #1a73e8;
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
+      gap: 0.9rem;
+      margin-bottom: 1rem;
     }
-    .btn-metamask img { width: 22px; height: 22px; }
-    .btn-metamask:hover {
+    .metamask-btn img {
+      width: 28px;
+      height: 28px;
+    }
+    .metamask-btn:hover {
       background: #1557b0;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(26, 115, 232, 0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(26, 115, 232, 0.5);
     }
 
-    .links {
-      text-align: center;
+    .metamask-status {
       margin-top: 1rem;
-      font-size: 0.9rem;
+      font-size: 0.96rem;
+      text-align: center;
+      min-height: 1.6em;
+      padding: 0.6rem;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
     }
-    .links a {
-      color: #ffcb05;
-      text-decoration: none;
-    }
-    .links a:hover { text-decoration: underline; }
 
     .form { display: none; animation: fadeIn 0.5s ease; }
     .form.active { display: block; }
 
-    .metamask-status {
-      margin-top: 0.75rem;
-      font-size: 0.9rem;
+    .links {
       text-align: center;
+      margin-top: 1.6rem;
+      font-size: 0.92rem;
     }
+    .links a {
+      color: #ffcb05;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .links a:hover { text-decoration: underline; }
 
-    /* Animations */
     @keyframes fadeInLeft {
-      from { opacity: 0; transform: translateX(-50px); }
+      from { opacity: 0; transform: translateX(-60px); }
       to { opacity: 1; transform: translateX(0); }
     }
     @keyframes fadeInRight {
-      from { opacity: 0; transform: translateX(50px); }
+      from { opacity: 0; transform: translateX(60px); }
       to { opacity: 1; transform: translateX(0); }
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Mobile Responsive */
+    /* Responsive Adjustments */
     @media (max-width: 992px) {
       body { flex-direction: column; }
-      .bg-image { flex: none; height: 40vh; }
-      .form-panel { flex: none; min-width: 100%; padding: 1.5rem; }
-      .bg-overlay h1 { font-size: 2.5rem; }
-      .bg-overlay p { font-size: 1.1rem; }
+      .bg-image { 
+        flex: none; 
+        height: 45vh; 
+        min-height: 300px;
+      }
+      .form-panel { 
+        flex: none; 
+        min-width: 100%; 
+        padding: 2rem 1.5rem;
+      }
+      .pokemon-sprite {
+        width: 140px;
+        top: 10%;
+        right: 5%;
+      }
+      .bg-overlay h1 { font-size: 2.8rem; }
+      .bg-overlay p { font-size: 1.2rem; }
     }
 
     @media (max-width: 480px) {
-      .container { padding: 1.8rem; }
-      .bg-overlay h1 { font-size: 2rem; }
+      .container { padding: 2rem 1.5rem; }
+      .bg-overlay h1 { font-size: 2.2rem; }
+      .metamask-btn { font-size: 1rem; padding: 1rem; }
+      .pokemon-sprite {
+        width: 110px;
+        top: 8%;
+        right: 2%;
+      }
+      .toggle-tabs { padding: 4px; }
+      .tab { font-size: 0.9rem; padding: 0.7rem; }
     }
   </style>
 </head>
@@ -286,13 +272,17 @@
     </div>
   </div>
 
-  <!-- RIGHT: Login / Register Form -->
+  <!-- RIGHT: Form Panel with Floating Pokémon -->
   <div class="form-panel">
+    <!-- Floating Pikachu Sprite -->
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" 
+         alt="Pikachu" class="pokemon-sprite">
+
     <div class="container">
       <div class="header">
         <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffcb05'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>" alt="Pokeball">
         <h1>PikaPlay</h1>
-        <p>Log in or register to begin your journey!</p>
+        <p>Connect your wallet to begin!</p>
       </div>
 
       <div class="toggle-tabs">
@@ -301,56 +291,24 @@
       </div>
 
       <div class="form-container">
-        <!-- LOGIN FORM -->
-        <form id="loginForm" class="form active">
-          <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" placeholder="email@example.com" required>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" placeholder="••••••••" required>
-          </div>
-          <div class="checkbox">
-            <input type="checkbox" id="remember">
-            <label for="remember">Remember me</label>
-          </div>
-          <button type="submit" class="btn btn-login">Login</button>
-
-          <div class="divider"><span>or</span></div>
-          <button type="button" id="metamaskLogin" class="btn btn-metamask">
+        <!-- LOGIN WITH METAMASK -->
+        <div id="loginForm" class="form active">
+          <button type="button" id="metamaskLogin" class="metamask-btn">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1024px-MetaMask_Fox.svg.png" alt="MetaMask">
             Login with MetaMask
           </button>
-          <div class="metamask-status" id="metamaskStatus"></div>
+          <div class="metamask-status" id="loginStatus"></div>
+        </div>
 
-          <div class="links"><a href="#">Forgot password?</a></div>
-        </form>
-
-        <!-- REGISTER FORM -->
-        <form id="registerForm" class="form">
-          <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" placeholder="email@example.com" required>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" placeholder="Create strong password" required>
-          </div>
-          <div class="form-group">
-            <label>Confirm Password</label>
-            <input type="password" placeholder="Repeat password" required>
-          </div>
-          <button type="submit" class="btn btn-login">Create Account</button>
-
-          <div class="divider"><span>or</span></div>
-          <button type="button" id="metamaskRegister" class="btn btn-metamask">
+        <!-- REGISTER WITH METAMASK -->
+        <div id="registerForm" class="form">
+          <button type="button" id="metamaskRegister" class="metamask-btn">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1024px-MetaMask_Fox.svg.png" alt="MetaMask">
             Register with MetaMask
           </button>
-
+          <div class="metamask-status" id="registerStatus"></div>
           <div class="links">Already a trainer? <a href="#" class="switch-to-login">Login here</a></div>
-        </form>
+        </div>
       </div>
     </div>
   </div>
@@ -371,62 +329,60 @@
       document.querySelector('[data-form="login"]').click();
     });
 
-    // Form submission (mock)
-    document.getElementById('loginForm').addEventListener('submit', e => {
-      e.preventDefault();
-      goToHome({ type: 'email', address: e.target[0].value });
-    });
-    document.getElementById('registerForm').addEventListener('submit', e => {
-      e.preventDefault();
-      if (e.target[1].value !== e.target[2].value) {
-        alert('Passwords do not match!');
-        return;
-      }
-      goToHome({ type: 'email', address: e.target[0].value });
-    });
-
     // MetaMask Connection
-    async function connectMetaMask(statusEl) {
+    async function connectMetaMask(statusEl, action) {
       const eth = window.ethereum;
       if (!eth) {
         statusEl.textContent = 'MetaMask not detected';
-        statusEl.style.color = '#ffcb05';
+        statusEl.style.color = '#ff4444';
         alert('Please install MetaMask to continue.');
         return;
       }
+
       try {
-        statusEl.textContent = 'Connecting...';
+        statusEl.textContent = 'Connecting to wallet...';
         statusEl.style.color = '#ffcb05';
+
         const accounts = await eth.request({ method: 'eth_requestAccounts' });
-        if (!accounts?.length) throw new Error('No account');
+        if (!accounts?.length) throw new Error('No account selected');
 
         const addr = accounts[0];
+        const shortAddr = `${addr.slice(0,6)}...${addr.slice(-4)}`;
+
+        // Optional: Sign a welcome message
         try {
           await eth.request({
             method: 'personal_sign',
-            params: [addr, 'Welcome to Pokémon Trainer Portal!']
+            params: [addr, `Welcome to PikaPlay! ${action === 'register' ? 'Registering' : 'Logging in'} as trainer.`]
           });
-        } catch (_) {}
+        } catch (_) { /* Ignore signature denial */ }
 
-        const short = `${addr.slice(0,6)}...${addr.slice(-4)}`;
-        statusEl.textContent = `Connected: ${short}`;
+        statusEl.textContent = `Connected: ${shortAddr}`;
         statusEl.style.color = '#4CAF50';
-        goToHome({ type: 'metamask', address: addr });
+
+        // Save session and redirect
+        localStorage.setItem('trainerSession', JSON.stringify({
+          type: 'metamask',
+          address: addr,
+          action: action
+        }));
+
+        setTimeout(() => location.href = 'home.html', 1200);
       } catch (err) {
-        const msg = err.code === 4001 ? 'Connection rejected' : (err.message || 'Failed to connect');
+        const msg = err.code === 4001 
+          ? 'Connection rejected by user' 
+          : (err.message || 'Connection failed');
         statusEl.textContent = msg;
         statusEl.style.color = '#f44336';
       }
     }
 
-    document.getElementById('metamaskLogin').onclick = () => connectMetaMask(document.getElementById('metamaskStatus'));
-    document.getElementById('metamaskRegister').onclick = () => connectMetaMask(document.getElementById('metamaskStatus'));
+    // Button handlers
+    document.getElementById('metamaskLogin').onclick = () => 
+      connectMetaMask(document.getElementById('loginStatus'), 'login');
 
-    // Redirect
-    function goToHome(user) {
-      localStorage.setItem('trainerSession', JSON.stringify(user));
-      setTimeout(() => location.href = 'home.html', 800);
-    }
+    document.getElementById('metamaskRegister').onclick = () => 
+      connectMetaMask(document.getElementById('registerStatus'), 'register');
   </script>
 </body>
 </html>
