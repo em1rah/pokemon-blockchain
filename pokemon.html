@@ -8,17 +8,12 @@
   <!-- Ethers.js v5.7 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 
-  <!-- Font Awesome 6.5.1 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     /* ──────────────────────────────────────
-       ALL YOUR ORIGINAL CSS (unchanged + minor tweaks)
+       ALL YOUR ORIGINAL CSS (unchanged)
        ────────────────────────────────────── */
     *{margin:0;padding:0;box-sizing:border-box}
     body{
@@ -58,6 +53,22 @@
 
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
 
+    /* .card{
+      background:linear-gradient(135deg, #1a1a2e 0%, #1621a1a2e 50%, #0f3460 100%);
+      border:5px solid #ffcb05;
+      border-radius:24px;
+      padding:0;
+      text-align:left;
+      transition:all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow:0 10px 30px rgba(0,0,0,0.7), inset 0 0 0 2px rgba(255,203,5,0.2), inset 0 2px 4px rgba(255,255,255,0.1);
+      position:relative;
+      overflow:hidden;
+      aspect-ratio:2.5/3.5;
+      display:flex;
+      flex-direction:column;
+      cursor:pointer;
+      perspective:1000px;
+    } */
     .card::before{
       content:'';
       position:absolute;
@@ -140,7 +151,7 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .rarity-star i {font-size:0.75rem;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));}
+    .rarity-star{font-size:0.75rem;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));flex-shrink:0;}
 
     .card-type{
       position:absolute;
@@ -256,7 +267,6 @@
       border:1.5px solid rgba(255,255,255,0.3);
       box-shadow:0 2px 4px rgba(0,0,0,0.3);
       flex-shrink:0;
-      background:rgba(255,255,255,0.1);
     }
     .attack-damage{
       color:#fff;
@@ -466,6 +476,9 @@
     const freeDisplay = document.getElementById('freeDisplay');
     const walletDisplay = document.getElementById('walletDisplay');
 
+    // ──────────────────────────────────────
+    // GLOBAL ERROR DISPLAY (nice toast)
+    // ──────────────────────────────────────
     function showError(msg) {
       const toast = document.createElement('div');
       toast.textContent = msg;
@@ -478,6 +491,7 @@
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
     }
+    // tiny fade animations
     const style = document.createElement('style');
     style.textContent = `
       @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
@@ -553,121 +567,69 @@
     document.getElementById('refreshOwned').onclick = syncOwnedFromChain;
 
     function getNameFromId(id) {
-      const map = {
-        1:'Bulbasaur',4:'Charmander',7:'Squirtle',25:'Pikachu',133:'Eevee',
-        144:'Articuno',145:'Zapdos',146:'Moltres',150:'Mewtwo',151:'Mew',
-        243:'Raikou',244:'Entei',245:'Suicune',249:'Lugia',250:'Ho-Oh',
-        380:'Latias',381:'Latios',384:'Rayquaza',382:'Kyogre',483:'Dialga',
-        484:'Palkia',487:'Giratina',643:'Reshiram',644:'Zekrom',646:'Kyurem',
-        716:'Xerneas',717:'Yveltal',789:'Cosmog',791:'Solgaleo',792:'Lunala',
-        800:'Necrozma',888:'Zacian',889:'Zamazenta',893:'Zarude',898:'Calyrex',
-        94:'Gengar',68:'Machamp',130:'Gyarados',149:'Dragonite',157:'Typhlosion',
-        160:'Feraligatr',197:'Umbreon',229:'Houndoom',254:'Sceptile',257:'Blaziken',
-        260:'Swampert',282:'Gardevoir',306:'Aggron',376:'Metagross',445:'Garchomp',
-        448:'Lucario',475:'Gallade',609:'Chandelure',635:'Hydreigon',706:'Goodra'
-      };
+      const map = {1:'Bulbasaur',4:'Charmander',7:'Squirtle',25:'Pikachu',144:'Articuno',145:'Zapdos',146:'Moltres',150:'Mewtwo',151:'Mew',243:'Raikou',244:'Entei',245:'Suicune',249:'Lugia',250:'Ho-Oh',380:'Latias',381:'Latios',384:'Rayquaza',382:'Kyogre',483:'Dialga',484:'Palkia',487:'Giratina',643:'Reshiram',644:'Zekrom',646:'Kyurem',716:'Xerneas',717:'Yveltal',789:'Cosmog',791:'Solgaleo',792:'Lunala',800:'Necrozma',888:'Zacian',889:'Zamazenta',893:'Zarude',898:'Calyrex'};
       return map[id] || `Poke #${id}`;
     }
 
     function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
 
-    // ──────────────────────────────
-    // NEW POKÉMON SETS WITH ICONS
-    // ──────────────────────────────
-    const starters = [
-      {id:1,name:'Bulbasaur', type:'Grass'},
-      {id:4,name:'Charmander', type:'Fire'},
-      {id:7,name:'Squirtle', type:'Water'}
-    ];
-
+    const starters = [{id:1,name:'Bulbasaur'},{id:4,name:'Charmander'},{id:7,name:'Squirtle'}];
     const common = [
-      {id:25,name:'Pikachu',price:180,type:'Electric'},
-      {id:133,name:'Eevee',price:250,type:'Normal'},
-      {id:94,name:'Gengar',price:320,type:'Ghost'},
-      {id:68,name:'Machamp',price:280,type:'Fighting'},
-      {id:130,name:'Gyarados',price:350,type:'Water'},
-      {id:149,name:'Dragonite',price:500,type:'Dragon'},
-      {id:157,name:'Typhlosion',price:300,type:'Fire'},
-      {id:160,name:'Feraligatr',price:310,type:'Water'},
-      {id:197,name:'Umbreon',price:290,type:'Dark'},
-      {id:229,name:'Houndoom',price:270,type:'Dark'},
-      {id:254,name:'Sceptile',price:330,type:'Grass'},
-      {id:257,name:'Blaziken',price:340,type:'Fire'},
-      {id:260,name:'Swampert',price:320,type:'Water'},
-      {id:282,name:'Gardevoir',price:380,type:'Psychic'},
-      {id:306,name:'Aggron',price:300,type:'Steel'},
-      {id:376,name:'Metagross',price:420,type:'Steel'}
+      {id:25,name:'Pikachu',price:150},{id:133,name:'Eevee',price:200},{id:52,name:'Meowth',price:120},{id:19,name:'Rattata',price:50},
+      {id:16,name:'Pidgey',price:60},{id:10,name:'Caterpie',price:40},{id:69,name:'Bellsprout',price:80},{id:43,name:'Oddish',price:90},
+      {id:23,name:'Ekans',price:110},{id:27,name:'Sandshrew',price:100},{id:37,name:'Vulpix',price:180},{id:63,name:'Abra',price:220},
+      {id:92,name:'Gastly',price:190},{id:129,name:'Magikarp',price:30},{id:74,name:'Geodude',price:85},{id:95,name:'Onix',price:300},
+      {id:66,name:'Machop',price:140},{id:50,name:'Diglett',price:70},{id:54,name:'Psyduck',price:130},{id:79,name:'Slowpoke',price:160},
+      {id:104,name:'Cubone',price:210},{id:111,name:'Rhyhorn',price:280},{id:116,name:'Horsea',price:170},{id:118,name:'Goldeen',price:90},
+      {id:120,name:'Staryu',price:200},{id:147,name:'Dratini',price:500},{id:172,name:'Pichu',price:250},{id:175,name:'Togepi',price:300},
+      {id:152,name:'Chikorita',price:180},{id:155,name:'Cyndaquil',price:180}
     ];
-
     const rare = [
-      {id:144,name:'Articuno',price:2800,type:'Ice'},
-      {id:145,name:'Zapdos',price:2800,type:'Electric'},
-      {id:146,name:'Moltres',price:2800,type:'Fire'},
-      {id:150,name:'Mewtwo',price:5500,type:'Psychic'},
-      {id:151,name:'Mew',price:8500,type:'Psychic'},
-      {id:243,name:'Raikou',price:3800,type:'Electric'},
-      {id:244,name:'Entei',price:3800,type:'Fire'},
-      {id:245,name:'Suicune',price:3800,type:'Water'},
-      {id:249,name:'Lugia',price:6500,type:'Psychic'},
-      {id:250,name:'Ho-Oh',price:6500,type:'Fire'},
-      {id:380,name:'Latias',price:4800,type:'Dragon'},
-      {id:381,name:'Latios',price:4800,type:'Dragon'},
-      {id:384,name:'Rayquaza',price:7500,type:'Dragon'},
-      {id:382,name:'Kyogre',price:6200,type:'Water'},
-      {id:483,name:'Dialga',price:6800,type:'Steel'},
-      {id:484,name:'Palkia',price:6800,type:'Water'},
-      {id:487,name:'Giratina',price:7000,type:'Ghost'},
-      {id:643,name:'Reshiram',price:6500,type:'Dragon'},
-      {id:644,name:'Zekrom',price:6500,type:'Dragon'},
-      {id:646,name:'Kyurem',price:6300,type:'Dragon'},
-      {id:716,name:'Xerneas',price:6000,type:'Fairy'},
-      {id:717,name:'Yveltal',price:6000,type:'Dark'},
-      {id:791,name:'Solgaleo',price:7200,type:'Psychic'},
-      {id:792,name:'Lunala',price:7200,type:'Ghost'},
-      {id:800,name:'Necrozma',price:7800,type:'Psychic'},
-      {id:888,name:'Zacian',price:7000,type:'Fairy'},
-      {id:889,name:'Zamazenta',price:7000,type:'Fighting'},
-      {id:893,name:'Zarude',price:5800,type:'Dark'},
-      {id:898,name:'Calyrex',price:6200,type:'Psychic'}
+      {id:144,name:'Articuno',price:2500},{id:145,name:'Zapdos',price:2500},{id:146,name:'Moltres',price:2500},{id:150,name:'Mewtwo',price:5000},
+      {id:151,name:'Mew',price:8000},{id:243,name:'Raikou',price:3500},{id:244,name:'Entei',price:3500},{id:245,name:'Suicune',price:3500},
+      {id:249,name:'Lugia',price:6000},{id:250,name:'Ho-Oh',price:6000},{id:380,name:'Latias',price:4500},{id:381,name:'Latios',price:4500},
+      {id:384,name:'Rayquaza',price:7000},{id:483,name:'Dialga',price:6500},{id:484,name:'Palkia',price:6500},{id:487,name:'Giratina',price:6800},
+      {id:643,name:'Reshiram',price:6200},{id:644,name:'Zekrom',price:6200},{id:646,name:'Kyurem',price:6000},{id:716,name:'Xerneas',price:5800},
+      {id:717,name:'Yveltal',price:5800},{id:789,name:'Cosmog',price:3000},{id:791,name:'Solgaleo',price:7000},{id:792,name:'Lunala',price:7000},
+      {id:800,name:'Necrozma',price:7500},{id:888,name:'Zacian',price:6800},{id:889,name:'Zamazenta',price:6800},{id:893,name:'Zarude',price:5500},
+      {id:898,name:'Calyrex',price:6000},{id:382,name:'Kyogre',price:5800}
     ];
 
     function getPokemonType(id) {
-      return common.find(p=>p.id===id)?.type || 
-             rare.find(p=>p.id===id)?.type || 
-             starters.find(p=>p.id===id)?.type || 'Normal';
+      const map = {1:'Grass',4:'Fire',7:'Water',25:'Electric',144:'Ice',145:'Electric',146:'Fire',150:'Psychic',151:'Psychic',92:'Ghost',63:'Psychic',95:'Rock',74:'Rock',50:'Ground',54:'Water',104:'Ground',111:'Ground',116:'Water',118:'Water',120:'Water',147:'Dragon',172:'Electric',175:'Fairy',152:'Grass',155:'Fire',243:'Electric',244:'Fire',245:'Water',249:'Psychic',250:'Fire',380:'Dragon',381:'Dragon',384:'Dragon',382:'Water',483:'Steel',484:'Water',487:'Ghost',643:'Dragon',644:'Dragon',646:'Dragon',716:'Fairy',717:'Dark',789:'Psychic',791:'Psychic',792:'Ghost',800:'Psychic',888:'Fairy',889:'Fighting',893:'Dark',898:'Psychic'};
+      return map[id] || 'Normal';
     }
 
-    function getPokemonHP(id) { 
-      return Math.min(180, 60 + Math.floor(id / 3) + (id > 150 ? 40 : 0) + (id > 700 ? 30 : 0));
-    }
+    function getPokemonHP(id) { return Math.floor(50 + (id % 50) + (id > 100 ? 50 : 0) + (id > 150 ? 30 : 0)); }
 
     function getRarity(type, price) {
-      if (type === 'starter') return { level: 'STARTER', stars: '<i class="fa-solid fa-seedling"></i>' };
+      if (type === 'starter') return { level: 'COMMON', stars: 'star' };
       if (type === 'token') {
-        if (price >= 7000) return { level: 'MYTHICAL', stars: '<i class="fa-solid fa-star"></i>'.repeat(5) };
-        if (price >= 5000) return { level: 'LEGENDARY', stars: '<i class="fa-solid fa-star"></i>'.repeat(4) };
-        if (price >= 3000) return { level: 'ULTRA', stars: '<i class="fa-solid fa-star"></i>'.repeat(3) };
-        return { level: 'RARE', stars: '<i class="fa-solid fa-star"></i>'.repeat(2) };
+        if (price >= 7000) return { level: 'LEGENDARY', stars: 'starstarstarstarstar' };
+        if (price >= 5000) return { level: 'ULTRA RARE', stars: 'starstarstarstar' };
+        if (price >= 3000) return { level: 'RARE', stars: 'starstarstar' };
+        return { level: 'UNCOMMON', stars: 'starstar' };
       }
-      if (price >= 350) return { level: 'UNCOMMON', stars: '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>' };
-      return { level: 'COMMON', stars: '<i class="fa-solid fa-star"></i>' };
+      if (price >= 400) return { level: 'UNCOMMON', stars: 'starstar' };
+      return { level: 'COMMON', stars: 'star' };
     }
 
     function getAttack(type) {
       const attacks = {
-        'Fire': { name: 'Flamethrower', cost: ['fire'], damage: 90 },
-        'Water': { name: 'Hydro Pump', cost: ['water','water'], damage: 110 },
-        'Grass': { name: 'Solar Beam', cost: ['leaf','leaf'], damage: 100 },
-        'Electric': { name: 'Thunderbolt', cost: ['lightning'], damage: 95 },
-        'Psychic': { name: 'Psychic', cost: ['crystal'], damage: 90 },
-        'Ice': { name: 'Ice Beam', cost: ['snowflake'], damage: 85 },
-        'Ghost': { name: 'Shadow Ball', cost: ['ghost'], damage: 80 },
-        'Dragon': { name: 'Outrage', cost: ['dragon','dragon'], damage: 120 },
-        'Fairy': { name: 'Moonblast', cost: ['sparkles'], damage: 95 },
-        'Fighting': { name: 'Close Combat', cost: ['fist','fist'], damage: 100 },
-        'Dark': { name: 'Crunch', cost: ['dark'], damage: 80 },
-        'Steel': { name: 'Meteor Mash', cost: ['steel'], damage: 90 },
-        'Normal': { name: 'Hyper Beam', cost: [], damage: 150 }
+        'Fire': { name: 'Flame Thrower', cost: ['fire'], damage: 80 },
+        'Water': { name: 'Hydro Pump', cost: ['water'], damage: 90 },
+        'Grass': { name: 'Solar Beam', cost: ['leaf'], damage: 70 },
+        'Electric': { name: 'Thunder', cost: ['lightning'], damage: 100 },
+        'Psychic': { name: 'Psybeam', cost: ['crystal'], damage: 85 },
+        'Ice': { name: 'Blizzard', cost: ['snowflake'], damage: 80 },
+        'Ghost': { name: 'Shadow Ball', cost: ['ghost'], damage: 75 },
+        'Dragon': { name: 'Dragon Pulse', cost: ['dragon'], damage: 120 },
+        'Fairy': { name: 'Moonblast', cost: ['sparkles'], damage: 90 },
+        'Rock': { name: 'Stone Edge', cost: ['rock'], damage: 85 },
+        'Ground': { name: 'Earthquake', cost: ['earth'], damage: 100 },
+        'Dark': { name: 'Dark Pulse', cost: ['dark'], damage: 80 },
+        'Fighting': { name: 'Close Combat', cost: ['fist'], damage: 90 },
+        'Normal': { name: 'Tackle', cost: [], damage: 50 }
       };
       return attacks[type] || attacks['Normal'];
     }
@@ -690,42 +652,26 @@
       const btnClass = type === 'token' ? 'token-btn' : 'coin-btn';
       const pokemonType = getPokemonType(poke.id);
       const hp = getPokemonHP(poke.id);
-      const priceIcon = type === 'token' ? '<i class="fa-solid fa-gem"></i>' : '<i class="fa-solid fa-coins"></i>';
+      const priceIcon = type === 'token' ? 'diamond' : 'coin';
       const rarity = getRarity(type, poke.price);
       const attack = getAttack(pokemonType);
 
-      // Icon mapping
-      const energyIcons = {
-        fire: '<i class="fa-solid fa-fire"></i>',
-        water: '<i class="fa-solid fa-droplet"></i>',
-        leaf: '<i class="fa-solid fa-leaf"></i>',
-        lightning: '<i class="fa-solid fa-bolt"></i>',
-        crystal: '<i class="fa-solid fa-gem"></i>',
-        snowflake: '<i class="fa-solid fa-snowflake"></i>',
-        ghost: '<i class="fa-solid fa-ghost"></i>',
-        dragon: '<i class="fa-solid fa-dragon"></i>',
-        sparkles: '<i class="fa-solid fa-sparkles"></i>',
-        fist: '<i class="fa-solid fa-hand-fist"></i>',
-        dark: '<i class="fa-solid fa-moon"></i>',
-        steel: '<i class="fa-solid fa-shield"></i>'
-      };
-
       card.innerHTML = `
-        ${has ? '<div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>' : ''}
+        ${has ? '<div class="owned-tag">Owned</div>' : ''}
         <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
-        <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
-        <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase() === 'normal' ? 'paw' : pokemonType.toLowerCase() === 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+        <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><span>HP</span><span class="hp-value">${hp}</span></div></div>
+        <div class="card-type">${pokemonType}</div>
         <div class="card-image-area"><img src="${img(poke.id)}" alt="${poke.name}" loading="lazy"></div>
         <div class="card-info">
           <div class="attack-section">
-            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]}</span>`).join('')}</div>
+            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${e}</span>`).join('')}</div>
             <div class="attack-name">${attack.name}</div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Deals</span><span class="attack-damage">${attack.damage}</span></div>
           </div>
           <div class="card-id">#${String(poke.id).padStart(3,'0')} | ${poke.name}</div>
           <div class="weakness-resistance">
-            <span><i class="fa-solid fa-bolt"></i> Weak: ${pokemonType === 'Fire' ? 'Water' : pokemonType === 'Water' ? 'Grass' : '???'}</span>
-            <span><i class="fa-solid fa-shield"></i> Res: ${pokemonType === 'Electric' ? 'Flying' : '???'}</span>
+            <span>Weakness: ${pokemonType==='Fire'?'water':pokemonType==='Water'?'lightning':'sword'}</span>
+            <span>Resistance: ${pokemonType==='Electric'?'leaf':pokemonType==='Grass'?'fire':'shield'}</span>
           </div>
           <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
           <button class="${btnClass}" ${has?'disabled':''}
@@ -734,13 +680,12 @@
                       `buyCommon(${poke.id},'${poke.name}',${poke.price})`}">
             ${btnText}
           </button>
-          <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+          <div class="set-symbol">PK</div>
         </div>
       `;
       return card;
     }
 
-    // Load functions unchanged
     function loadStarters() {
       const grid = document.getElementById('starterGrid'); grid.innerHTML = '';
       starters.forEach(p => {
@@ -777,22 +722,21 @@
         const attack = getAttack(pokemonType);
         const card = document.createElement('div');
         card.className = 'card has-owned';
-        const energyIcons = { /* same as above */ };
         card.innerHTML = `
-          <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
-          <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
-          <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
-          <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+          <div class="owned-tag">Owned</div>
+          <div class="rarity-badge"><span class="rarity-star">star</span><span>COLLECTION</span></div>
+          <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><span>HP</span><span class="hp-value">${hp}</span></div></div>
+          <div class="card-type">${pokemonType}</div>
           <div class="card-image-area"><img src="${img(p.id)}" alt="${p.name}" loading="lazy"></div>
           <div class="card-info">
             <div class="attack-section">
-              <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e] || ''}</span>`).join('')}</div>
+              <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${e}</span>`).join('')}</div>
               <div class="attack-name">${attack.name}</div>
-              <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Deals</span><span class="attack-damage">${attack.damage}</span></div>
             </div>
             <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
-            <button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')"><i class="fa-solid fa-dollar-sign"></i> Sell</button>
-            <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+            <button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')">Sell</button>
+            <div class="set-symbol">PK</div>
           </div>
         `;
         grid.appendChild(card);
@@ -801,7 +745,6 @@
 
     function loadAll() { loadStarters(); loadCommon(); loadRare(); loadOwned(); }
 
-    // Action functions unchanged
     window.claimStarter = (id, name) => {
       if (claimedStarters.length >= 3) return showError('Max 3 starters allowed');
       if (claimedStarters.includes(id)) return showError('Already claimed');
