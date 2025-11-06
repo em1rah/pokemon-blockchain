@@ -797,8 +797,8 @@
           </div>
           <div class="card-id">#${String(poke.id).padStart(3,'0')} | ${poke.name}</div>
           <div class="weakness-resistance">
-            <span><i class="fa-solid fa-bolt"></i> Weak: ${pokemonType === 'Fire' ? 'Water' : pokemonType === 'Water' ? 'Grass' : '???'}</span>
-            <span><i class="fa-solid fa-shield"></i> Res: ${pokemonType === 'Electric' ? 'Flying' : '???'}</span>
+            <span><i class="fa-solid fa-bolt"></i> Weakness: ${pokemonType === 'Fire' ? 'Water' : pokemonType === 'Water' ? 'Grass' : '???'}</span>
+            <span><i class="fa-solid fa-shield"></i> Resistance: ${pokemonType === 'Electric' ? 'Flying' : '???'}</span>
           </div>
           <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
           <button class="${btnClass}" ${has?'disabled':''}
