@@ -58,6 +58,52 @@
 
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
 
+    .card {
+  position: relative;
+  overflow: hidden; /* Critical: contains ::before shimmer */
+  border: 2px solid rgba(255, 203, 5, 0.3);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(20, 20, 40, 0.8) 0%, rgba(10, 10, 30, 0.9) 100%);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 203, 5, 0.1) 40%,
+    rgba(74, 144, 226, 0.15) 50%,
+    rgba(255, 203, 5, 0.1) 60%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 1;
+  animation: none; /* We'll trigger animation on hover */
+}
+
+.card:hover::before {
+  opacity: 1;
+  animation: shimmer 2.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
     .card::before{
       content:'';
       position:absolute;
@@ -343,7 +389,7 @@
     .card button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 8px 16px rgba(0,0,0,0.6), inset 0 1px 3px rgba(255,255,255,0.3);}
     .card button:active:not(:disabled){transform:translateY(-1px);}
 
-    .owned-tag{
+    /* .owned-tag{
       position:absolute;
       top:8px;
       left:8px;
@@ -365,7 +411,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-    }
+    } */
 
     .starter-card{border-color:#4caf50 !important;background:linear-gradient(135deg, #1a3e1a 0%, #1e4a1e 50%, #162816 100%);}
     .starter-card::before{background:linear-gradient(45deg, transparent 30%, rgba(76,175,80,0.2) 40%, rgba(139,195,74,0.25) 50%, rgba(76,175,80,0.2) 60%, transparent 70%);}
@@ -395,6 +441,33 @@
       text-overflow:ellipsis;
       white-space:nowrap;
     }
+        /* Error Message Style */
+    .card-error {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid #f44336;
+      border-radius: 8px;
+      color: #ff8a80;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.3s ease;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .card-error i {
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     @media(max-width:1200px){.grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}}
     @media(max-width:768px){.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}.card{aspect-ratio:2.5/3.5;}.card img{max-width:140px;max-height:140px;}.card-header{padding:38px 10px 8px;}.card-name{font-size:0.6rem;}.hp-value{font-size:0.75rem;padding:3px 8px;}.card-type{font-size:0.6rem;padding:5px 8px;max-width:70px;}.rarity-badge{font-size:0.55rem;padding:4px 6px;}.attack-section{padding:6px;}.attack-name{font-size:0.7rem;}.card-info{padding:10px 12px 45px;}.set-symbol{width:24px;height:24px;font-size:0.9rem;bottom:8px;right:8px;}}
@@ -405,10 +478,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pokémon Shop</h1></div>
     <div class="menu">
-      <a href="home.html">Home</a>
-      <a href="arena.html">Arena</a>
-      <a href="shop.html">Shop</a>
-      <a href="settings.html">Settings</a>
+        <a href="home.html">🏠 Home</a>
+      <a href="arena.html">⚔ Arena</a>
+      <a href="shop.html">🛒 Shop</a>
+      <a href="settings.html">⚙ Settings</a>
     </div>
     <div class="status">
       <span class="coins" id="coinDisplay">500 Coins</span>
