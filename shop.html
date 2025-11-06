@@ -784,7 +784,7 @@
       };
 
       card.innerHTML = `
-        ${has ? '<div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>' : ''}
+        ${has ? '<div class="owned-tag"><i class="fa-solid fa-check"></i></div>' : ''}
         <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
         <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
         <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase() === 'normal' ? 'paw' : pokemonType.toLowerCase() === 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
