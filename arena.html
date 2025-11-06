@@ -1020,13 +1020,24 @@
       await new Promise(r=>setTimeout(r, 600));
     }
 
+    // function loadPlayer(){
+    //   const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
+    //   player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
+    //   playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+    //   playerName.textContent = p.name;
+    //   updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+    // }
     function loadPlayer(){
-      const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
-      player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
-      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
-      playerName.textContent = p.name;
-      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-    }
+   const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
+   player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
+   playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+   
+   // Flip the sprite horizontally
+   playerSprite.style.transform = 'scaleX(-1)';
+   
+   playerName.textContent = p.name;
+   updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+}
 
     function loadOpponent(o){
       opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${o.id}.gif`;
