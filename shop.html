@@ -17,9 +17,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ──────────────────────────────────────
-       ALL YOUR ORIGINAL CSS (unchanged + minor tweaks)
-       ────────────────────────────────────── */
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       min-height:100vh;
@@ -409,12 +406,9 @@
     @media(max-width:768px){.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}.card{aspect-ratio:2.5/3.5;}.card img{max-width:140px;max-height:140px;}.card-header{padding:38px 10px 8px;}.card-name{font-size:0.6rem;}.hp-value{font-size:0.75rem;padding:3px 8px;}.card-type{font-size:0.6rem;padding:5px 8px;max-width:70px;}.rarity-badge{font-size:0.55rem;padding:4px 6px;}.attack-section{padding:6px;}.attack-name{font-size:0.7rem;}.card-info{padding:10px 12px 45px;}.set-symbol{width:24px;height:24px;font-size:0.9rem;bottom:8px;right:8px;}}
     @media(max-width:480px){.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.8rem;}.card-header{min-height:55px;padding:35px 8px 6px;}.card-image-area{min-height:140px;max-height:160px;padding:10px;}.card img{max-width:120px;max-height:120px;}.weakness-resistance{font-size:0.6rem;gap:6px;}.weakness-resistance span{min-width:100%;}.card button{font-size:0.85rem;padding:12px;}}
 
-    /* ────────────────────────
-       NEW: GIF-on-hover styles
-       ──────────────────────── */
     .pokemon-img {
       transition: opacity 0.3s ease !important;
-      image-rendering: pixelated;   /* keeps retro GIF look */
+      image-rendering: pixelated;
     }
   </style>
 </head>
@@ -422,10 +416,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pokémon Shop</h1></div>
     <div class="menu">
-        <a href="home.html">Home</a>
-      <a href="arena.html">Arena</a>
-      <a href="shop.html">Shop</a>
-      <a href="settings.html">Settings</a>
+        <a href="home.html">🏠 Home</a>
+      <a href="arena.html">⚔ Arena</a>
+      <a href="shop.html">🛒 Shop</a>
+      <a href="settings.html">⚙ Settings</a>
     </div>
     <div class="status">
       <span class="coins" id="coinDisplay">500 Coins</span>
@@ -571,17 +565,22 @@
 
     function getNameFromId(id) {
       const map = {
-        1:'Bulbasaur',4:'Charmander',7:'Squirtle',25:'Pikachu',133:'Eevee',
+        // Starters
+        1:'Bulbasaur',4:'Charmander',7:'Squirtle',
+        // New Commons
+        10:'Caterpie',13:'Weedle',16:'Pidgey',19:'Rattata',21:'Spearow',
+        23:'Ekans',27:'Sandshrew',29:'Nidoran♀',32:'Nidoran♂',35:'Clefairy',
+        37:'Vulpix',39:'Jigglypuff',41:'Zubat',43:'Oddish',46:'Paras',
+        48:'Venonat',50:'Diglett',52:'Meowth',54:'Psyduck',56:'Mankey',
+        58:'Growlithe',60:'Poliwag',63:'Abra',66:'Machop',69:'Bellsprout',
+        72:'Tentacool',74:'Geodude',77:'Ponyta',79:'Slowpoke',81:'Magnemite',
+        // New Rares
         144:'Articuno',145:'Zapdos',146:'Moltres',150:'Mewtwo',151:'Mew',
         243:'Raikou',244:'Entei',245:'Suicune',249:'Lugia',250:'Ho-Oh',
-        380:'Latias',381:'Latios',384:'Rayquaza',382:'Kyogre',483:'Dialga',
-        484:'Palkia',487:'Giratina',643:'Reshiram',644:'Zekrom',646:'Kyurem',
-        716:'Xerneas',717:'Yveltal',789:'Cosmog',791:'Solgaleo',792:'Lunala',
-        800:'Necrozma',888:'Zacian',889:'Zamazenta',893:'Zarude',898:'Calyrex',
-        94:'Gengar',68:'Machamp',130:'Gyarados',149:'Dragonite',157:'Typhlosion',
-        160:'Feraligatr',197:'Umbreon',229:'Houndoom',254:'Sceptile',257:'Blaziken',
-        260:'Swampert',282:'Gardevoir',306:'Aggron',376:'Metagross',445:'Garchomp',
-        448:'Lucario',475:'Gallade',609:'Chandelure',635:'Hydreigon',706:'Goodra'
+        377:'Regirock',378:'Regice',379:'Registeel',380:'Latias',381:'Latios',
+        382:'Kyogre',383:'Groudon',384:'Rayquaza',385:'Jirachi',386:'Deoxys',
+        480:'Uxie',481:'Mesprit',482:'Azelf',483:'Dialga',484:'Palkia',
+        485:'Heatran',486:'Regigigas',487:'Giratina',488:'Cresselia',491:'Darkrai'
       };
       return map[id] || `Poke #${id}`;
     }
@@ -589,7 +588,7 @@
     function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
 
     // ──────────────────────────────
-    // NEW POKÉMON SETS WITH ICONS
+    // NEW 30 COMMON + 30 RARE POKÉMON
     // ──────────────────────────────
     const starters = [
       {id:1,name:'Bulbasaur', type:'Grass'},
@@ -598,54 +597,69 @@
     ];
 
     const common = [
-      {id:25,name:'Pikachu',price:180,type:'Electric'},
-      {id:133,name:'Eevee',price:250,type:'Normal'},
-      {id:94,name:'Gengar',price:320,type:'Ghost'},
-      {id:68,name:'Machamp',price:280,type:'Fighting'},
-      {id:130,name:'Gyarados',price:350,type:'Water'},
-      {id:149,name:'Dragonite',price:500,type:'Dragon'},
-      {id:157,name:'Typhlosion',price:300,type:'Fire'},
-      {id:160,name:'Feraligatr',price:310,type:'Water'},
-      {id:197,name:'Umbreon',price:290,type:'Dark'},
-      {id:229,name:'Houndoom',price:270,type:'Dark'},
-      {id:254,name:'Sceptile',price:330,type:'Grass'},
-      {id:257,name:'Blaziken',price:340,type:'Fire'},
-      {id:260,name:'Swampert',price:320,type:'Water'},
-      {id:282,name:'Gardevoir',price:380,type:'Psychic'},
-      {id:306,name:'Aggron',price:300,type:'Steel'},
-      {id:376,name:'Metagross',price:420,type:'Steel'}
+      {id:10,name:'Caterpie',price:120,type:'Bug'},
+      {id:13,name:'Weedle',price:120,type:'Bug'},
+      {id:16,name:'Pidgey',price:140,type:'Normal'},
+      {id:19,name:'Rattata',price:130,type:'Normal'},
+      {id:21,name:'Spearow',price:150,type:'Normal'},
+      {id:23,name:'Ekans',price:160,type:'Poison'},
+      {id:27,name:'Sandshrew',price:170,type:'Ground'},
+      {id:29,name:'Nidoran♀',price:180,type:'Poison'},
+      {id:32,name:'Nidoran♂',price:180,type:'Poison'},
+      {id:35,name:'Clefairy',price:280,type:'Fairy'},
+      {id:37,name:'Vulpix',price:220,type:'Fire'},
+      {id:39,name:'Jigglypuff',price:240,type:'Normal'},
+      {id:41,name:'Zubat',price:150,type:'Poison'},
+      {id:43,name:'Oddish',price:170,type:'Grass'},
+      {id:46,name:'Paras',price:160,type:'Bug'},
+      {id:48,name:'Venonat',price:180,type:'Bug'},
+      {id:50,name:'Diglett',price:160,type:'Ground'},
+      {id:52,name:'Meowth',price:210,type:'Normal'},
+      {id:54,name:'Psyduck',price:200,type:'Water'},
+      {id:56,name:'Mankey',price:190,type:'Fighting'},
+      {id:58,name:'Growlithe',price:230,type:'Fire'},
+      {id:60,name:'Poliwag',price:170,type:'Water'},
+      {id:63,name:'Abra',price:290,type:'Psychic'},
+      {id:66,name:'Machop',price:200,type:'Fighting'},
+      {id:69,name:'Bellsprout',price:170,type:'Grass'},
+      {id:72,name:'Tentacool',price:190,type:'Water'},
+      {id:74,name:'Geodude',price:180,type:'Rock'},
+      {id:77,name:'Ponyta',price:240,type:'Fire'},
+      {id:79,name:'Slowpoke',price:210,type:'Water'},
+      {id:81,name:'Magnemite',price:220,type:'Electric'}
     ];
 
     const rare = [
-      {id:144,name:'Articuno',price:2800,type:'Ice'},
-      {id:145,name:'Zapdos',price:2800,type:'Electric'},
-      {id:146,name:'Moltres',price:2800,type:'Fire'},
-      {id:150,name:'Mewtwo',price:5500,type:'Psychic'},
-      {id:151,name:'Mew',price:8500,type:'Psychic'},
-      {id:243,name:'Raikou',price:3800,type:'Electric'},
-      {id:244,name:'Entei',price:3800,type:'Fire'},
-      {id:245,name:'Suicune',price:3800,type:'Water'},
-      {id:249,name:'Lugia',price:6500,type:'Psychic'},
-      {id:250,name:'Ho-Oh',price:6500,type:'Fire'},
-      {id:380,name:'Latias',price:4800,type:'Dragon'},
-      {id:381,name:'Latios',price:4800,type:'Dragon'},
-      {id:384,name:'Rayquaza',price:7500,type:'Dragon'},
-      {id:382,name:'Kyogre',price:6200,type:'Water'},
-      {id:483,name:'Dialga',price:6800,type:'Steel'},
-      {id:484,name:'Palkia',price:6800,type:'Water'},
-      {id:487,name:'Giratina',price:7000,type:'Ghost'},
-      {id:643,name:'Reshiram',price:6500,type:'Dragon'},
-      {id:644,name:'Zekrom',price:6500,type:'Dragon'},
-      {id:646,name:'Kyurem',price:6300,type:'Dragon'},
-      {id:716,name:'Xerneas',price:6000,type:'Fairy'},
-      {id:717,name:'Yveltal',price:6000,type:'Dark'},
-      {id:791,name:'Solgaleo',price:7200,type:'Psychic'},
-      {id:792,name:'Lunala',price:7200,type:'Ghost'},
-      {id:800,name:'Necrozma',price:7800,type:'Psychic'},
-      {id:888,name:'Zacian',price:7000,type:'Fairy'},
-      {id:889,name:'Zamazenta',price:7000,type:'Fighting'},
-      {id:893,name:'Zarude',price:5800,type:'Dark'},
-      {id:898,name:'Calyrex',price:6200,type:'Psychic'}
+      {id:144,name:'Articuno',price:3200,type:'Ice'},
+      {id:145,name:'Zapdos',price:3200,type:'Electric'},
+      {id:146,name:'Moltres',price:3200,type:'Fire'},
+      {id:150,name:'Mewtwo',price:6800,type:'Psychic'},
+      {id:151,name:'Mew',price:9200,type:'Psychic'},
+      {id:243,name:'Raikou',price:4200,type:'Electric'},
+      {id:244,name:'Entei',price:4200,type:'Fire'},
+      {id:245,name:'Suicune',price:4200,type:'Water'},
+      {id:249,name:'Lugia',price:7200,type:'Psychic'},
+      {id:250,name:'Ho-Oh',price:7200,type:'Fire'},
+      {id:377,name:'Regirock',price:4800,type:'Rock'},
+      {id:378,name:'Regice',price:4800,type:'Ice'},
+      {id:379,name:'Registeel',price:4800,type:'Steel'},
+      {id:380,name:'Latias',price:5200,type:'Dragon'},
+      {id:381,name:'Latios',price:5200,type:'Dragon'},
+      {id:382,name:'Kyogre',price:6800,type:'Water'},
+      {id:383,name:'Groudon',price:6800,type:'Ground'},
+      {id:384,name:'Rayquaza',price:8200,type:'Dragon'},
+      {id:385,name:'Jirachi',price:5800,type:'Steel'},
+      {id:386,name:'Deoxys',price:7000,type:'Psychic'},
+      {id:480,name:'Uxie',price:4600,type:'Psychic'},
+      {id:481,name:'Mesprit',price:4600,type:'Psychic'},
+      {id:482,name:'Azelf',price:4600,type:'Psychic'},
+      {id:483,name:'Dialga',price:7200,type:'Steel'},
+      {id:484,name:'Palkia',price:7200,type:'Water'},
+      {id:485,name:'Heatran',price:5800,type:'Fire'},
+      {id:486,name:'Regigigas',price:6800,type:'Normal'},
+      {id:487,name:'Giratina',price:7500,type:'Ghost'},
+      {id:488,name:'Cresselia',price:5200,type:'Psychic'},
+      {id:491,name:'Darkrai',price:6800,type:'Dark'}
     ];
 
     function getPokemonType(id) {
@@ -655,7 +669,7 @@
     }
 
     function getPokemonHP(id) {
-      return Math.min(180, 60 + Math.floor(id / 3) + (id > 150 ? 40 : 0) + (id > 700 ? 30 : 0));
+      return Math.min(200, 50 + Math.floor(id / 2.5) + (id > 150 ? 50 : 0) + (id > 700 ? 40 : 0));
     }
 
     function getRarity(type, price) {
@@ -666,25 +680,29 @@
         if (price >= 3000) return { level: 'ULTRA', stars: '<i class="fa-solid fa-star"></i>'.repeat(3) };
         return { level: 'RARE', stars: '<i class="fa-solid fa-star"></i>'.repeat(2) };
       }
-      if (price >= 350) return { level: 'UNCOMMON', stars: '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>' };
+      if (price >= 250) return { level: 'UNCOMMON', stars: '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>' };
       return { level: 'COMMON', stars: '<i class="fa-solid fa-star"></i>' };
     }
 
     function getAttack(type) {
       const attacks = {
-        'Fire': { name: 'Flamethrower', cost: ['fire'], damage: 90 },
-        'Water': { name: 'Hydro Pump', cost: ['water','water'], damage: 110 },
-        'Grass': { name: 'Solar Beam', cost: ['leaf','leaf'], damage: 100 },
-        'Electric': { name: 'Thunderbolt', cost: ['lightning'], damage: 95 },
-        'Psychic': { name: 'Psychic', cost: ['crystal'], damage: 90 },
-        'Ice': { name: 'Ice Beam', cost: ['snowflake'], damage: 85 },
-        'Ghost': { name: 'Shadow Ball', cost: ['ghost'], damage: 80 },
-        'Dragon': { name: 'Outrage', cost: ['dragon','dragon'], damage: 120 },
-        'Fairy': { name: 'Moonblast', cost: ['sparkles'], damage: 95 },
-        'Fighting': { name: 'Close Combat', cost: ['fist','fist'], damage: 100 },
-        'Dark': { name: 'Crunch', cost: ['dark'], damage: 80 },
-        'Steel': { name: 'Meteor Mash', cost: ['steel'], damage: 90 },
-        'Normal': { name: 'Hyper Beam', cost: [], damage: 150 }
+        'Bug': { name: 'Bug Bite', cost: ['leaf'], damage: 60 },
+        'Normal': { name: 'Tackle', cost: [], damage: 40 },
+        'Poison': { name: 'Poison Sting', cost: ['ghost'], damage: 50 },
+        'Ground': { name: 'Earthquake', cost: ['steel','steel'], damage: 100 },
+        'Fairy': { name: 'Dazzling Gleam', cost: ['sparkles','sparkles'], damage: 80 },
+        'Fire': { name: 'Ember', cost: ['fire'], damage: 70 },
+        'Water': { name: 'Water Gun', cost: ['water'], damage: 60 },
+        'Grass': { name: 'Vine Whip', cost: ['leaf'], damage: 65 },
+        'Electric': { name: 'Thunder Shock', cost: ['lightning'], damage: 70 },
+        'Psychic': { name: 'Confusion', cost: ['crystal'], damage: 75 },
+        'Ice': { name: 'Ice Shard', cost: ['snowflake'], damage: 70 },
+        'Fighting': { name: 'Karate Chop', cost: ['fist'], damage: 70 },
+        'Rock': { name: 'Rock Throw', cost: ['steel'], damage: 65 },
+        'Ghost': { name: 'Lick', cost: ['ghost'], damage: 60 },
+        'Dragon': { name: 'Dragon Rage', cost: ['dragon'], damage: 90 },
+        'Dark': { name: 'Bite', cost: ['dark'], damage: 70 },
+        'Steel': { name: 'Metal Claw', cost: ['steel'], damage: 75 }
       };
       return attacks[type] || attacks['Normal'];
     }
@@ -692,7 +710,7 @@
     function getPurchaseDetails(id) {
       const s = starters.find(x=>x.id===id); if(s) return {price:0,currency:'free'};
       const c = common.find(x=>x.id===id); if(c) return {price:c.price,currency:'coins'};
-      const r = rare.find(x=>x.id===id); if(r) return {price:r.price,currency:'inut'};
+      const r = rare.find(x=>x.id===id); if(r) return {price:r.price,currency:'token'};
       return null;
     }
 
@@ -711,7 +729,6 @@
       const rarity = getRarity(type, poke.price);
       const attack = getAttack(pokemonType);
 
-      // Icon mapping
       const energyIcons = {
         fire: '<i class="fa-solid fa-fire"></i>',
         water: '<i class="fa-solid fa-droplet"></i>',
@@ -727,7 +744,6 @@
         steel: '<i class="fa-solid fa-shield"></i>'
       };
 
-      // ---- NEW: image with data-gif attribute ----
       const staticImg = img(poke.id);
       const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${poke.id}.gif`;
 
@@ -753,8 +769,8 @@
           </div>
           <div class="card-id">#${String(poke.id).padStart(3,'0')} | ${poke.name}</div>
           <div class="weakness-resistance">
-            <span><i class="fa-solid fa-bolt"></i> Weakness: ${pokemonType === 'Fire' ? 'Water' : pokemonType === 'Water' ? 'Grass' : '???'}</span>
-            <span><i class="fa-solid fa-shield"></i> Resistance: ${pokemonType === 'Electric' ? 'Flying' : '???'}</span>
+            <span><i class="fa-solid fa-bolt"></i> Weak: ${pokemonType === 'Grass' ? 'Fire' : '???'}</span>
+            <span><i class="fa-solid fa-shield"></i> Resist: ${pokemonType === 'Steel' ? 'Normal' : '???'}</span>
           </div>
           <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
           <button class="${btnClass}" ${has?'disabled':''}
@@ -769,7 +785,6 @@
       return card;
     }
 
-    // Load functions unchanged
     function loadStarters() {
       const grid = document.getElementById('starterGrid'); grid.innerHTML = '';
       starters.forEach(p => {
@@ -800,20 +815,34 @@
         grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
         return;
       }
+      const energyIcons = {
+        fire: '<i class="fa-solid fa-fire"></i>',
+        water: '<i class="fa-solid fa-droplet"></i>',
+        leaf: '<i class="fa-solid fa-leaf"></i>',
+        lightning: '<i class="fa-solid fa-bolt"></i>',
+        crystal: '<i class="fa-solid fa-gem"></i>',
+        snowflake: '<i class="fa-solid fa-snowflake"></i>',
+        ghost: '<i class="fa-solid fa-ghost"></i>',
+        dragon: '<i class="fa-solid fa-dragon"></i>',
+        sparkles: '<i class="fa-solid fa-sparkles"></i>',
+        fist: '<i class="fa-solid fa-hand-fist"></i>',
+        dark: '<i class="fa-solid fa-moon"></i>',
+        steel: '<i class="fa-solid fa-shield"></i>'
+      };
+
       ownedLocal.forEach(p => {
         const pokemonType = getPokemonType(p.id);
         const hp = getPokemonHP(p.id);
         const attack = getAttack(pokemonType);
         const card = document.createElement('div');
         card.className = 'card has-owned';
-        const energyIcons = { /* same as above */ };
         const staticImg = img(p.id);
         const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
 
         card.innerHTML = `
           <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
           <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
-          <div class="card-header"><div class="card-name">${p.name}</,myGrid></div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
+          <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
           <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
           <div class="card-image-area">
             <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
@@ -835,7 +864,6 @@
 
     function loadAll() { loadStarters(); loadCommon(); loadRare(); loadOwned(); }
 
-    // Action functions unchanged
     window.claimStarter = (id, name) => {
       if (claimedStarters.length >= 3) return showError('Max 3 starters allowed');
       if (claimedStarters.includes(id)) return showError('Already claimed');
@@ -888,7 +916,7 @@
       const details = getPurchaseDetails(id);
       if (!details) return showError('Unknown Pokémon');
 
-      if (details.currency !== 'tokens') {
+      if (details.currency !== 'token') {
         const sellPrice = details.currency === 'free' ? 100 : Math.floor(details.price * 0.5);
         coins += sellPrice;
         ownedLocal = ownedLocal.filter(o=>o.id!==id);
@@ -926,21 +954,14 @@
       }
     });
 
-    /* ─────────────────────────────────────
-       NEW: GIF-on-hover logic (runs once)
-       ───────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', () => {
-      // Use event delegation for performance
       document.body.addEventListener('mouseenter', e => {
         const card = e.target.closest('.card');
         if (!card) return;
         const img = card.querySelector('.pokemon-img');
         if (!img) return;
 
-        const staticSrc = img.src;
         const gifSrc = img.dataset.gif;
-
-        // Preload GIF only once per image
         if (!img.dataset.preloaded) {
           const pre = new Image();
           pre.src = gifSrc;
@@ -960,15 +981,13 @@
         const card = e.target.closest('.card');
         if (!card) return;
         const img = card.querySelector('.pokemon-img');
-        if (!img) return;
+        if (!img || !img.dataset.originalSrc) return;
 
-        const staticSrc = img.dataset.static || img.dataset.originalSrc || img.src.split('?')[0]; // fallback
-        if (!img.dataset.originalSrc) img.dataset.originalSrc = img.src; // remember first src
-
-        if (img.src !== img.dataset.originalSrc) {
+        const staticSrc = img.dataset.originalSrc;
+        if (img.src !== staticSrc) {
           img.style.opacity = 0;
           setTimeout(() => {
-            img.src = img.dataset.originalSrc;
+            img.src = staticSrc;
             img.style.opacity = 1;
           }, 150);
         }
