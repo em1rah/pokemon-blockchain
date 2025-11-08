@@ -29,7 +29,7 @@
     }
     body > header, body > .container{position:relative;z-index:1;}
 
-    /* Sidebar - Unified with shop.html */
+    /* Sidebar */
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
     .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
     .sidebar .brand h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;margin:0;text-shadow:2px 2px 0 #000}
@@ -75,7 +75,7 @@
       text-shadow: 2px 2px 0 #000;
     }
 
-    /* POKÉMON CAROUSEL - MOBILE CARD STYLE */
+    /* POKÉMON CAROUSEL */
     .pokemon-carousel-container {
       position: relative;
       margin: 20px 0;
@@ -446,7 +446,62 @@
       transform:scale(1.1);
     }
 
-    /* NEW: center start button in step 3 */
+    /* ATTACK ANIMATION SYSTEM */
+    .attack-effect {
+      position: absolute;
+      pointer-events: none;
+      z-index: 100;
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, #ff9800 10%, #ff5722 40%, #f44336 70%, transparent 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 30px #ff5722, 0 0 60px #ff9800;
+      opacity: 0;
+      transform: scale(0.3);
+    }
+
+    .attack-trail {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #ffeb3b, 0 0 30px #ff9800;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .impact-flash {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, #ffffff 10%, #ffeb3b 40%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 101;
+      opacity: 0;
+      transform: scale(0);
+      animation: impactFlash 0.4s ease-out forwards;
+    }
+
+    @keyframes impactFlash {
+      0% { opacity: 0; transform: scale(0.2); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0; transform: scale(1.8); }
+    }
+
+    .screen-shake {
+      animation: screenShake 0.5s ease-in-out;
+    }
+
+    @keyframes screenShake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+      20%, 40%, 60%, 80% { transform: translateX(8px); }
+    }
+
+    /* Center start button */
     #slide-start .wizard-actions { display:flex; justify-content:center; }
   </style>
 </head>
@@ -454,10 +509,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pokémon Arena</h1></div>
     <div class="menu">
-  <a href="home.html">🏠 Home</a>
-      <a href="arena.html">⚔ Arena</a>
-      <a href="shop.html">🛒 Shop</a>
-      <a href="settings.html">⚙ Settings</a>
+      <a href="home.html">Home</a>
+      <a href="arena.html">Arena</a>
+      <a href="shop.html">Shop</a>
+      <a href="settings.html">Settings</a>
     </div>
     <div class="status">
       <span class="coins" id="coinDisplay">0 Coins</span>
@@ -519,7 +574,7 @@
     <!-- BATTLE ARENA -->
     <div class="arena-layout" id="battleArena" style="display:none;">
       <div class="main-col">
-        <div class="battlefield">
+        <div class="battlefield" id="battlefield">
           <div class="pokemon" id="playerPokemon">
             <div class="name" id="playerName">Pikachu</div>
             <img id="playerSprite" src="" alt="You">
@@ -567,7 +622,7 @@
 
   <script>
     /* ==============================================================
-       FULL TOURNAMENT WIZARD + BATTLE ENGINE (updated)
+       FULL TOURNAMENT WIZARD + BATTLE ENGINE + HP FIX + ATTACK FX
        ============================================================== */
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
@@ -599,6 +654,7 @@
     // UI Elements
     const wizard = document.getElementById('setupWizard');
     const battleArena = document.getElementById('battleArena');
+    const battlefield = document.getElementById('battlefield');
     const carousel = document.getElementById('pokemonCarousel');
     const prevBtn = document.getElementById('prevPokemon');
     const nextBtn = document.getElementById('nextPokemon');
@@ -618,7 +674,7 @@
     let opponents = [];               
     let pokemonDetails = [];
 
-    // Sound System (unchanged)
+    // Sound System
     let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
     let soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
     let currentMusic = null;
@@ -728,9 +784,68 @@
     soundBtn.onclick = () => { soundsEnabled = !soundsEnabled; localStorage.setItem('soundsEnabled', soundsEnabled); updateIcons(); };
     updateIcons();
 
-    // --------------------------------------------------------------
-    // 1. Load owned Pokémon into carousel (now mobile card style)
-    // --------------------------------------------------------------
+    // ATTACK ANIMATION
+    function createAttackEffect(fromEl, toEl, color = '#ff5722', size = 60, duration = 500) {
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+      const battlefieldRect = battlefield.getBoundingClientRect();
+
+      const startX = fromRect.left + fromRect.width / 2 - battlefieldRect.left;
+      const startY = fromRect.top + fromRect.height / 2 - battlefieldRect.top;
+      const endX = toRect.left + toRect.width / 2 - battlefieldRect.left;
+      const endY = toRect.top + toRect.height / 2 - battlefieldRect.top;
+
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+      const fireball = document.createElement('div');
+      fireball.className = 'attack-effect';
+      fireball.style.left = startX + 'px';
+      fireball.style.top = startY + 'px';
+      fireball.style.width = size + 'px';
+      fireball.style.height = size + 'px';
+      fireball.style.background = `radial-gradient(circle, ${color} 10%, #ff9800 40%, #f44336 70%, transparent 100%)`;
+      battlefield.appendChild(fireball);
+
+      for (let i = 0; i < 6; i++) {
+        const trail = document.createElement('div');
+        trail.className = 'attack-trail';
+        const delay = i * 50;
+        setTimeout(() => {
+          trail.style.left = (startX + dx * (i / 6)) + 'px';
+          trail.style.top = (startY + dy * (i / 6)) + 'px';
+          trail.style.opacity = '1';
+          trail.style.transform = 'scale(1)';
+          battlefield.appendChild(trail);
+          setTimeout(() => trail.remove(), 400);
+        }, delay);
+      }
+
+      fireball.style.transition = `all ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1)`;
+      setTimeout(() => {
+        fireball.style.opacity = '1';
+        fireball.style.transform = `translate(${dx}px, ${dy}px) scale(1.5) rotate(${angle}deg)`;
+      }, 10);
+
+      setTimeout(() => {
+        const impact = document.createElement('div');
+        impact.className = 'impact-flash';
+        impact.style.left = (endX - 60) + 'px';
+        impact.style.top = (endY - 60) + 'px';
+        battlefield.appendChild(impact);
+        setTimeout(() => impact.remove(), 400);
+        fireball.remove();
+      }, duration);
+
+      if (size > 50) {
+        battlefield.classList.add('screen-shake');
+        setTimeout(() => battlefield.classList.remove('screen-shake'), 500);
+      }
+    }
+
+    // Load carousel
     async function loadPokemonCarousel() {
       carousel.innerHTML = '';
       pokemonDetails = [];
@@ -759,7 +874,6 @@
         const card = document.createElement('div');
         card.className = 'carousel-card';
 
-        // Determine dominant type for header gradient
         const primaryType = types[0];
         const headerClass = primaryType === 'water' ? 'squirtle' : 
                            primaryType === 'fire' ? 'charmander' : 
@@ -828,9 +942,6 @@
       document.getElementById(id).classList.add('active');
     }
 
-    // --------------------------------------------------------------
-    // 2. Opponent slider + preview (unchanged)
-    // --------------------------------------------------------------
     opponentSlider.oninput = () => {
       const n = parseInt(opponentSlider.value);
       sliderValue.textContent = n;
@@ -875,10 +986,6 @@
       playSound('confirm');
     };
 
-    // --------------------------------------------------------------
-    // 3. Start button centered (CSS already added)
-    // --------------------------------------------------------------
-
     startTournamentBtn.onclick = async () => {
       startTournamentBtn.disabled = true;
       let count = 3;
@@ -898,9 +1005,7 @@
       }, 800);
     };
 
-    // ==============================================================
-    // BATTLE ENGINE (unchanged)
-    // ==============================================================
+    // BATTLE ENGINE
     let player = {id:0, name:'', hp:100, maxHp:100};
     let opponent = null;
     let battleActive = false;
@@ -910,9 +1015,9 @@
     let playerStats = {wins:0, losses:0};
 
     const moves = {
-      thunderbolt: { name: 'Thunderbolt', power: 30, color: '#ffeb3b' },
-      quickattack: { name: 'Quick Attack', power: 20, color: '#81c784' },
-      irontail: { name: 'Iron Tail', power: 40, color: '#9e9e9e' },
+      thunderbolt: { name: 'Thunderbolt', power: 30, color: '#ffeb3b', size: 70 },
+      quickattack: { name: 'Quick Attack', power: 20, color: '#81c784', size: 50 },
+      irontail: { name: 'Iron Tail', power: 40, color: '#9e9e9e', size: 80 },
       run: { name: 'Run Away', power: 0, color: '#ff9800', run: true }
     };
 
@@ -953,6 +1058,11 @@
     async function startNextMatch(){
       if(currentMatch >= opponents.length){ endTournament(); return; }
       opponent = opponents[currentMatch];
+
+      // RESET HP FOR BOTH
+      player.hp = player.maxHp = 100;
+      opponent.hp = opponent.maxHp = 100;
+
       battleActive = true;
       playerTurn = true;
       moveButtons.forEach(b=>b.disabled=false);
@@ -962,6 +1072,7 @@
       playSound('appear');
     }
 
+    // FIXED: AI uses local HP copies
     async function simulateAIMatch(roundIndex){
       if (opponents.length < 2) return;
       const len = opponents.length;
@@ -977,6 +1088,8 @@
       playerName.textContent = a.name; opponentName.textContent = b.name;
       playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${a.id}.gif`;
       opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${b.id}.gif`;
+
+      // LOCAL HP COPIES
       let aHp = 100, bHp = 100;
       updateHP(playerHP, playerHPText, aHp, 100);
       updateHP(opponentHP, opponentHPText, bHp, 100);
@@ -987,6 +1100,7 @@
         if (turnA){
           document.getElementById('playerPokemon').classList.add('attack');
           playAttackSound('quickattack');
+          createAttackEffect(document.getElementById('playerPokemon'), document.getElementById('opponentPokemon'), '#ff9800', 50);
           await new Promise(r=>setTimeout(r, 280));
           document.getElementById('playerPokemon').classList.remove('attack');
           const dmg = Math.floor(Math.random()*20)+15;
@@ -999,6 +1113,7 @@
         } else {
           document.getElementById('opponentPokemon').classList.add('attack');
           playAttackSound('quickattack');
+          createAttackEffect(document.getElementById('opponentPokemon'), document.getElementById('playerPokemon'), '#ff9800', 50);
           await new Promise(r=>setTimeout(r, 280));
           document.getElementById('opponentPokemon').classList.remove('attack');
           const dmg2 = Math.floor(Math.random()*20)+15;
@@ -1013,37 +1128,32 @@
         await new Promise(r=>setTimeout(r, 520));
       }
 
-      const aWins = bHp === 0 && aHp > 0;
-      if (aWins){ a.wins++; b.losses++; playSound('victory'); log(`<span class="system"><strong style="color:#4caf50;">${a.name} wins!</strong></span>`); }
-      else { b.wins++; a.losses++; playSound('victory'); log(`<span class="system"><strong style="color:#4caf50;">${b.name} wins!</strong></span>`); }
+      if (bHp === 0 && aHp > 0) {
+        a.wins++; b.losses++;
+        playSound('victory');
+        log(`<span class="system"><strong style="color:#4caf50;">${a.name} wins!</strong></span>`);
+      } else {
+        b.wins++; a.losses++;
+        playSound('victory');
+        log(`<span class="system"><strong style="color:#4caf50;">${b.name} wins!</strong></span>`);
+      }
 
       await new Promise(r=>setTimeout(r, 600));
     }
 
-    // function loadPlayer(){
-    //   const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
-    //   player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
-    //   playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
-    //   playerName.textContent = p.name;
-    //   updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-    // }
     function loadPlayer(){
-   const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
-   player.id = p.id; player.name = p.name; player.hp = player.maxHp = 100;
-   playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
-   
-   // Flip the sprite horizontally
-   playerSprite.style.transform = 'scaleX(-1)';
-   
-   playerName.textContent = p.name;
-   updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-}
+      const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
+      player.id = p.id; player.name = p.name;
+      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+      playerSprite.style.transform = 'scaleX(-1)';
+      playerName.textContent = p.name;
+      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+    }
 
     function loadOpponent(o){
       opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${o.id}.gif`;
       opponentName.textContent = o.name;
-      opponent.hp = opponent.maxHp = 100;
-      updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+      updateHP(opponentHP, opponentHPText, o.hp, o.maxHp);
       opponentSprite.style.opacity = '0'; opponentSprite.style.transform = 'scale(0)';
       setTimeout(() => { opponentSprite.style.transition = 'all 0.5s ease'; opponentSprite.style.opacity = '1'; opponentSprite.style.transform = 'scale(1)'; }, 100);
     }
@@ -1059,8 +1169,10 @@
           await endMatch(false, true);
           return;
         }
+
         document.getElementById('playerPokemon').classList.add('attack');
         playAttackSound(key);
+        createAttackEffect(document.getElementById('playerPokemon'), document.getElementById('opponentPokemon'), move.color, move.size);
         setTimeout(() => document.getElementById('playerPokemon').classList.remove('attack'), 400);
 
         const dmg = Math.floor(Math.random()*8) + move.power;
@@ -1080,6 +1192,7 @@
 
         document.getElementById('opponentPokemon').classList.add('attack');
         setTimeout(() => document.getElementById('opponentPokemon').classList.remove('attack'), 400);
+        createAttackEffect(document.getElementById('opponentPokemon'), document.getElementById('playerPokemon'), '#ff5722', 60);
 
         const oppDmg = Math.floor(Math.random()*25) + 15;
         player.hp = Math.max(0, player.hp - oppDmg);
@@ -1111,7 +1224,7 @@
         opponents[currentMatch].losses++;
         const reward = 100;
         setCoins(getCoins() + reward);
-        log(`<strong style="color:#4caf50;">Victory!</strong> ${trophySvg()} +${reward} coins`);
+        log(`<strong style="color:#4caf50;">Victory!</strong> +${reward} coins`);
       } else if (ran){
         playerStats.losses++;
         opponents[currentMatch].wins++;
@@ -1150,7 +1263,7 @@
       if (standings[0].name === player.name){
         const champReward = 500;
         setCoins(getCoins() + champReward);
-        log(`<strong style="color:#ffeb3b;">Champion! +${champReward} coins ${trophySvg()}</strong>`);
+        log(`<strong style="color:#ffeb3b;">Champion! +${champReward} coins</strong>`);
       }
       setTimeout(() => {
         wizard.style.display = 'block';
@@ -1159,10 +1272,6 @@
         document.getElementById('slide-pokemon').classList.add('active');
         loadPokemonCarousel();
       }, 5000);
-    }
-
-    function trophySvg(){
-      return '<svg class="trophy" width="18" height="18" viewBox="0 0 24 24" fill="#ffeb3b" xmlns="http://www.w3.org/2000/svg"><path d="M6 2h12v3h3v4a5 5 0 0 1-5 5h-1.1A5.002 5.002 0 0 1 12 17a5.002 5.002 0 0 1-2.9-3H8a5 5 0 0 1-5-5V4h3V2Zm12 5V4H6v3H4v2a3 3 0 0 0 3 3h1.18A5.988 5.988 0 0 1 12 10c1.55 0 2.97.59 4.02 1.56L17 12a3 3 0 0 0 3-3V7h-2Zm-6 7a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 14Zm-4 4h8v2H8v-2Z"/></svg>';
     }
 
     // Init
