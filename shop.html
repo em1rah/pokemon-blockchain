@@ -9,8 +9,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 
   <!-- Font Awesome 6.5.1 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,64 +59,33 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
 
     .card {
-  position: relative;
-  overflow: hidden; /* Critical: contains ::before shimmer */
-  border: 2px solid rgba(255, 203, 5, 0.3);
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(20, 20, 40, 0.8) 0%, rgba(10, 10, 30, 0.9) 100%);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-  transition: all 0.3s ease;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 203, 5, 0.1) 40%,
-    rgba(74, 144, 226, 0.15) 50%,
-    rgba(255, 203, 5, 0.1) 60%,
-    transparent 70%
-  );
-  background-size: 200% 200%;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-  z-index: 1;
-  animation: none; /* We'll trigger animation on hover */
-}
-
-.card:hover::before {
-  opacity: 1;
-  animation: shimmer 2.5s infinite linear;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-    .card::before{
-      content:'';
-      position:absolute;
-      top:-50%;left:-50%;width:200%;height:200%;
-      background:linear-gradient(45deg, transparent 30%, rgba(255,203,5,0.1) 40%, rgba(74,144,226,0.2) 50%, rgba(255,203,5,0.1) 60%, transparent 70%);
-      animation:shimmer 3s infinite;
-      opacity:0;
-      transition:opacity 0.5s;
-      z-index:1;
-      pointer-events:none;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 203, 5, 0.3);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(20, 20, 40, 0.8) 0%, rgba(10, 10, 30, 0.9) 100%);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s ease;
     }
-    .card:hover::before{opacity:1;}
-    @keyframes shimmer{0%{transform:translate(-50%,-50%) rotate(0deg);}100%{transform:translate(-50%,-50%) rotate(360deg);}}
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(45deg,
+        transparent 30%,
+        rgba(255,203,5,0.1) 40%,
+        rgba(74,144,226,0.15) 50%,
+        rgba(255,203,5,0.1) 60%,
+        transparent 70%);
+      background-size: 200% 200%;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .card:hover::before { opacity: 1; animation: shimmer 2.5s infinite linear; }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 
     .card-header{
       background:linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
@@ -165,8 +134,7 @@
 
     .rarity-badge{
       position:absolute;
-      top:8px;
-      left:8px;
+      top:8px; left:8px;
       background:linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
       color:#1a1a2e;
       padding:5px 8px;
@@ -190,8 +158,7 @@
 
     .card-type{
       position:absolute;
-      top:8px;
-      right:8px;
+      top:8px; right:8px;
       background:linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
       padding:6px 10px;
       border-radius:20px;
@@ -389,30 +356,6 @@
     .card button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 8px 16px rgba(0,0,0,0.6), inset 0 1px 3px rgba(255,255,255,0.3);}
     .card button:active:not(:disabled){transform:translateY(-1px);}
 
-    /* .owned-tag{
-      position:absolute;
-      top:8px;
-      left:8px;
-      background:linear-gradient(135deg, #4caf50 0%, #388e3c 50%, #2e7d32 100%);
-      color:#fff;
-      padding:6px 10px;
-      border-radius:20px;
-      font-size:0.65rem;
-      font-weight:700;
-      z-index:11;
-      border:2px solid rgba(255,255,255,0.4);
-      box-shadow:0 4px 12px rgba(76,175,80,0.5), inset 0 1px 2px rgba(255,255,255,0.3);
-      text-transform:uppercase;
-      letter-spacing:1px;
-      display:flex;
-      align-items:center;
-      gap:4px;
-      max-width:calc(100% - 100px);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    } */
-
     .starter-card{border-color:#4caf50 !important;background:linear-gradient(135deg, #1a3e1a 0%, #1e4a1e 50%, #162816 100%);}
     .starter-card::before{background:linear-gradient(45deg, transparent 30%, rgba(76,175,80,0.2) 40%, rgba(139,195,74,0.25) 50%, rgba(76,175,80,0.2) 60%, transparent 70%);}
     .starter-card button{background:linear-gradient(135deg, #8bc34a 0%, #689f38 50%, #558b2f 100%);}
@@ -441,7 +384,7 @@
       text-overflow:ellipsis;
       white-space:nowrap;
     }
-        /* Error Message Style */
+
     .card-error {
       margin-top: 8px;
       padding: 8px 10px;
@@ -459,29 +402,30 @@
       opacity: 1;
       transition: opacity 0.3s ease;
     }
-
-    .card-error i {
-      font-size: 0.9rem;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .card-error i {font-size: 0.9rem;}
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
     @media(max-width:1200px){.grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}}
     @media(max-width:768px){.grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}.card{aspect-ratio:2.5/3.5;}.card img{max-width:140px;max-height:140px;}.card-header{padding:38px 10px 8px;}.card-name{font-size:0.6rem;}.hp-value{font-size:0.75rem;padding:3px 8px;}.card-type{font-size:0.6rem;padding:5px 8px;max-width:70px;}.rarity-badge{font-size:0.55rem;padding:4px 6px;}.attack-section{padding:6px;}.attack-name{font-size:0.7rem;}.card-info{padding:10px 12px 45px;}.set-symbol{width:24px;height:24px;font-size:0.9rem;bottom:8px;right:8px;}}
     @media(max-width:480px){.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.8rem;}.card-header{min-height:55px;padding:35px 8px 6px;}.card-image-area{min-height:140px;max-height:160px;padding:10px;}.card img{max-width:120px;max-height:120px;}.weakness-resistance{font-size:0.6rem;gap:6px;}.weakness-resistance span{min-width:100%;}.card button{font-size:0.85rem;padding:12px;}}
+
+    /* ────────────────────────
+       NEW: GIF-on-hover styles
+       ──────────────────────── */
+    .pokemon-img {
+      transition: opacity 0.3s ease !important;
+      image-rendering: pixelated;   /* keeps retro GIF look */
+    }
   </style>
 </head>
 <body>
   <aside class="sidebar">
     <div class="brand"><h1>Pokémon Shop</h1></div>
     <div class="menu">
-        <a href="home.html">🏠 Home</a>
-      <a href="arena.html">⚔ Arena</a>
-      <a href="shop.html">🛒 Shop</a>
-      <a href="settings.html">⚙ Settings</a>
+        <a href="home.html">Home</a>
+      <a href="arena.html">Arena</a>
+      <a href="shop.html">Shop</a>
+      <a href="settings.html">Settings</a>
     </div>
     <div class="status">
       <span class="coins" id="coinDisplay">500 Coins</span>
@@ -705,12 +649,12 @@
     ];
 
     function getPokemonType(id) {
-      return common.find(p=>p.id===id)?.type || 
-             rare.find(p=>p.id===id)?.type || 
+      return common.find(p=>p.id===id)?.type ||
+             rare.find(p=>p.id===id)?.type ||
              starters.find(p=>p.id===id)?.type || 'Normal';
     }
 
-    function getPokemonHP(id) { 
+    function getPokemonHP(id) {
       return Math.min(180, 60 + Math.floor(id / 3) + (id > 150 ? 40 : 0) + (id > 700 ? 30 : 0));
     }
 
@@ -748,7 +692,7 @@
     function getPurchaseDetails(id) {
       const s = starters.find(x=>x.id===id); if(s) return {price:0,currency:'free'};
       const c = common.find(x=>x.id===id); if(c) return {price:c.price,currency:'coins'};
-      const r = rare.find(x=>x.id===id); if(r) return {price:r.price,currency:'tokens'};
+      const r = rare.find(x=>x.id===id); if(r) return {price:r.price,currency:'inut'};
       return null;
     }
 
@@ -783,12 +727,24 @@
         steel: '<i class="fa-solid fa-shield"></i>'
       };
 
+      // ---- NEW: image with data-gif attribute ----
+      const staticImg = img(poke.id);
+      const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${poke.id}.gif`;
+
       card.innerHTML = `
         ${has ? '<div class="owned-tag"><i class="fa-solid fa-check"></i></div>' : ''}
         <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
         <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
         <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase() === 'normal' ? 'paw' : pokemonType.toLowerCase() === 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
-        <div class="card-image-area"><img src="${img(poke.id)}" alt="${poke.name}" loading="lazy"></div>
+        <div class="card-image-area">
+          <img src="${staticImg}"
+               data-gif="${gifImg}"
+               alt="${poke.name}"
+               loading="lazy"
+               class="pokemon-img"
+               onload="this.style.opacity=1"
+               style="opacity:0;">
+        </div>
         <div class="card-info">
           <div class="attack-section">
             <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]}</span>`).join('')}</div>
@@ -851,12 +807,17 @@
         const card = document.createElement('div');
         card.className = 'card has-owned';
         const energyIcons = { /* same as above */ };
+        const staticImg = img(p.id);
+        const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+
         card.innerHTML = `
           <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
           <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
-          <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
+          <div class="card-header"><div class="card-name">${p.name}</,myGrid></div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
           <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
-          <div class="card-image-area"><img src="${img(p.id)}" alt="${p.name}" loading="lazy"></div>
+          <div class="card-image-area">
+            <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+          </div>
           <div class="card-info">
             <div class="attack-section">
               <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e] || ''}</span>`).join('')}</div>
@@ -963,6 +924,55 @@
         updateCoinDisplay();
         loadAll();
       }
+    });
+
+    /* ─────────────────────────────────────
+       NEW: GIF-on-hover logic (runs once)
+       ───────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Use event delegation for performance
+      document.body.addEventListener('mouseenter', e => {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        const img = card.querySelector('.pokemon-img');
+        if (!img) return;
+
+        const staticSrc = img.src;
+        const gifSrc = img.dataset.gif;
+
+        // Preload GIF only once per image
+        if (!img.dataset.preloaded) {
+          const pre = new Image();
+          pre.src = gifSrc;
+          img.dataset.preloaded = 'true';
+        }
+
+        if (img.src !== gifSrc) {
+          img.style.opacity = 0;
+          setTimeout(() => {
+            img.src = gifSrc;
+            img.style.opacity = 1;
+          }, 150);
+        }
+      }, true);
+
+      document.body.addEventListener('mouseleave', e => {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        const img = card.querySelector('.pokemon-img');
+        if (!img) return;
+
+        const staticSrc = img.dataset.static || img.dataset.originalSrc || img.src.split('?')[0]; // fallback
+        if (!img.dataset.originalSrc) img.dataset.originalSrc = img.src; // remember first src
+
+        if (img.src !== img.dataset.originalSrc) {
+          img.style.opacity = 0;
+          setTimeout(() => {
+            img.src = img.dataset.originalSrc;
+            img.style.opacity = 1;
+          }, 150);
+        }
+      }, true);
     });
   </script>
 </body>
