@@ -20,7 +20,6 @@
     overflow-x:hidden;
   }
 
-  /* Main Background Image */
   body::before{
     content:'';
     position:fixed;
@@ -29,12 +28,12 @@
     width:100%;
     height:100%;
   background: url('images/431.jpg') center/cover no-repeat;
-      opacity: 0.35; /* Adjust opacity here (0.1 to 1.0) */
+      opacity: 0.35; 
     z-index:-2;
     pointer-events:none;
   }
 
-  /* Subtle Pokémon Watermark Pattern (on top of background) */
+
   body::after{
     content:'';
     position:fixed;
@@ -53,7 +52,6 @@
     z-index:1;
   }
 
-  /* Rest of your styles unchanged */
   header h1, nav a, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
   header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
   /* Sidebar */
@@ -225,27 +223,7 @@
   .log .opponent{color:#ff5252;}
   .log .system{color:#ffcb05;font-weight:600;}
 
-  /* Shop */
-  .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:20px;}
-  .shop-card{background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;padding:14px;text-align:center;transition:.3s;}
-  .shop-card:hover{transform:scale(1.05);background:rgba(255,203,5,.2);}
-  .shop-card img{width:140px;height:140px;object-fit:contain;margin:8px 0;filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));}
-  .shop-card .price{color:#ffeb3b;font-weight:700;font-size:1.1rem;}
-  .shop-card button{margin-top:8px;padding:8px 16px;background:#4caf50;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
-  .shop-card button:disabled{background:#666;cursor:not-allowed;}
-  .shop-card button:hover:not(:disabled){background:#388e3c;}
 
-  /* My Pokémon */
-  .my-pokemon-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:16px;}
-  .my-card{background:rgba(0,0,0,.5);border:2px solid #ffcb05;border-radius:12px;padding:12px;text-align:center;position:relative;}
-  .my-card.equipped::after{content:"★";position:absolute;top:8px;right:8px;color:#ffeb3b;font-size:1.4rem;}
-  .my-card img{width:120px;height:120px;object-fit:contain;}
-  .equip-btn{margin-top:6px;padding:6px 12px;background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;}
-  .equip-btn:hover{background:#f57c00;}
-
-  .tournament-list{margin:1.5rem;padding:1.5rem;background:rgba(100,65,165,.8);border-radius:16px;}
-  .tournament-item{background:rgba(0,0,0,.4);margin:10px 0;padding:14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-size:15px;}
-  .trophy{font-size:1.5rem;}
 
   .logout{margin:2rem auto;display:block;padding:.9rem 2.5rem;background:#f44336;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;}
   .logout:hover{background:#d32f2f;}
@@ -256,21 +234,6 @@
   .settings-btn:hover{color:#fff}
   .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
 
-  /* Settings */
-  .settings-panel{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.7);box-shadow:0 15px 35px rgba(0,0,0,.6);}
-  .settings-panel.active{display:block;}
-  .settings-field{margin:10px 0}
-  .settings-field label{display:block;margin-bottom:6px;color:#ffcb05}
-  .settings-field input, .settings-field select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,203,5,.4);background:rgba(255,255,255,.1);color:#fff;width:100%}
-  .save-settings{margin-top:10px;padding:10px 16px;background:#4caf50;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
-
-  @media(max-width:700px){
-    .battlefield{flex-direction:column;align-items:center;gap:30px;}
-    .pokemon img{width:120px;height:120px;}
-    .hp-bar{width:120px;}
-    .moves{grid-template-columns:1fr;}
-    .shop-grid{grid-template-columns:1fr 1fr;}
-  }
 </style>
 </head>
 <body>
@@ -331,16 +294,15 @@
 
   
   <script>
-    // === Session ===
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
-    // Update trainer info
+
     const trainerName = document.getElementById('trainerName');
     trainerName.textContent = session.type === 'metamask' 
       ? `${session.address.slice(0,6)}...${session.address.slice(-4)}`
       : session.address.split('@')[0];
 
-    // === DOM ===
+  
     const walletDisplay = document.getElementById('walletDisplay');
 
     // === Player & Coins ===
@@ -363,247 +325,8 @@
     if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
 
 
-    // === Shop ===
-    function loadStarters(){
-      const claimed = localStorage.getItem(STARTER_KEY) === '1';
-      starterGrid.innerHTML = '';
-      starterNotice.style.display = claimed ? 'none' : 'block';
-      if (claimed) return;
-      starterPokemon.forEach(poke => {
-        const card = document.createElement('div');
-        card.className = 'shop-card';
-        card.innerHTML = `
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${poke.id}.png" alt="${poke.name}">
-          <div class="name">${poke.name}</div>
-          <div class="price">Free Starter</div>
-          <button>Claim</button>
-        `;
-        card.querySelector('button').onclick = () => claimStarter(poke);
-        starterGrid.appendChild(card);
-      });
-    }
+   
 
-    function claimStarter(poke){
-      if (!ownedPokemon.some(o=>o.id===poke.id)){
-        ownedPokemon.push({ id: poke.id, name: poke.name });
-        localStorage.setItem('ownedPokemon', JSON.stringify(ownedPokemon));
-      }
-      const ownedStarters = ownedPokemon.filter(o=>[1,4,7].includes(o.id)).length;
-      if (ownedStarters >= 3) { localStorage.setItem(STARTER_KEY,'1'); }
-      loadStarters();
-      loadMyPokemon();
-    }
-
-    function loadShop() {
-      shopGrid.innerHTML = '';
-      shopPokemon.forEach(poke => {
-        const owned = ownedPokemon.some(o => o.id === poke.id);
-        const card = document.createElement('div');
-        card.className = 'shop-card';
-        card.innerHTML = `
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${poke.id}.png" alt="${poke.name}">
-          <div class="name">${poke.name}</div>
-          <div class="price">${poke.price} Coins</div>
-          <button ${owned ? 'disabled' : ''}>${owned ? 'Owned' : 'Buy'}</button>
-        `;
-        if (!owned) {
-          card.querySelector('button').onclick = () => buyPokemon(poke);
-        }
-        shopGrid.appendChild(card);
-      });
-    }
-
-    function buyPokemon(poke) {
-      const coins = getCoins();
-      if (coins < poke.price) { alert('Not enough coins'); return; }
-      if (!ownedPokemon.some(o => o.id === poke.id)) {
-        setCoins(coins - poke.price);
-        ownedPokemon.push({ id: poke.id, name: poke.name });
-        localStorage.setItem('ownedPokemon', JSON.stringify(ownedPokemon));
-        loadShop();
-        loadMyPokemon();
-        alert(`You bought ${poke.name}!`);
-      }
-    }
-
-    // === My Pokémon ===
-    function loadMyPokemon() {
-      myPokemonList.innerHTML = '';
-      if (ownedPokemon.length === 0) {
-        myPokemonList.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;">No Pokémon yet. Visit the shop!</p>';
-        return;
-      }
-      ownedPokemon.forEach(poke => {
-        const card = document.createElement('div');
-        card.className = `my-card ${poke.id === equippedId ? 'equipped' : ''}`;
-        card.innerHTML = `
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${poke.id}.png" alt="${poke.name}">
-          <div>${poke.name}</div>
-          <button class="equip-btn" ${poke.id === equippedId ? 'disabled' : ''}>
-            ${poke.id === equippedId ? 'Equipped' : 'Equip'}
-          </button>
-        `;
-        if (poke.id !== equippedId) {
-          card.querySelector('.equip-btn').onclick = () => equipPokemon(poke.id);
-        }
-        myPokemonList.appendChild(card);
-      });
-    }
-
-    function equipPokemon(id) {
-      equippedId = id;
-      localStorage.setItem('equippedPokemon', id);
-      loadEquipped();
-      loadMyPokemon();
-      if (battleActive) startNewBattle(); 
-    }
-
-    // === Battle Logic ===
-    let opponent = null;
-    let battleActive = false;
-    let playerTurn = true;
-
-    const moves = {
-      thunderbolt: { name: "Thunderbolt", power: 30, color: "#ffeb3b" },
-      quickattack: { name: "Quick Attack", power: 20, color: "#81c784" },
-      irontail: { name: "Iron Tail", power: 40, color: "#9e9e9e" },
-      run: { name: "Run Away", power: 0, color: "#ff9800", run: true }
-    };
-
-    enterArenaBtn.addEventListener('click', () => {
-      welcomeSection.style.display = 'none';
-      showTab('arena');
-      startNewBattle();
-    });
-
-    async function startNewBattle() {
-      battleActive = true;
-      playerTurn = true;
-      player.hp = player.maxHp;
-      battleLog.innerHTML = '';
-      newBattleBtn.style.display = 'none';
-      moveButtons.forEach(b => b.disabled = false);
-      loadEquipped();
-
-      const oppId = Math.floor(Math.random() * 150) + 1;
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${oppId}`);
-      const data = await res.json();
-      opponent = {
-        id: oppId,
-        name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
-        hp: 100,
-        maxHp: 100
-      };
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${oppId}.png`;
-      opponentName.textContent = opponent.name;
-      updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-
-      log(`A wild <strong>${opponent.name}</strong> appeared!`, 'system');
-      log(`What will <strong>${player.name}</strong> do?`, 'system');
-    }
-
-    moveButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (!battleActive || !playerTurn) return;
-        const moveKey = btn.dataset.move;
-        const move = moves[moveKey];
-
-        if (move.run) {
-          log(`<strong>${player.name}</strong> ran away!`, 'system');
-          endBattle(false, true);
-          return;
-        }
-
-        const damage = Math.floor(Math.random() * 8) + move.power;
-        opponent.hp = Math.max(0, opponent.hp - damage);
-
-        log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`, 'player');
-        log(`${opponent.name} took <strong>${damage}</strong> damage.`, 'player');
-        updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-        document.getElementById('opponentPokemon').classList.add('hit');
-        setTimeout(() => document.getElementById('opponentPokemon').classList.remove('hit'), 400);
-
-        if (opponent.hp === 0) {
-          setTimeout(() => endBattle(true), 600);
-          return;
-        }
-
-        playerTurn = false;
-        moveButtons.forEach(b => b.disabled = true);
-
-        setTimeout(() => {
-          const oppMove = ['Tackle', 'Scratch', 'Ember', 'Vine Whip'][Math.floor(Math.random() * 4)];
-          const oppDmg = Math.floor(Math.random() * 25) + 15;
-          player.hp = Math.max(0, player.hp - oppDmg);
-
-          log(`${opponent.name} used <strong>${oppMove}</strong>!`, 'opponent');
-          log(`You took <strong>${oppDmg}</strong> damage.`, 'opponent');
-          updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-          document.getElementById('playerPokemon').classList.add('hit');
-          setTimeout(() => document.getElementById('playerPokemon').classList.remove('hit'), 400);
-
-          if (player.hp === 0) {
-            setTimeout(() => endBattle(false), 600);
-          } else {
-            playerTurn = true;
-            moveButtons.forEach(b => b.disabled = false);
-          }
-        }, 1200);
-      });
-    });
-
-    function endBattle(won, ran = false) {
-      battleActive = false;
-      moveButtons.forEach(b => b.disabled = true);
-
-      const tournaments = JSON.parse(localStorage.getItem('tournaments') || '[]');
-      tournaments.push({
-        player: player.name,
-        opponent: opponent.name,
-        won: won && !ran,
-        date: new Date().toLocaleString()
-      });
-      localStorage.setItem('tournaments', JSON.stringify(tournaments));
-      loadTournaments();
-
-      if (won && !ran) {
-        log(`<strong style=\"color:#4caf50;\">Victory! You won the tournament! Trophy</strong>`, 'system');
-        const reward = 100;
-        setCoins(getCoins() + reward);
-        log(`You earned <strong>${reward}</strong> coins!`, 'system');
-      } else if (ran) {
-        log(`<strong style="color:#ff9800;">You escaped safely.</strong>`, 'system');
-      } else {
-        log(`<strong style=\"color:#f44336;\">Defeat... Better luck next time.</strong>`, 'system');
-      }
-
-      newBattleBtn.style.display = 'block';
-    }
-
-    newBattleBtn.addEventListener('click', startNewBattle);
-
-    // === Helpers ===
-    function updateHP(bar, textEl, hp, max) {
-      const percent = (hp / max) * 100;
-      bar.style.width = percent + '%';
-      textEl.textContent = `${hp}/${max}`;
-      bar.style.background = percent > 50 ? '#4caf50' : percent > 25 ? '#ff9800' : '#f44336';
-    }
-
-    function log(msg, type = '') {
-      const p = document.createElement('p');
-      p.innerHTML = msg;
-      if (type) p.className = type;
-      battleLog.appendChild(p);
-      battleLog.scrollTop = battleLog.scrollHeight;
-    }
-
-    function showTab(tabName) {
-      Object.values(tabs).forEach(t => t.classList.remove('active'));
-      tabs[tabName].classList.add('active');
-      if (tabName === 'shop') loadShop();
-      if (tabName === 'myPokemon') loadMyPokemon();
-    }
 
     // === Navigation ===
     document.getElementById('navArena').setAttribute('href','arena.html');
@@ -631,7 +354,6 @@
 
     // === Settings ===
     function loadSettings(){
-      // Settings loading if needed
     }
   </script>
 </body>
