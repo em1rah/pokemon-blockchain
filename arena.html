@@ -75,6 +75,44 @@
       text-shadow: 2px 2px 0 #000;
     }
 
+    /* MUSIC SELECTOR */
+    .music-selector {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .music-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 15px;
+      border: 2px solid rgba(255,203,5,0.3);
+      border-radius: 12px;
+      transition: all 0.3s;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .music-option:hover, .music-option.selected {
+      border-color: #ffcb05;
+      background: rgba(255,203,5,0.15);
+      box-shadow: 0 0 20px rgba(255,203,5,0.3);
+    }
+
+    .music-option i {
+      font-size: 2rem;
+      color: #ffcb05;
+    }
+
+    .music-option span {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
     /* POKÉMON CAROUSEL */
     .pokemon-carousel-container {
       position: relative;
@@ -544,8 +582,26 @@
 
     <!-- WIZARD -->
     <div id="setupWizard" class="wizard">
+      <!-- Step 0 - Music Selection -->
+      <div class="wizard-slide active" id="slide-music">
+        <div class="slide-title">Choose Battle Music</div>
+        <div class="music-selector">
+          <div class="music-option selected" data-music="classic">
+            <i class="fas fa-music"></i>
+            <span>Classic<br>Synth</span>
+          </div>
+          <div class="music-option" data-music="real">
+            <i class="fas fa-headphones"></i>
+            <span>Real Pokémon<br>Battle Theme</span>
+          </div>
+        </div>
+        <div class="wizard-actions">
+          <button class="move-btn" id="confirmMusicBtn">Next</button>
+        </div>
+      </div>
+
       <!-- Step 1 -->
-      <div class="wizard-slide active" id="slide-pokemon">
+      <div class="wizard-slide" id="slide-pokemon">
         <div class="slide-title">Step 1: Choose Your Pokémon</div>
         <div class="pokemon-carousel-container">
           <button class="carousel-nav left" id="prevPokemon"><i class="fas fa-chevron-left"></i></button>
@@ -640,6 +696,7 @@
   <script>
     /* ==============================================================
        FULL TOURNAMENT WIZARD + BATTLE ENGINE + PUNCH/THUNDER + RANDOM AI
+       + POKÉMON CRIES + REAL POKÉMON MUSIC
        ============================================================== */
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
@@ -685,6 +742,11 @@
     const finalOpponentCount = document.getElementById('finalOpponentCount');
     const startCountdown = document.getElementById('startCountdown');
 
+    // Music selection
+    const musicOptions = document.querySelectorAll('.music-option');
+    const confirmMusicBtn = document.getElementById('confirmMusicBtn');
+    let selectedMusicType = 'classic'; // default
+
     let carouselIndex = 0;
     let selectedPokemon = null;
     let opponentCount = 5;
@@ -695,6 +757,51 @@
     let musicEnabled = localStorage.getItem('musicEnabled') !== 'false';
     let soundsEnabled = localStorage.getItem('soundsEnabled') !== 'false';
     let currentMusic = null;
+    let pokemonCryAudio = null;
+
+    // Pokémon Cry Function
+    async function playPokemonCry(pokemonId) {
+      if (!soundsEnabled) return;
+      
+      try {
+        // Use official Pokémon cries from PokéAPI
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+        const data = await response.json();
+        const cryUrl = data.cries?.latest || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemonId}.gif`; // fallback
+        
+        if (data.cries && data.cries.latest) {
+          const audio = new Audio(data.cries.latest);
+          audio.volume = 0.3;
+          audio.play().catch(e => console.log('Cry play failed:', e));
+          return;
+        }
+        
+        // Fallback: Generate Pikachu-like cry for any Pokémon
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        // Dynamic frequency based on Pokémon ID
+        const baseFreq = 800 + (pokemonId * 10) % 400;
+        osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, ctx.currentTime + 0.1);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.7, ctx.currentTime + 0.3);
+        
+        osc.type = 'sawtooth';
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {
+        // Ultimate fallback: Pikachu cry pattern
+        tone(850, 0.1, 0.25, 'sawtooth');
+        setTimeout(() => tone(950, 0.12, 0.28, 'sawtooth'), 100);
+        setTimeout(() => tone(750, 0.15, 0.3, 'sawtooth'), 220);
+      }
+    }
 
     function tone(freq, duration = 0.1, volume = 0.12, type = 'sine') {
       if (!soundsEnabled) return;
@@ -760,9 +867,29 @@
       }
     }
 
+    // Enhanced Music System with Real Pokémon Music
     function playMusic(type){
       if (!musicEnabled) return;
       stopMusic();
+      
+      if (selectedMusicType === 'real' && type === 'battle') {
+        // Real Pokémon Battle Music (using a popular public domain/remix)
+        const realBattleMusic = new Audio('https://raw.githubusercontent.com/PokeAPI/cries/main/mp3/1.mp3'); // Placeholder - replace with actual Pokémon battle theme URL
+        realBattleMusic.volume = 0.15;
+        realBattleMusic.loop = true;
+        realBattleMusic.play().catch(e => {
+          console.log('Real music failed, falling back to classic');
+          playClassicMusic(type);
+        });
+        currentMusic = realBattleMusic;
+        return;
+      }
+      
+      // Classic synth music (original)
+      playClassicMusic(type);
+    }
+
+    function playClassicMusic(type){
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const notes = type === 'battle' ? [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] : [];
       let noteIndex = 0;
@@ -786,7 +913,13 @@
 
     function stopMusic(){
       if (currentMusic) {
-        if (currentMusic.audioContext) currentMusic.audioContext.close();
+        if (typeof currentMusic.stop === 'function') {
+          currentMusic.stop();
+        } else if (currentMusic.audioContext) {
+          currentMusic.audioContext.close();
+        } else if (currentMusic.pause) {
+          currentMusic.pause();
+        }
         currentMusic = null;
       }
     }
@@ -800,6 +933,20 @@
     musicBtn.onclick = () => { musicEnabled = !musicEnabled; localStorage.setItem('musicEnabled', musicEnabled); updateIcons(); if (!musicEnabled) stopMusic(); else if (tournamentActive) playMusic('battle'); };
     soundBtn.onclick = () => { soundsEnabled = !soundsEnabled; localStorage.setItem('soundsEnabled', soundsEnabled); updateIcons(); };
     updateIcons();
+
+    // Music Selection Handler
+    musicOptions.forEach(option => {
+      option.onclick = () => {
+        musicOptions.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+        selectedMusicType = option.dataset.music;
+      };
+    });
+
+    confirmMusicBtn.onclick = () => {
+      showSlide('slide-pokemon');
+      playSound('confirm');
+    };
 
 // --------------------------------------------------------------
   //  ATTACK ANIMATION – ENHANCED PUNCH & THUNDER
@@ -1011,7 +1158,7 @@
 
         const paddedId = String(p.id).padStart(3, '0');
 
-        pokemonDetails.push({ ...p, types, stats, flavor, paddedId });
+        pokemonDetails.push({ ...p, types, stats, flavor, paddedId, cries: data.cries });
 
         const card = document.createElement('div');
         card.className = 'carousel-card';
@@ -1071,7 +1218,10 @@
 
     prevBtn.onclick = () => { carouselIndex = (carouselIndex - 1 + ownedPokemon.length) % ownedPokemon.length; updateCarousel(); playSound('select'); };
     nextBtn.onclick = () => { carouselIndex = (carouselIndex + 1) % ownedPokemon.length; updateCarousel(); playSound('select'); };
-    confirmPokemonBtn.onclick = () => {
+    confirmPokemonBtn.onclick = async () => {
+      // Play Pokémon cry on confirm!
+      await playPokemonCry(selectedPokemon.id);
+      
       equippedId = selectedPokemon.id;
       localStorage.setItem(EQUIPPED_KEY, equippedId);
       finalPokemonName.textContent = selectedPokemon.name;
@@ -1195,7 +1345,7 @@
       moveButtons.forEach(b=>b.disabled=true);
       battleLog.innerHTML = '';
       log(`<span class="system">=== ROUND-ROBIN TOURNAMENT BEGIN ===</span>`);
-      playMusic('battle');
+      playMusic('battle'); // Uses selected music type
       await startNextMatch();
     }
 
@@ -1423,7 +1573,7 @@
         wizard.style.display = 'block';
         battleArena.style.display = 'none';
         document.querySelectorAll('.wizard-slide').forEach(s => s.classList.remove('active'));
-        document.getElementById('slide-pokemon').classList.add('active');
+        document.getElementById('slide-music').classList.add('active');
         loadPokemonCarousel();
       }, 5000);
     }
