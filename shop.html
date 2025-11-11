@@ -813,55 +813,73 @@
     }
   }
 
-  async function loadOwned() {
-    const grid = document.getElementById('myGrid'); grid.innerHTML = '';
-    if (!ownedLocal.length) {
-      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
-      return;
-    }
-    for (const p of ownedLocal) {
-      const pokemonType = getPokemonType(p.id);
-      const hp = getPokemonHP(p.id);
-      const attack = getAttack(pokemonType);
-      const card = document.createElement('div');
-      card.className = 'card has-owned';
-
-      const staticImg = img(p.id);
-      const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
-
-      let extraBtn = '';
-      if (p.price !== undefined) { // on-chain token
-        if (p.price > 0) {
-          extraBtn = `<button class="sell-btn" onclick="cancelListing(${p.id})">Cancel Sale</button>`;
-        } else {
-          extraBtn = `<button class="sell-btn" onclick="promptList(${p.id},'${p.name}')">List for Sale</button>`;
-        }
-      } else {
-        extraBtn = `<button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')">Sell (50% refund)</button>`;
-      }
-
-      card.innerHTML = `
-        <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
-        <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
-        <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
-        <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
-        <div class="card-image-area">
-          <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
-        </div>
-        <div class="card-info">
-          <div class="attack-section">
-            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]||''}</span>`).join('')}</div>
-            <div class="attack-name">${attack.name}</div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
-          </div>
-          <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
-          ${extraBtn}
-          <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
-        </div>
-      `;
-      grid.appendChild(card);
-    }
+ async function loadOwned() {
+  const grid = document.getElementById('myGrid'); grid.innerHTML = '';
+  if (!ownedLocal.length) {
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
+    return;
   }
+
+  for (const p of ownedLocal) {
+    const pokemonType = getPokemonType(p.id);
+    const hp = getPokemonHP(p.id);
+    const attack = getAttack(pokemonType);
+    const card = document.createElement('div');
+    card.className = 'card has-owned';
+
+    const staticImg = img(p.id);
+    const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+
+    let extraBtn = '';
+
+    // -------------------------------------------------
+    // 1. Starters & Common Pokémon → **no sell button**
+    // -------------------------------------------------
+    const isStarter = starters.some(s => s.id === p.id);
+    const isCommon  = common.some(c => c.id === p.id);
+
+    if (isStarter || isCommon) {
+      // nothing – we deliberately show **no** button
+    }
+    // -------------------------------------------------
+    // 2. Rare (token-bought) Pokémon → marketplace buttons
+    // -------------------------------------------------
+    else if (p.price !== undefined) {               // on-chain token
+      if (p.price > 0) {
+        extraBtn = `<button class="sell-btn" onclick="cancelListing(${p.id})">Cancel Sale</button>`;
+      } else {
+        extraBtn = `<button class="sell-btn" onclick="promptList(${p.id},'${p.name}')">List for Sale</button>`;
+      }
+    }
+    // -------------------------------------------------
+    // 3. (Legacy) burn-and-refund – keep for old rares
+    // -------------------------------------------------
+    else {
+      extraBtn = `<button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')">Sell (50% refund)</button>`;
+    }
+
+    card.innerHTML = `
+      <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
+      <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
+      <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
+      <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+      <div class="card-image-area">
+        <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+      </div>
+      <div class="card-info">
+        <div class="attack-section">
+          <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]||''}</span>`).join('')}</div>
+          <div class="attack-name">${attack.name}</div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
+        </div>
+        <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
+        ${extraBtn}
+        <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+}
 
   function loadAll() { loadStarters(); loadCommon(); loadRare(); loadOwned(); }
 
