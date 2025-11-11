@@ -447,146 +447,149 @@
     <div class="grid" id="myGrid"></div>
   </div>
 
-  <script>
-    // ──────────────────────────────────────
-    // REPLACE THESE AFTER DEPLOYMENT
-    // ──────────────────────────────────────
-    const TOKEN_ADDRESS = '0x62D43050C999BD8DF36De560F29f518F7579dE68';
-    const NFT_ADDRESS   = '0x7c2c971F8571c462c800Aa143CA84007a78C0A7B';
-    // ──────────────────────────────────────
+<script>
+  // ──────────────────────────────────────
+  // REPLACE THESE AFTER DEPLOYMENT
+  // ──────────────────────────────────────
+  const TOKEN_ADDRESS = '0x62D43050C999BD8DF36De560F29f518F7579dE68';
+  const NFT_ADDRESS   = '0x7c2c971F8571c462c800Aa143CA84007a78C0A7B';
+  // ──────────────────────────────────────
 
-    const ERC20_ABI = [
-      'function balanceOf(address) view returns (uint256)',
-      'function allowance(address,address) view returns (uint256)',
-      'function approve(address,uint256) external'
-    ];
+  const ERC20_ABI = [
+    'function balanceOf(address) view returns (uint256)',
+    'function allowance(address,address) view returns (uint256)',
+    'function approve(address,uint256) external'
+  ];
 
-    const NFT_ABI = [
-      'function mintWithToken(address to,uint256 pokeId,string name,uint256 amount) external returns (uint256)',
-      'function sell(uint256 pokeId) external',
-      'function balanceOf(address) view returns (uint256)',
-      'function tokenOfOwnerByIndex(address owner,uint256 index) view returns (uint256)'
-    ];
+  const NFT_ABI = [
+    'function mintWithToken(address to,uint256 pokeId,string name,uint256 amount) external returns (uint256)',
+    'function sell(uint256 pokeId) external',
+    'function balanceOf(address) view returns (uint256)',
+    'function tokenOfOwnerByIndex(address owner,uint256 index) view returns (uint256)'
+  ];
 
-    let provider, signer, token, nft, userAddress;
-    let coins = parseInt(localStorage.getItem('coins') || '500');
-    let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
-    let claimedStarters = JSON.parse(localStorage.getItem('claimedStarters') || '[]');
+  let provider, signer, token, nft, userAddress;
+  let coins = parseInt(localStorage.getItem('coins') || '500');
+  let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
+  let claimedStarters = JSON.parse(localStorage.getItem('claimedStarters') || '[]');
 
-    const coinDisplay = document.getElementById('coinDisplay');
-    const freeDisplay = document.getElementById('freeDisplay');
-    const walletDisplay = document.getElementById('walletDisplay');
+  const coinDisplay = document.getElementById('coinDisplay');
+  const freeDisplay = document.getElementById('freeDisplay');
+  const walletDisplay = document.getElementById('walletDisplay');
 
-    function showError(msg) {
-      const toast = document.createElement('div');
-      toast.textContent = msg;
-      toast.style.cssText = `
-        position:fixed; top:20px; right:20px; z-index:9999;
-        background:#c62828; color:#fff; padding:12px 20px;
-        border-radius:8px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.5);
-        animation:fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
-      `;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
-      @keyframes fadeOut { from {opacity:1; transform:translateY(0);} to {opacity:0; transform:translateY(-10px);} }
+  function showError(msg) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = `
+      position:fixed; top:20px; right:20px; z-index:9999;
+      background:#c62828; color:#fff; padding:12px 20px;
+      border-radius:8px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.5);
+      animation:fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
     `;
-    document.head.appendChild(style);
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+    @keyframes fadeOut { from {opacity:1; transform:translateY(0);} to {opacity:0; transform:translateY(-10px);} }
+  `;
+  document.head.appendChild(style);
 
-    function updateCoinDisplay() {
-      coinDisplay.textContent = `${coins} Coins`;
-      localStorage.setItem('coins', coins);
+  function updateCoinDisplay() {
+    coinDisplay.textContent = `${coins} Coins`;
+    localStorage.setItem('coins', coins);
+  }
+
+  async function updateTokenBalance() {
+    if (!token || !userAddress) return;
+    try {
+      const bal = await token.balanceOf(userAddress);
+      const fmt = ethers.utils.formatUnits(bal, 18).split('.')[0];
+      freeDisplay.textContent = `${fmt} TOKEN`;
+    } catch (e) { console.error(e); }
+  }
+
+  document.getElementById('connectBtn').onclick = async () => {
+    if (!window.ethereum) return showError('Install MetaMask!');
+    try {
+      await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      userAddress = accounts[0];
+
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+      token = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, signer);
+      nft = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
+
+      walletDisplay.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
+      document.getElementById('connectBtn').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+
+      await updateTokenBalance();
+      await syncOwnedFromChain();
+      loadAll();
+      alert('Connected to Sepolia');
+    } catch (e) {
+      showError('Connect failed: ' + (e?.message || e));
     }
+  };
 
-    async function updateTokenBalance() {
-      if (!token || !userAddress) return;
-      try {
-        const bal = await token.balanceOf(userAddress);
-        const fmt = ethers.utils.formatUnits(bal, 18).split('.')[0];
-        freeDisplay.textContent = `${fmt} TOKEN`;
-      } catch (e) { console.error(e); }
-    }
+  document.getElementById('logoutBtn').onclick = () => location.reload();
 
-    document.getElementById('connectBtn').onclick = async () => {
-      if (!window.ethereum) return showError('Install MetaMask!');
-      try {
-        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        userAddress = accounts[0];
+  // FULLY SYNC ownedLocal with on-chain NFTs (for rare/token Pokémon)
+  async function syncOwnedFromChain() {
+    if (!nft || !userAddress) return;
 
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        signer = provider.getSigner();
-        token = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, signer);
-        nft = new ethers.Contract(NFT_ADDRESS, NFT_ABI, signer);
-
-        walletDisplay.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
-        document.getElementById('connectBtn').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'inline-block';
-
-        await updateTokenBalance();
-        await syncOwnedFromChain();
-        loadAll();
-        alert('Connected to Sepolia');
-      } catch (e) {
-        showError('Connect failed: ' + (e?.message || e));
+    const ownedOnChain = [];
+    try {
+      const bal = await nft.balanceOf(userAddress);
+      for (let i = 0; i < bal; i++) {
+        const id = await nft.tokenOfOwnerByIndex(userAddress, i);
+        const pokeId = Number(id);
+        const name = getNameFromId(pokeId);
+        ownedOnChain.push({ id: pokeId, name });
       }
+    } catch (e) {
+      console.error('sync error', e);
+      showError('Failed to sync owned Pokémon');
+      return;
+    }
+
+    // PRESERVE LOCAL-ONLY (starters, common) + MERGE ON-CHAIN (rare)
+    const localOnly = ownedLocal.filter(p => {
+      const details = getPurchaseDetails(p.id);
+      return details && details.currency !== 'token'; // Keep non-token purchases
+    });
+
+    // Combine: local-only + on-chain (rare)
+    ownedLocal = [...localOnly, ...ownedOnChain];
+    localStorage.setItem('owned', JSON.stringify(ownedLocal));
+    loadOwned();
+  }
+
+  document.getElementById('refreshOwned').onclick = syncOwnedFromChain;
+
+  function getNameFromId(id) {
+    const map = {
+      1:'Bulbasaur',4:'Charmander',7:'Squirtle',
+      10:'Caterpie',13:'Weedle',16:'Pidgey',19:'Rattata',21:'Spearow',
+      23:'Ekans',27:'Sandshrew',29:'Nidoran♀',32:'Nidoran♂',35:'Clefairy',
+      37:'Vulpix',39:'Jigglypuff',41:'Zubat',43:'Oddish',46:'Paras',
+      48:'Venonat',50:'Diglett',52:'Meowth',54:'Psyduck',56:'Mankey',
+      58:'Growlithe',60:'Poliwag',63:'Abra',66:'Machop',69:'Bellsprout',
+      72:'Tentacool',74:'Geodude',77:'Ponyta',79:'Slowpoke',81:'Magnemite',
+      144:'Articuno',145:'Zapdos',146:'Moltres',150:'Mewtwo',151:'Mew',
+      243:'Raikou',244:'Entei',245:'Suicune',249:'Lugia',250:'Ho-Oh',
+      377:'Regirock',378:'Regice',379:'Registeel',380:'Latias',381:'Latios',
+      382:'Kyogre',383:'Groudon',384:'Rayquaza',385:'Jirachi',386:'Deoxys',
+      480:'Uxie',481:'Mesprit',482:'Azelf',483:'Dialga',484:'Palkia',
+      485:'Heatran',486:'Regigigas',487:'Giratina',488:'Cresselia',491:'Darkrai'
     };
+    return map[id] || `Poke #${id}`;
+  }
 
-    document.getElementById('logoutBtn').onclick = () => location.reload();
-
-    async function syncOwnedFromChain() {
-      if (!nft || !userAddress) return;
-      const ownedOnChain = [];
-      try {
-        const bal = await nft.balanceOf(userAddress);
-        for (let i = 0; i < bal; i++) {
-          const id = await nft.tokenOfOwnerByIndex(userAddress, i);
-          const pokeId = Number(id);
-          ownedOnChain.push({ id: pokeId, name: getNameFromId(pokeId) });
-        }
-      } catch (e) {
-        console.error('sync error', e);
-        showError('Failed to sync owned Pokémon');
-      }
-
-      const merged = [...ownedOnChain];
-      for (const loc of ownedLocal) {
-        if (!merged.some(o => o.id === loc.id)) merged.push(loc);
-      }
-      ownedLocal = merged;
-      localStorage.setItem('owned', JSON.stringify(ownedLocal));
-      loadOwned();
-    }
-
-    document.getElementById('refreshOwned').onclick = syncOwnedFromChain;
-
-    function getNameFromId(id) {
-      const map = {
-        // Starters
-        1:'Bulbasaur',4:'Charmander',7:'Squirtle',
-        // New Commons
-        10:'Caterpie',13:'Weedle',16:'Pidgey',19:'Rattata',21:'Spearow',
-        23:'Ekans',27:'Sandshrew',29:'Nidoran♀',32:'Nidoran♂',35:'Clefairy',
-        37:'Vulpix',39:'Jigglypuff',41:'Zubat',43:'Oddish',46:'Paras',
-        48:'Venonat',50:'Diglett',52:'Meowth',54:'Psyduck',56:'Mankey',
-        58:'Growlithe',60:'Poliwag',63:'Abra',66:'Machop',69:'Bellsprout',
-        72:'Tentacool',74:'Geodude',77:'Ponyta',79:'Slowpoke',81:'Magnemite',
-        // New Rares
-        144:'Articuno',145:'Zapdos',146:'Moltres',150:'Mewtwo',151:'Mew',
-        243:'Raikou',244:'Entei',245:'Suicune',249:'Lugia',250:'Ho-Oh',
-        377:'Regirock',378:'Regice',379:'Registeel',380:'Latias',381:'Latios',
-        382:'Kyogre',383:'Groudon',384:'Rayquaza',385:'Jirachi',386:'Deoxys',
-        480:'Uxie',481:'Mesprit',482:'Azelf',483:'Dialga',484:'Palkia',
-        485:'Heatran',486:'Regigigas',487:'Giratina',488:'Cresselia',491:'Darkrai'
-      };
-      return map[id] || `Poke #${id}`;
-    }
-
-    function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
-
+  function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
     // ──────────────────────────────
     // NEW 30 COMMON + 30 RARE POKÉMON
     // ──────────────────────────────
@@ -809,12 +812,12 @@
       rare.forEach(p => grid.appendChild(createCard(p, 'token')));
     }
 
-    function loadOwned() {
-      const grid = document.getElementById('myGrid'); grid.innerHTML = '';
-      if (!ownedLocal.length) {
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
-        return;
-      }
+  function loadOwned() {
+    const grid = document.getElementById('myGrid'); grid.innerHTML = '';
+    if (!ownedLocal.length) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
+      return;
+    }
       const energyIcons = {
         fire: '<i class="fa-solid fa-fire"></i>',
         water: '<i class="fa-solid fa-droplet"></i>',
@@ -830,39 +833,39 @@
         steel: '<i class="fa-solid fa-shield"></i>'
       };
 
-      ownedLocal.forEach(p => {
-        const pokemonType = getPokemonType(p.id);
-        const hp = getPokemonHP(p.id);
-        const attack = getAttack(pokemonType);
-        const card = document.createElement('div');
-        card.className = 'card has-owned';
-        const staticImg = img(p.id);
-        const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+ownedLocal.forEach(p => {
+      const pokemonType = getPokemonType(p.id);
+      const hp = getPokemonHP(p.id);
+      const attack = getAttack(pokemonType);
+      const card = document.createElement('div');
+      card.className = 'card has-owned';
+      const staticImg = img(p.id);
+      const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
 
-        card.innerHTML = `
-          <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
-          <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
-          <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
-          <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
-          <div class="card-image-area">
-            <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+      card.innerHTML = `
+        <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
+        <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
+        <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
+        <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+        <div class="card-image-area">
+          <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+        </div>
+        <div class="card-info">
+          <div class="attack-section">
+            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e] || ''}</span>`).join('')}</div>
+            <div class="attack-name">${attack.name}</div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
           </div>
-          <div class="card-info">
-            <div class="attack-section">
-              <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e] || ''}</span>`).join('')}</div>
-              <div class="attack-name">${attack.name}</div>
-              <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
-            </div>
-            <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
-            <button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')"><i class="fa-solid fa-dollar-sign"></i> Sell</button>
-            <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
+          <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
+          <button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')"><i class="fa-solid fa-dollar-sign"></i> Sell</button>
+          <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
 
-    function loadAll() { loadStarters(); loadCommon(); loadRare(); loadOwned(); }
+  function loadAll() { loadStarters(); loadCommon(); loadRare(); loadOwned(); }
 
     window.claimStarter = (id, name) => {
       if (claimedStarters.length >= 3) return showError('Max 3 starters allowed');
@@ -911,88 +914,103 @@
       }
     };
 
-    window.sellPokemon = async (id, name) => {
-      if (!confirm(`Sell ${name}?`)) return;
-      const details = getPurchaseDetails(id);
-      if (!details) return showError('Unknown Pokémon');
+    
+// ========== FIXED sellPokemon ==========
+  window.sellPokemon = async (id, name) => {
+    if (!confirm(`Sell ${name}?`)) return;
 
-      if (details.currency !== 'token') {
-        const sellPrice = details.currency === 'free' ? 100 : Math.floor(details.price * 0.5);
-        coins += sellPrice;
-        ownedLocal = ownedLocal.filter(o=>o.id!==id);
-        if (details.currency === 'free') claimedStarters = claimedStarters.filter(c=>c!==id);
-        localStorage.setItem('owned', JSON.stringify(ownedLocal));
-        localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
-        updateCoinDisplay();
-        loadAll();
-        alert(`Sold ${name} for ${sellPrice} Coins`);
-        return;
+    const details = getPurchaseDetails(id);
+    if (!details) return showError('Unknown Pokémon');
+
+    // === LOCAL (starters / common) ===
+    if (details.currency !== 'token') {
+      const sellPrice = details.currency === 'free' ? 100 : Math.floor(details.price * 0.5);
+      coins += sellPrice;
+      ownedLocal = ownedLocal.filter(o => o.id !== id);
+      if (details.currency === 'free') {
+        claimedStarters = claimedStartersccb.filter(c => c !== id);
+      }
+      localStorage.setItem('owned', JSON.stringify(ownedLocal));
+      localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
+      updateCoinDisplay();
+      loadAll();
+      alert(`Sold ${name} for ${sellPrice} Coins`);
+      return;
+    }
+
+    // === ON-CHAIN (rare/token) ===
+    try {
+      const tx = await nft.sell(id);
+      await tx.wait();
+
+      // IMMEDIATELY REMOVE FROM LOCAL
+      ownedLocal = ownedLocal.filter(o => o.id !== id);
+      localStorage.setItem('owned', JSON.stringify(ownedLocal));
+
+      await syncOwnedFromChain(); // Re-sync to confirm
+      await updateTokenBalance();
+      loadAll();
+      alert(`Sold ${name} – 50% refunded to wallet`);
+    } catch (e) {
+      const msg = e?.error?.message || e?.message || e?.reason || e;
+      showError('Sell failed: ' + msg);
+    }
+  };
+
+  updateCoinDisplay();
+  loadAll();
+
+  window.addEventListener('storage', e => {
+    if (['coins','owned','claimedStarters'].includes(e.key)) {
+      coins = parseInt(localStorage.getItem('coins')||'500');
+      ownedLocal = JSON.parse(localStorage.getItem('owned')||'[]');
+      claimedStarters = JSON.parse(localStorage.getItem('claimedStarters')||'[]');
+      updateCoinDisplay();
+      loadAll();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.addEventListener('mouseenter', e => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const img = card.querySelector('.pokemon-img');
+      if (!img) return;
+
+      const gifSrc = img.dataset.gif;
+      if (!img.dataset.preloaded) {
+        const pre = new Image();
+        pre.src = gifSrc;
+        img.dataset.preloaded = 'true';
       }
 
-      try {
-        const tx = await nft.sell(id);
-        await tx.wait();
-        await syncOwnedFromChain();
-        await updateTokenBalance();
-        alert(`Sold ${name} – 50% refunded`);
-      } catch (e) {
-        const msg = e?.error?.message || e?.message || e?.reason || e;
-        showError('Sell failed: ' + msg);
+      if (img.src !== gifSrc) {
+        img.style.opacity = 0;
+        setTimeout(() => {
+          img.src = gifSrc;
+          img.style.opacity = 1;
+        }, 150);
       }
-    };
+    }, true);
 
-    updateCoinDisplay();
-    loadAll();
+    document.body.addEventListener('mouseleave', e => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const img = card.querySelector('.pokemon-img');
+      if (!img || !img.dataset.originalSrc) return;
 
-    window.addEventListener('storage', e => {
-      if (['coins','owned','claimedStarters'].includes(e.key)) {
-        coins = parseInt(localStorage.getItem('coins')||'500');
-        ownedLocal = JSON.parse(localStorage.getItem('owned')||'[]');
-        claimedStarters = JSON.parse(localStorage.getItem('claimedStarters')||'[]');
-        updateCoinDisplay();
-        loadAll();
+      const staticSrc = img.dataset.originalSrc || img.src;
+      if (!img.dataset.originalSrc) img.dataset.originalSrc = staticSrc;
+
+      if (img.src !== staticSrc) {
+        img.style.opacity = 0;
+        setTimeout(() => {
+          img.src = staticSrc;
+          img.style.opacity = 1;
+        }, 150);
       }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.body.addEventListener('mouseenter', e => {
-        const card = e.target.closest('.card');
-        if (!card) return;
-        const img = card.querySelector('.pokemon-img');
-        if (!img) return;
-
-        const gifSrc = img.dataset.gif;
-        if (!img.dataset.preloaded) {
-          const pre = new Image();
-          pre.src = gifSrc;
-          img.dataset.preloaded = 'true';
-        }
-
-        if (img.src !== gifSrc) {
-          img.style.opacity = 0;
-          setTimeout(() => {
-            img.src = gifSrc;
-            img.style.opacity = 1;
-          }, 150);
-        }
-      }, true);
-
-      document.body.addEventListener('mouseleave', e => {
-        const card = e.target.closest('.card');
-        if (!card) return;
-        const img = card.querySelector('.pokemon-img');
-        if (!img || !img.dataset.originalSrc) return;
-
-        const staticSrc = img.dataset.originalSrc;
-        if (img.src !== staticSrc) {
-          img.style.opacity = 0;
-          setTimeout(() => {
-            img.src = staticSrc;
-            img.style.opacity = 1;
-          }, 150);
-        }
-      }, true);
-    });
-  </script>
+    }, true);
+  });
+</script>
 </body>
 </html>
