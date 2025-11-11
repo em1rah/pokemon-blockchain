@@ -832,28 +832,19 @@
 
     let extraBtn = '';
 
-    // -------------------------------------------------
-    // 1. Starters & Common Pokémon → **no sell button**
-    // -------------------------------------------------
     const isStarter = starters.some(s => s.id === p.id);
     const isCommon  = common.some(c => c.id === p.id);
 
     if (isStarter || isCommon) {
-      // nothing – we deliberately show **no** button
     }
-    // -------------------------------------------------
-    // 2. Rare (token-bought) Pokémon → marketplace buttons
-    // -------------------------------------------------
-    else if (p.price !== undefined) {               // on-chain token
+    else if (p.price !== undefined) {              
       if (p.price > 0) {
         extraBtn = `<button class="sell-btn" onclick="cancelListing(${p.id})">Cancel Sale</button>`;
       } else {
         extraBtn = `<button class="sell-btn" onclick="promptList(${p.id},'${p.name}')">List for Sale</button>`;
       }
     }
-    // -------------------------------------------------
-    // 3. (Legacy) burn-and-refund – keep for old rares
-    // -------------------------------------------------
+  
     else {
       extraBtn = `<button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')">Sell (50% refund)</button>`;
     }
