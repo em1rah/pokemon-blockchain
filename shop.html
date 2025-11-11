@@ -838,7 +838,7 @@ ownedLocal.forEach(p => {
       card.innerHTML = `
         <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
         <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
-        <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-heart"></i><span class="hp-value">${hp}</span></div></div>
+        <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
         <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
         <div class="card-image-area">
           <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
