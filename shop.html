@@ -64,7 +64,6 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
       transition: all 0.3s ease;
     }
-
     .card::before {
       content: '';
       position: absolute;
@@ -416,10 +415,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Shop</h1></div>
     <div class="menu">
-        <a href="home.html">🏠 Home</a>
-      <a href="arena.html">⚔ Arena</a>
-      <a href="shop.html">🛒 Shop</a>
-      <a href="settings.html">⚙ Settings</a>
+        <a href="home.html">Home</a>
+      <a href="arena.html">Arena</a>
+      <a href="shop.html">Shop</a>
+      <a href="settings.html">Settings</a>
     </div>
     <div class="status">
       <span class="coins" id="coinDisplay">500 Coins</span>
@@ -449,8 +448,8 @@
 
 <script>
   // ──────────────────────────────────────
-  const TOKEN_ADDRESS = '0x62D43050C999BD8DF36De560F29f518F7579dE68';
-  const NFT_ADDRESS   = '0x7c2c971F8571c462c800Aa143CA84007a78C0A7B';
+  const TOKEN_ADDRESS = '0x8b50B0A3e5F8e774579554eA723356D84C232aa3';
+  const NFT_ADDRESS   = '0xaa3FD902ECC943893D867B09dCB8e248dAc0CE80';
   // ──────────────────────────────────────
 
   const ERC20_ABI = [
@@ -460,10 +459,19 @@
   ];
 
   const NFT_ABI = [
+    // mint
     'function mintWithToken(address to,uint256 pokeId,string name,uint256 amount) external returns (uint256)',
-    'function sell(uint256 pokeId) external',
+    // marketplace
+    'function listForSale(uint256 tokenId,uint256 price) external',
+    'function cancelListing(uint256 tokenId) external',
+    'function buyListed(uint256 tokenId) external',
+    // optional burn-refund
+    'function sellAndRefund(uint256 tokenId) external',
+    // view
     'function balanceOf(address) view returns (uint256)',
-    'function tokenOfOwnerByIndex(address owner,uint256 index) view returns (uint256)'
+    'function tokenOfOwnerByIndex(address owner,uint256 index) view returns (uint256)',
+    'function listings(uint256) view returns (tuple(uint256 price, address seller))',
+    'function purchasePrice(uint256) view returns (uint256)'
   ];
 
   let provider, signer, token, nft, userAddress;
@@ -475,23 +483,16 @@
   const freeDisplay = document.getElementById('freeDisplay');
   const walletDisplay = document.getElementById('walletDisplay');
 
+  /* ---------- UI HELPERS ---------- */
   function showError(msg) {
     const toast = document.createElement('div');
     toast.textContent = msg;
-    toast.style.cssText = `
-      position:fixed; top:20px; right:20px; z-index:9999;
-      background:#c62828; color:#fff; padding:12px 20px;
-      border-radius:8px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.5);
-      animation:fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
-    `;
+    toast.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;background:#c62828;color:#fff;padding:12px 20px;border-radius:8px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.5);animation:fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
   }
   const style = document.createElement('style');
-  style.textContent = `
-    @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
-    @keyframes fadeOut { from {opacity:1; transform:translateY(0);} to {opacity:0; transform:translateY(-10px);} }
-  `;
+  style.textContent = `@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}@keyframes fadeOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-10px)}}`;
   document.head.appendChild(style);
 
   function updateCoinDisplay() {
@@ -508,6 +509,7 @@
     } catch (e) { console.error(e); }
   }
 
+  /* ---------- WALLET ---------- */
   document.getElementById('connectBtn').onclick = async () => {
     if (!window.ethereum) return showError('Install MetaMask!');
     try {
@@ -528,17 +530,13 @@
       await syncOwnedFromChain();
       loadAll();
       alert('Connected to Sepolia');
-    } catch (e) {
-      showError('Connect failed: ' + (e?.message || e));
-    }
+    } catch (e) { showError('Connect failed: ' + (e?.message || e)); }
   };
-
   document.getElementById('logoutBtn').onclick = () => location.reload();
 
-  // FULLY SYNC ownedLocal with on-chain NFTs (for rare/token Pokémon)
+  /* ---------- SYNC OWNED (on-chain) ---------- */
   async function syncOwnedFromChain() {
     if (!nft || !userAddress) return;
-
     const ownedOnChain = [];
     try {
       const bal = await nft.balanceOf(userAddress);
@@ -546,26 +544,22 @@
         const id = await nft.tokenOfOwnerByIndex(userAddress, i);
         const pokeId = Number(id);
         const name = getNameFromId(pokeId);
-        ownedOnChain.push({ id: pokeId, name });
+        const listing = await nft.listings(pokeId);
+        ownedOnChain.push({ id: pokeId, name, price: Number(ethers.utils.formatUnits(listing.price, 18)), seller: listing.seller });
       }
-    } catch (e) {
-      console.error('sync error', e);
-      showError('Failed to sync owned Pokémon');
-      return;
-    }
+    } catch (e) { console.error(e); showError('Sync failed'); return; }
 
     const localOnly = ownedLocal.filter(p => {
-      const details = getPurchaseDetails(p.id);
-      return details && details.currency !== 'token'; 
+      const d = getPurchaseDetails(p.id);
+      return d && d.currency !== 'token';
     });
-
     ownedLocal = [...localOnly, ...ownedOnChain];
     localStorage.setItem('owned', JSON.stringify(ownedLocal));
     loadOwned();
   }
-
   document.getElementById('refreshOwned').onclick = syncOwnedFromChain;
 
+  /* ---------- DATA ---------- */
   function getNameFromId(id) {
     const map = {
       1:'Bulbasaur',4:'Charmander',7:'Squirtle',
@@ -586,254 +580,265 @@
   }
 
   function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
-    const starters = [
-      {id:1,name:'Bulbasaur', type:'Grass'},
-      {id:4,name:'Charmander', type:'Fire'},
-      {id:7,name:'Squirtle', type:'Water'}
-    ];
 
-    const common = [
-      {id:10,name:'Caterpie',price:120,type:'Bug'},
-      {id:13,name:'Weedle',price:120,type:'Bug'},
-      {id:16,name:'Pidgey',price:140,type:'Normal'},
-      {id:19,name:'Rattata',price:130,type:'Normal'},
-      {id:21,name:'Spearow',price:150,type:'Normal'},
-      {id:23,name:'Ekans',price:160,type:'Poison'},
-      {id:27,name:'Sandshrew',price:170,type:'Ground'},
-      {id:29,name:'Nidoran♀',price:180,type:'Poison'},
-      {id:32,name:'Nidoran♂',price:180,type:'Poison'},
-      {id:35,name:'Clefairy',price:280,type:'Fairy'},
-      {id:37,name:'Vulpix',price:220,type:'Fire'},
-      {id:39,name:'Jigglypuff',price:240,type:'Normal'},
-      {id:41,name:'Zubat',price:150,type:'Poison'},
-      {id:43,name:'Oddish',price:170,type:'Grass'},
-      {id:46,name:'Paras',price:160,type:'Bug'},
-      {id:48,name:'Venonat',price:180,type:'Bug'},
-      {id:50,name:'Diglett',price:160,type:'Ground'},
-      {id:52,name:'Meowth',price:210,type:'Normal'},
-      {id:54,name:'Psyduck',price:200,type:'Water'},
-      {id:56,name:'Mankey',price:190,type:'Fighting'},
-      {id:58,name:'Growlithe',price:230,type:'Fire'},
-      {id:60,name:'Poliwag',price:170,type:'Water'},
-      {id:63,name:'Abra',price:290,type:'Psychic'},
-      {id:66,name:'Machop',price:200,type:'Fighting'},
-      {id:69,name:'Bellsprout',price:170,type:'Grass'},
-      {id:72,name:'Tentacool',price:190,type:'Water'},
-      {id:74,name:'Geodude',price:180,type:'Rock'},
-      {id:77,name:'Ponyta',price:240,type:'Fire'},
-      {id:79,name:'Slowpoke',price:210,type:'Water'},
-      {id:81,name:'Magnemite',price:220,type:'Electric'}
-    ];
+  const starters = [
+    {id:1,name:'Bulbasaur', type:'Grass'},
+    {id:4,name:'Charmander', type:'Fire'},
+    {id:7,name:'Squirtle', type:'Water'}
+  ];
 
-    const rare = [
-      {id:144,name:'Articuno',price:3200,type:'Ice'},
-      {id:145,name:'Zapdos',price:3200,type:'Electric'},
-      {id:146,name:'Moltres',price:3200,type:'Fire'},
-      {id:150,name:'Mewtwo',price:6800,type:'Psychic'},
-      {id:151,name:'Mew',price:9200,type:'Psychic'},
-      {id:243,name:'Raikou',price:4200,type:'Electric'},
-      {id:244,name:'Entei',price:4200,type:'Fire'},
-      {id:245,name:'Suicune',price:4200,type:'Water'},
-      {id:249,name:'Lugia',price:7200,type:'Psychic'},
-      {id:250,name:'Ho-Oh',price:7200,type:'Fire'},
-      {id:377,name:'Regirock',price:4800,type:'Rock'},
-      {id:378,name:'Regice',price:4800,type:'Ice'},
-      {id:379,name:'Registeel',price:4800,type:'Steel'},
-      {id:380,name:'Latias',price:5200,type:'Dragon'},
-      {id:381,name:'Latios',price:5200,type:'Dragon'},
-      {id:382,name:'Kyogre',price:6800,type:'Water'},
-      {id:383,name:'Groudon',price:6800,type:'Ground'},
-      {id:384,name:'Rayquaza',price:8200,type:'Dragon'},
-      {id:385,name:'Jirachi',price:5800,type:'Steel'},
-      {id:386,name:'Deoxys',price:7000,type:'Psychic'},
-      {id:480,name:'Uxie',price:4600,type:'Psychic'},
-      {id:481,name:'Mesprit',price:4600,type:'Psychic'},
-      {id:482,name:'Azelf',price:4600,type:'Psychic'},
-      {id:483,name:'Dialga',price:7200,type:'Steel'},
-      {id:484,name:'Palkia',price:7200,type:'Water'},
-      {id:485,name:'Heatran',price:5800,type:'Fire'},
-      {id:486,name:'Regigigas',price:6800,type:'Normal'},
-      {id:487,name:'Giratina',price:7500,type:'Ghost'},
-      {id:488,name:'Cresselia',price:5200,type:'Psychic'},
-      {id:491,name:'Darkrai',price:6800,type:'Dark'}
-    ];
+  const common = [
+    {id:10,name:'Caterpie',price:120,type:'Bug'},
+    {id:13,name:'Weedle',price:120,type:'Bug'},
+    {id:16,name:'Pidgey',price:140,type:'Normal'},
+    {id:19,name:'Rattata',price:130,type:'Normal'},
+    {id:21,name:'Spearow',price:150,type:'Normal'},
+    {id:23,name:'Ekans',price:160,type:'Poison'},
+    {id:27,name:'Sandshrew',price:170,type:'Ground'},
+    {id:29,name:'Nidoran♀',price:180,type:'Poison'},
+    {id:32,name:'Nidoran♂',price:180,type:'Poison'},
+    {id:35,name:'Clefairy',price:280,type:'Fairy'},
+    {id:37,name:'Vulpix',price:220,type:'Fire'},
+    {id:39,name:'Jigglypuff',price:240,type:'Normal'},
+    {id:41,name:'Zubat',price:150,type:'Poison'},
+    {id:43,name:'Oddish',price:170,type:'Grass'},
+    {id:46,name:'Paras',price:160,type:'Bug'},
+    {id:48,name:'Venonat',price:180,type:'Bug'},
+    {id:50,name:'Diglett',price:160,type:'Ground'},
+    {id:52,name:'Meowth',price:210,type:'Normal'},
+    {id:54,name:'Psyduck',price:200,type:'Water'},
+    {id:56,name:'Mankey',price:190,type:'Fighting'},
+    {id:58,name:'Growlithe',price:230,type:'Fire'},
+    {id:60,name:'Poliwag',price:170,type:'Water'},
+    {id:63,name:'Abra',price:290,type:'Psychic'},
+    {id:66,name:'Machop',price:200,type:'Fighting'},
+    {id:69,name:'Bellsprout',price:170,type:'Grass'},
+    {id:72,name:'Tentacool',price:190,type:'Water'},
+    {id:74,name:'Geodude',price:180,type:'Rock'},
+    {id:77,name:'Ponyta',price:240,type:'Fire'},
+    {id:79,name:'Slowpoke',price:210,type:'Water'},
+    {id:81,name:'Magnemite',price:220,type:'Electric'}
+  ];
 
-    function getPokemonType(id) {
-      return common.find(p=>p.id===id)?.type ||
-             rare.find(p=>p.id===id)?.type ||
-             starters.find(p=>p.id===id)?.type || 'Normal';
+  const rare = [
+    {id:144,name:'Articuno',price:3200,type:'Ice'},
+    {id:145,name:'Zapdos',price:3200,type:'Electric'},
+    {id:146,name:'Moltres',price:3200,type:'Fire'},
+    {id:150,name:'Mewtwo',price:6800,type:'Psychic'},
+    {id:151,name:'Mew',price:9200,type:'Psychic'},
+    {id:243,name:'Raikou',price:4200,type:'Electric'},
+    {id:244,name:'Entei',price:4200,type:'Fire'},
+    {id:245,name:'Suicune',price:4200,type:'Water'},
+    {id:249,name:'Lugia',price:7200,type:'Psychic'},
+    {id:250,name:'Ho-Oh',price:7200,type:'Fire'},
+    {id:377,name:'Regirock',price:4800,type:'Rock'},
+    {id:378,name:'Regice',price:4800,type:'Ice'},
+    {id:379,name:'Registeel',price:4800,type:'Steel'},
+    {id:380,name:'Latias',price:5200,type:'Dragon'},
+    {id:381,name:'Latios',price:5200,type:'Dragon'},
+    {id:382,name:'Kyogre',price:6800,type:'Water'},
+    {id:383,name:'Groudon',price:6800,type:'Ground'},
+    {id:384,name:'Rayquaza',price:8200,type:'Dragon'},
+    {id:385,name:'Jirachi',price:5800,type:'Steel'},
+    {id:386,name:'Deoxys',price:7000,type:'Psychic'},
+    {id:480,name:'Uxie',price:4600,type:'Psychic'},
+    {id:481,name:'Mesprit',price:4600,type:'Psychic'},
+    {id:482,name:'Azelf',price:4600,type:'Psychic'},
+    {id:483,name:'Dialga',price:7200,type:'Steel'},
+    {id:484,name:'Palkia',price:7200,type:'Water'},
+    {id:485,name:'Heatran',price:5800,type:'Fire'},
+    {id:486,name:'Regigigas',price:6800,type:'Normal'},
+    {id:487,name:'Giratina',price:7500,type:'Ghost'},
+    {id:488,name:'Cresselia',price:5200,type:'Psychic'},
+    {id:491,name:'Darkrai',price:6800,type:'Dark'}
+  ];
+
+  function getPokemonType(id) {
+    return common.find(p=>p.id===id)?.type ||
+           rare.find(p=>p.id===id)?.type ||
+           starters.find(p=>p.id===id)?.type || 'Normal';
+  }
+
+  function getPokemonHP(id) {
+    return Math.min(200, 50 + Math.floor(id / 2.5) + (id > 150 ? 50 : 0) + (id > 700 ? 40 : 0));
+  }
+
+  function getRarity(type, price) {
+    if (type === 'starter') return { level: 'STARTER', stars: '<i class="fa-solid fa-seedling"></i>' };
+    if (type === 'token') {
+      if (price >= 7000) return { level: 'MYTHICAL', stars: '<i class="fa-solid fa-star"></i>'.repeat(5) };
+      if (price >= 5000) return { level: 'LEGENDARY', stars: '<i class="fa-solid fa-star"></i>'.repeat(4) };
+      if (price >= 3000) return { level: 'ULTRA', stars: '<i class="fa-solid fa-star"></i>'.repeat(3) };
+      return { level: 'RARE', stars: '<i class="fa-solid fa-star"></i>'.repeat(2) };
     }
+    if (price >= 250) return { level: 'UNCOMMON', stars: '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>' };
+    return { level: 'COMMON', stars: '<i class="fa-solid fa-star"></i>' };
+  }
 
-    function getPokemonHP(id) {
-      return Math.min(200, 50 + Math.floor(id / 2.5) + (id > 150 ? 50 : 0) + (id > 700 ? 40 : 0));
-    }
+  function getAttack(type) {
+    const attacks = {
+      'Bug': { name: 'Bug Bite', cost: ['leaf'], damage: 60 },
+      'Normal': { name: 'Tackle', cost: [], damage: 40 },
+      'Poison': { name: 'Poison Sting', cost: ['ghost'], damage: 50 },
+      'Ground': { name: 'Earthquake', cost: ['steel','steel'], damage: 100 },
+      'Fairy': { name: 'Dazzling Gleam', cost: ['sparkles','sparkles'], damage: 80 },
+      'Fire': { name: 'Ember', cost: ['fire'], damage: 70 },
+      'Water': { name: 'Water Gun', cost: ['water'], damage: 60 },
+      'Grass': { name: 'Vine Whip', cost: ['leaf'], damage: 65 },
+      'Electric': { name: 'Thunder Shock', cost: ['lightning'], damage: 70 },
+      'Psychic': { name: 'Confusion', cost: ['crystal'], damage: 75 },
+      'Ice': { name: 'Ice Shard', cost: ['snowflake'], damage: 70 },
+      'Fighting': { name: 'Karate Chop', cost: ['fist'], damage: 70 },
+      'Rock': { name: 'Rock Throw', cost: ['steel'], damage: 65 },
+      'Ghost': { name: 'Lick', cost: ['ghost'], damage: 60 },
+      'Dragon': { name: 'Dragon Rage', cost: ['dragon'], damage: 90 },
+      'Dark': { name: 'Bite', cost: ['dark'], damage: 70 },
+      'Steel': { name: 'Metal Claw', cost: ['steel'], damage: 75 }
+    };
+    return attacks[type] || attacks['Normal'];
+  }
 
-    function getRarity(type, price) {
-      if (type === 'starter') return { level: 'STARTER', stars: '<i class="fa-solid fa-seedling"></i>' };
-      if (type === 'token') {
-        if (price >= 7000) return { level: 'MYTHICAL', stars: '<i class="fa-solid fa-star"></i>'.repeat(5) };
-        if (price >= 5000) return { level: 'LEGENDARY', stars: '<i class="fa-solid fa-star"></i>'.repeat(4) };
-        if (price >= 3000) return { level: 'ULTRA', stars: '<i class="fa-solid fa-star"></i>'.repeat(3) };
-        return { level: 'RARE', stars: '<i class="fa-solid fa-star"></i>'.repeat(2) };
-      }
-      if (price >= 250) return { level: 'UNCOMMON', stars: '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>' };
-      return { level: 'COMMON', stars: '<i class="fa-solid fa-star"></i>' };
-    }
+  function getPurchaseDetails(id) {
+    const s = starters.find(x=>x.id===id); if(s) return {price:0,currency:'free'};
+    const c = common.find(x=>x.id===id); if(c) return {price:c.price,currency:'coins'};
+    const r = rare.find(x=>x.id===id); if(r) return {price:r.price,currency:'token'};
+    return null;
+  }
 
-    function getAttack(type) {
-      const attacks = {
-        'Bug': { name: 'Bug Bite', cost: ['leaf'], damage: 60 },
-        'Normal': { name: 'Tackle', cost: [], damage: 40 },
-        'Poison': { name: 'Poison Sting', cost: ['ghost'], damage: 50 },
-        'Ground': { name: 'Earthquake', cost: ['steel','steel'], damage: 100 },
-        'Fairy': { name: 'Dazzling Gleam', cost: ['sparkles','sparkles'], damage: 80 },
-        'Fire': { name: 'Ember', cost: ['fire'], damage: 70 },
-        'Water': { name: 'Water Gun', cost: ['water'], damage: 60 },
-        'Grass': { name: 'Vine Whip', cost: ['leaf'], damage: 65 },
-        'Electric': { name: 'Thunder Shock', cost: ['lightning'], damage: 70 },
-        'Psychic': { name: 'Confusion', cost: ['crystal'], damage: 75 },
-        'Ice': { name: 'Ice Shard', cost: ['snowflake'], damage: 70 },
-        'Fighting': { name: 'Karate Chop', cost: ['fist'], damage: 70 },
-        'Rock': { name: 'Rock Throw', cost: ['steel'], damage: 65 },
-        'Ghost': { name: 'Lick', cost: ['ghost'], damage: 60 },
-        'Dragon': { name: 'Dragon Rage', cost: ['dragon'], damage: 90 },
-        'Dark': { name: 'Bite', cost: ['dark'], damage: 70 },
-        'Steel': { name: 'Metal Claw', cost: ['steel'], damage: 75 }
-      };
-      return attacks[type] || attacks['Normal'];
-    }
+  const energyIcons = {
+    fire: '<i class="fa-solid fa-fire"></i>',
+    water: '<i class="fa-solid fa-droplet"></i>',
+    leaf: '<i class="fa-solid fa-leaf"></i>',
+    lightning: '<i class="fa-solid fa-bolt"></i>',
+    crystal: '<i class="fa-solid fa-gem"></i>',
+    snowflake: '<i class="fa-solid fa-snowflake"></i>',
+    ghost: '<i class="fa-solid fa-ghost"></i>',
+    dragon: '<i class="fa-solid fa-dragon"></i>',
+    sparkles: '<i class="fa-solid fa-sparkles"></i>',
+    fist: '<i class="fa-solid fa-hand-fist"></i>',
+    dark: '<i class="fa-solid fa-moon"></i>',
+    steel: '<i class="fa-solid fa-shield"></i>'
+  };
 
-    function getPurchaseDetails(id) {
-      const s = starters.find(x=>x.id===id); if(s) return {price:0,currency:'free'};
-      const c = common.find(x=>x.id===id); if(c) return {price:c.price,currency:'coins'};
-      const r = rare.find(x=>x.id===id); if(r) return {price:r.price,currency:'token'};
-      return null;
-    }
+  /* ---------- CARD CREATION ---------- */
+  function createCard(poke, type, listing = null) {
+    const has = ownedLocal.some(o => o.id === poke.id);
+    const card = document.createElement('div');
+    const cardClass = type === 'starter' ? 'starter-card' : type === 'token' ? 'rare-card' : '';
+    card.className = `card ${cardClass} ${has ? 'has-owned' : ''}`;
 
-    function createCard(poke, type) {
-      const has = ownedLocal.some(o => o.id === poke.id);
-      const card = document.createElement('div');
-      const cardClass = type === 'starter' ? 'starter-card' : type === 'token' ? 'rare-card' : '';
-      card.className = `card ${cardClass} ${has ? 'has-owned' : ''}`;
+    const pokemonType = getPokemonType(poke.id);
+    const hp = getPokemonHP(poke.id);
+    const attack = getAttack(pokemonType);
+    const rarity = getRarity(type, poke.price);
+    const priceIcon = type === 'token' ? '<i class="fa-solid fa-gem"></i>' : '<i class="fa-solid fa-coins"></i>';
+    const priceText = type === 'token' ? `${poke.price} TOKEN` : `${poke.price} Coins`;
 
-      const priceText = type === 'token' ? `${poke.price} TOKEN` : `${poke.price} Coins`;
-      const btnText = has ? 'Owned' : (type === 'starter' ? 'Claim' : type === 'token' ? 'Buy with TOKEN' : 'Buy');
-      const btnClass = type === 'token' ? 'token-btn' : 'coin-btn';
-      const pokemonType = getPokemonType(poke.id);
-      const hp = getPokemonHP(poke.id);
-      const priceIcon = type === 'token' ? '<i class="fa-solid fa-gem"></i>' : '<i class="fa-solid fa-coins"></i>';
-      const rarity = getRarity(type, poke.price);
-      const attack = getAttack(pokemonType);
+    const staticImg = img(poke.id);
+    const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${poke.id}.gif`;
 
-      const energyIcons = {
-        fire: '<i class="fa-solid fa-fire"></i>',
-        water: '<i class="fa-solid fa-droplet"></i>',
-        leaf: '<i class="fa-solid fa-leaf"></i>',
-        lightning: '<i class="fa-solid fa-bolt"></i>',
-        crystal: '<i class="fa-solid fa-gem"></i>',
-        snowflake: '<i class="fa-solid fa-snowflake"></i>',
-        ghost: '<i class="fa-solid fa-ghost"></i>',
-        dragon: '<i class="fa-solid fa-dragon"></i>',
-        sparkles: '<i class="fa-solid fa-sparkles"></i>',
-        fist: '<i class="fa-solid fa-hand-fist"></i>',
-        dark: '<i class="fa-solid fa-moon"></i>',
-        steel: '<i class="fa-solid fa-shield"></i>'
-      };
-
-      const staticImg = img(poke.id);
-      const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${poke.id}.gif`;
-
-      card.innerHTML = `
-        ${has ? '<div class="owned-tag"><i class="fa-solid fa-check"></i></div>' : ''}
-        <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
-        <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
-        <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase() === 'normal' ? 'paw' : pokemonType.toLowerCase() === 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
-        <div class="card-image-area">
-          <img src="${staticImg}"
-               data-gif="${gifImg}"
-               alt="${poke.name}"
-               loading="lazy"
-               class="pokemon-img"
-               onload="this.style.opacity=1"
-               style="opacity:0;">
-        </div>
-        <div class="card-info">
-          <div class="attack-section">
-            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]}</span>`).join('')}</div>
-            <div class="attack-name">${attack.name}</div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
-          </div>
-          <div class="card-id">#${String(poke.id).padStart(3,'0')} | ${poke.name}</div>
-          <div class="weakness-resistance">
-            <span><i class="fa-solid fa-bolt"></i> Weak: ${pokemonType === 'Grass' ? 'Fire' : '???'}</span>
-            <span><i class="fa-solid fa-shield"></i> Resist: ${pokemonType === 'Steel' ? 'Normal' : '???'}</span>
-          </div>
-          <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
-          <button class="${btnClass}" ${has?'disabled':''}
-            onclick="${type==='starter'?`claimStarter(${poke.id},'${poke.name}')`:
-                      type==='token'?`buyRare(${poke.id},'${poke.name}',${poke.price})`:
-                      `buyCommon(${poke.id},'${poke.name}',${poke.price})`}">
-            ${btnText}
-          </button>
-          <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
-        </div>
-      `;
-      return card;
-    }
-
-    function loadStarters() {
-      const grid = document.getElementById('starterGrid'); grid.innerHTML = '';
-      starters.forEach(p => {
-        if (claimedStarters.includes(p.id) || claimedStarters.length >= 3) {
-          const card = createCard(p, 'starter');
-          card.querySelector('button').disabled = true;
-          card.querySelector('button').textContent = 'Claimed';
-          grid.appendChild(card);
+    // ---------- BUTTON ----------
+    let btnHTML = '';
+    if (type === 'starter') {
+      const claimed = claimedStarters.includes(poke.id) || claimedStarters.length >= 3;
+      btnHTML = `<button class="coin-btn" ${claimed?'disabled':''} onclick="${claimed?'':'claimStarter('+poke.id+',\''+poke.name+'\')'}">${claimed?'Claimed':'Claim'}</button>`;
+    } else if (type === 'common') {
+      btnHTML = `<button class="coin-btn" ${has?'disabled':''} onclick="${has?'':'buyCommon('+poke.id+',\''+poke.name+'\','+poke.price+')'}">${has?'Owned':'Buy'}</button>`;
+    } else if (type === 'token') {
+      if (listing && listing.price > 0) {
+        const isOwner = listing.seller.toLowerCase() === userAddress?.toLowerCase();
+        if (isOwner) {
+          btnHTML = `<button class="sell-btn" onclick="cancelListing(${poke.id})">Cancel</button>`;
         } else {
-          grid.appendChild(createCard(p, 'starter'));
+          btnHTML = `<button class="token-btn" onclick="buyListed(${poke.id})">Buy ${listing.price} TOKEN</button>`;
         }
-      });
+      } else {
+        btnHTML = `<button class="token-btn" ${has?'disabled':''} onclick="${has?'':'buyRare('+poke.id+',\''+poke.name+'\','+poke.price+')'}">${has?'Owned':'Buy with TOKEN'}</button>`;
+      }
     }
 
-    function loadCommon() {
-      const grid = document.getElementById('shopGrid'); grid.innerHTML = '';
-      common.forEach(p => grid.appendChild(createCard(p, 'common')));
-    }
+    card.innerHTML = `
+      <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
+      <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
+      <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()=== 'normal' ? 'paw' : pokemonType.toLowerCase()=== 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+      <div class="card-image-area">
+        <img src="${staticImg}" data-gif="${gifImg}" alt="${poke.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+      </div>
+      <div class="card-info">
+        <div class="attack-section">
+          <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]}</span>`).join('')}</div>
+          <div class="attack-name">${attack.name}</div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
+        </div>
+        <div class="card-id">#${String(poke.id).padStart(3,'0')} | ${poke.name}</div>
+        <div class="weakness-resistance">
+          <span><i class="fa-solid fa-bolt"></i> Weak: ???</span>
+          <span><i class="fa-solid fa-shield"></i> Resist: ???</span>
+        </div>
+        <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
+        ${btnHTML}
+        <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+      </div>
+    `;
+    return card;
+  }
 
-    function loadRare() {
-      const grid = document.getElementById('rareGrid'); grid.innerHTML = '';
-      rare.forEach(p => grid.appendChild(createCard(p, 'token')));
-    }
+  /* ---------- LOAD GRIDS ---------- */
+  function loadStarters() {
+    const grid = document.getElementById('starterGrid'); grid.innerHTML = '';
+    starters.forEach(p => {
+      if (claimedStarters.includes(p.id) || claimedStarters.length >= 3) {
+        const card = createCard(p, 'starter');
+        card.querySelector('button').disabled = true;
+        card.querySelector('button').textContent = 'Claimed';
+        grid.appendChild(card);
+      } else {
+        grid.appendChild(createCard(p, 'starter'));
+      }
+    });
+  }
 
-  function loadOwned() {
+  function loadCommon() {
+    const grid = document.getElementById('shopGrid'); grid.innerHTML = '';
+    common.forEach(p => grid.appendChild(createCard(p, 'common')));
+  }
+
+  async function loadRare() {
+    const grid = document.getElementById('rareGrid'); grid.innerHTML = '';
+    for (const p of rare) {
+      let listing = {price:0, seller:ethers.constants.AddressZero};
+      try { listing = await nft.listings(p.id); } catch(e){}
+      const price = Number(ethers.utils.formatUnits(listing.price, 18));
+      grid.appendChild(createCard(p, 'token', price>0?{price,seller:listing.seller}:null));
+    }
+  }
+
+  async function loadOwned() {
     const grid = document.getElementById('myGrid'); grid.innerHTML = '';
     if (!ownedLocal.length) {
       grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
       return;
     }
-      const energyIcons = {
-        fire: '<i class="fa-solid fa-fire"></i>',
-        water: '<i class="fa-solid fa-droplet"></i>',
-        leaf: '<i class="fa-solid fa-leaf"></i>',
-        lightning: '<i class="fa-solid fa-bolt"></i>',
-        crystal: '<i class="fa-solid fa-gem"></i>',
-        snowflake: '<i class="fa-solid fa-snowflake"></i>',
-        ghost: '<i class="fa-solid fa-ghost"></i>',
-        dragon: '<i class="fa-solid fa-dragon"></i>',
-        sparkles: '<i class="fa-solid fa-sparkles"></i>',
-        fist: '<i class="fa-solid fa-hand-fist"></i>',
-        dark: '<i class="fa-solid fa-moon"></i>',
-        steel: '<i class="fa-solid fa-shield"></i>'
-      };
-
-ownedLocal.forEach(p => {
+    for (const p of ownedLocal) {
       const pokemonType = getPokemonType(p.id);
       const hp = getPokemonHP(p.id);
       const attack = getAttack(pokemonType);
       const card = document.createElement('div');
       card.className = 'card has-owned';
+
       const staticImg = img(p.id);
       const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+
+      let extraBtn = '';
+      if (p.price !== undefined) { // on-chain token
+        if (p.price > 0) {
+          extraBtn = `<button class="sell-btn" onclick="cancelListing(${p.id})">Cancel Sale</button>`;
+        } else {
+          extraBtn = `<button class="sell-btn" onclick="promptList(${p.id},'${p.name}')">List for Sale</button>`;
+        }
+      } else {
+        extraBtn = `<button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')">Sell (50% refund)</button>`;
+      }
 
       card.innerHTML = `
         <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
@@ -845,141 +850,134 @@ ownedLocal.forEach(p => {
         </div>
         <div class="card-info">
           <div class="attack-section">
-            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e] || ''}</span>`).join('')}</div>
+            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]||''}</span>`).join('')}</div>
             <div class="attack-name">${attack.name}</div>
             <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
           </div>
           <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
-          <button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')"><i class="fa-solid fa-dollar-sign"></i> Sell</button>
+          ${extraBtn}
           <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
         </div>
       `;
       grid.appendChild(card);
-    });
+    }
   }
 
   function loadAll() { loadStarters(); loadCommon(); loadRare(); loadOwned(); }
 
-    window.claimStarter = (id, name) => {
-      if (claimedStarters.length >= 3) return showError('Max 3 starters allowed');
-      if (claimedStarters.includes(id)) return showError('Already claimed');
-      claimedStarters.push(id);
-      ownedLocal.push({id, name});
-      localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
-      localStorage.setItem('owned', JSON.stringify(ownedLocal));
-      loadAll();
-    };
-
-    window.buyCommon = (id, name, price) => {
-      if (coins < price) return showError('Not enough coins');
-      if (ownedLocal.some(o=>o.id===id)) return showError('Already owned');
-      coins -= price;
-      ownedLocal.push({id, name});
-      updateCoinDisplay();
-      localStorage.setItem('owned', JSON.stringify(ownedLocal));
-      loadAll();
-    };
-
-    window.buyRare = async (id, name, price) => {
-      if (!userAddress) return showError('Connect wallet first');
-      if (ownedLocal.some(o=>o.id===id)) return showError('Already owned');
-      try {
-        const amount = ethers.utils.parseUnits(price.toString(), 18);
-        const bal = await token.balanceOf(userAddress);
-        if (bal.lt(amount)) return showError('Not enough TOKEN');
-
-        const allow = await token.allowance(userAddress, NFT_ADDRESS);
-        if (allow.lt(amount)) {
-          const tx = await token.approve(NFT_ADDRESS, ethers.constants.MaxUint256);
-          await tx.wait();
-          alert('Approved token spending');
-        }
-
-        const tx = await nft.mintWithToken(userAddress, id, name, amount);
-        await tx.wait();
-
-        await syncOwnedFromChain();
-        await updateTokenBalance();
-        alert(`Minted ${name}!`);
-      } catch (e) {
-        const msg = e?.error?.message || e?.message || e?.reason || e;
-        showError('Buy failed: ' + msg);
-      }
-    };
-
-
-  window.sellPokemon = async (id, name) => {
-    if (!confirm(`Sell ${name}?`)) return;
-
-    const details = getPurchaseDetails(id);
-    if (!details) return showError('Unknown Pokémon');
-
-    if (details.currency !== 'token') {
-      const sellPrice = details.currency === 'free' ? 100 : Math.floor(details.price * 0.5);
-      coins += sellPrice;
-      ownedLocal = ownedLocal.filter(o => o.id !== id);
-      if (details.currency === 'free') {
-        claimedStarters = claimedStartersccb.filter(c => c !== id);
-      }
-      localStorage.setItem('owned', JSON.stringify(ownedLocal));
-      localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
-      updateCoinDisplay();
-      loadAll();
-      alert(`Sold ${name} for ${sellPrice} Coins`);
-      return;
-    }
-
-    try {
-      const tx = await nft.sell(id);
-      await tx.wait();
-
-      // IMMEDIATELY REMOVE FROM LOCAL
-      ownedLocal = ownedLocal.filter(o => o.id !== id);
-      localStorage.setItem('owned', JSON.stringify(ownedLocal));
-
-      await syncOwnedFromChain(); // Re-sync to confirm
-      await updateTokenBalance();
-      loadAll();
-      alert(`Sold ${name} – 50% refunded to wallet`);
-    } catch (e) {
-      const msg = e?.error?.message || e?.message || e?.reason || e;
-      showError('Sell failed: ' + msg);
-    }
+  /* ---------- USER ACTIONS ---------- */
+  window.claimStarter = (id, name) => {
+    if (claimedStarters.length >= 3) return showError('Max 3 starters');
+    if (claimedStarters.includes(id)) return showError('Already claimed');
+    claimedStarters.push(id);
+    ownedLocal.push({id, name});
+    localStorage.setItem('claimedStarters', JSON.stringify(claimedStarters));
+    localStorage.setItem('owned', JSON.stringify(ownedLocal));
+    loadAll();
   };
 
+  window.buyCommon = (id, name, price) => {
+    if (coins < price) return showError('Not enough coins');
+    if (ownedLocal.some(o=>o.id===id)) return showError('Already owned');
+    coins -= price;
+    ownedLocal.push({id, name});
+    updateCoinDisplay();
+    localStorage.setItem('owned', JSON.stringify(ownedLocal));
+    loadAll();
+  };
+
+  window.buyRare = async (id, name, price) => {
+    if (!userAddress) return showError('Connect wallet');
+    if (ownedLocal.some(o=>o.id===id)) return showError('Already owned');
+    try {
+      const amount = ethers.utils.parseUnits(price.toString(), 18);
+      const bal = await token.balanceOf(userAddress);
+      if (bal.lt(amount)) return showError('Not enough TOKEN');
+
+      const allow = await token.allowance(userAddress, NFT_ADDRESS);
+      if (allow.lt(amount)) {
+        const tx = await token.approve(NFT_ADDRESS, ethers.constants.MaxUint256);
+        await tx.wait();
+        alert('Approved token spending');
+      }
+
+      const tx = await nft.mintWithToken(userAddress, id, name, amount);
+      await tx.wait();
+
+      await syncOwnedFromChain();
+      await updateTokenBalance();
+      alert(`Minted ${name}!`);
+    } catch (e) { showError('Mint failed: ' + (e?.error?.message || e?.message || e)); }
+  };
+
+  window.promptList = async (id, name) => {
+    const price = prompt(`List ${name} for sale – price in TOKEN (whole numbers):`);
+    if (!price) return;
+    const p = parseInt(price);
+    if (isNaN(p) || p <= 0) return showError('Invalid price');
+    try {
+      const tx = await nft.listForSale(id, ethers.utils.parseUnits(p.toString(), 18));
+      await tx.wait();
+      await syncOwnedFromChain();
+      alert(`${name} listed for ${p} TOKEN`);
+    } catch (e) { showError('List failed: ' + (e?.error?.message || e?.message || e)); }
+  };
+
+  window.cancelListing = async (id) => {
+    try {
+      const tx = await nft.cancelListing(id);
+      await tx.wait();
+      await syncOwnedFromChain();
+      alert('Listing cancelled');
+    } catch (e) { showError('Cancel failed: ' + (e?.error?.message || e?.message || e)); }
+  };
+
+  window.buyListed = async (id) => {
+    try {
+      const listing = await nft.listings(id);
+      const price = listing.price;
+      if (price.eq(0)) return showError('Not for sale');
+
+      const tx = await nft.buyListed(id);
+      await tx.wait();
+
+      await syncOwnedFromChain();
+      await updateTokenBalance();
+      alert(`Bought Pokémon #${id}!`);
+    } catch (e) { showError('Buy failed: ' + (e?.error?.message || e?.message || e)); }
+  };
+
+  window.sellPokemon = async (id, name) => {
+    if (!confirm(`Sell ${name} and get 50% refund?`)) return;
+    try {
+      const tx = await nft.sellAndRefund(id);
+      await tx.wait();
+      ownedLocal = ownedLocal.filter(o => o.id !== id);
+      localStorage.setItem('owned', JSON.stringify(ownedLocal));
+      await syncOwnedFromChain();
+      await updateTokenBalance();
+      alert(`Sold ${name} – 50% refunded`);
+    } catch (e) { showError('Sell failed: ' + (e?.error?.message || e?.message || e)); }
+  };
+
+  /* ---------- INIT ---------- */
   updateCoinDisplay();
   loadAll();
 
-  window.addEventListener('storage', e => {
-    if (['coins','owned','claimedStarters'].includes(e.key)) {
-      coins = parseInt(localStorage.getItem('coins')||'500');
-      ownedLocal = JSON.parse(localStorage.getItem('owned')||'[]');
-      claimedStarters = JSON.parse(localStorage.getItem('claimedStarters')||'[]');
-      updateCoinDisplay();
-      loadAll();
-    }
-  });
-
+  // GIF hover
   document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('mouseenter', e => {
       const card = e.target.closest('.card');
       if (!card) return;
       const img = card.querySelector('.pokemon-img');
       if (!img) return;
-
-      const gifSrc = img.dataset.gif;
+      const gif = img.dataset.gif;
       if (!img.dataset.preloaded) {
-        const pre = new Image();
-        pre.src = gifSrc;
-        img.dataset.preloaded = 'true';
+        const pre = new Image(); pre.src = gif; img.dataset.preloaded = 'true';
       }
-
-      if (img.src !== gifSrc) {
+      if (img.src !== gif) {
         img.style.opacity = 0;
-        setTimeout(() => {
-          img.src = gifSrc;
-          img.style.opacity = 1;
-        }, 150);
+        setTimeout(() => { img.src = gif; img.style.opacity = 1; }, 150);
       }
     }, true);
 
@@ -988,16 +986,11 @@ ownedLocal.forEach(p => {
       if (!card) return;
       const img = card.querySelector('.pokemon-img');
       if (!img || !img.dataset.originalSrc) return;
-
-      const staticSrc = img.dataset.originalSrc || img.src;
-      if (!img.dataset.originalSrc) img.dataset.originalSrc = staticSrc;
-
-      if (img.src !== staticSrc) {
+      const static = img.dataset.originalSrc || img.src;
+      if (!img.dataset.originalSrc) img.dataset.originalSrc = static;
+      if (img.src !== static) {
         img.style.opacity = 0;
-        setTimeout(() => {
-          img.src = staticSrc;
-          img.style.opacity = 1;
-        }, 150);
+        setTimeout(() => { img.src = static; img.style.opacity = 1; }, 150);
       }
     }, true);
   });
