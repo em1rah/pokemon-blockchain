@@ -24,7 +24,6 @@
       transition: opacity 0.4s ease;
     }
 
-    /* Theme Classes */
     .theme-starter body { 
       background: linear-gradient(135deg, #1a3e1a 0%, #1e4a1e 50%, #162816 100%);
     }
@@ -52,7 +51,6 @@
     .theme-rare .save { background: #9c27b0; }
     .theme-rare .theme-card.active { border-color: #9c27b0; box-shadow: 0 0 0 3px rgba(156,39,176,.3) inset; }
 
-    /* Sidebar */
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20; transition: background 0.4s ease;}
     .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
     .sidebar .brand h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;margin:0}
@@ -68,7 +66,6 @@
     .title{color:#ffcb05;font-size:1.6rem;margin-bottom:.75rem}
     .field{margin:12px 0}
     
-    /* Theme Grid */
     .theme-section{margin: 2rem 0;}
     .theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:8px}
     .theme-card{position:relative;border:2px solid rgba(255,255,255,.2);border-radius:14px;overflow:hidden;cursor:pointer;transition:.3s;background:#101425}
@@ -111,7 +108,6 @@
     <div class="title" style="margin-top: 2rem;">Theme</div>
     <div class="theme-section">
       <div class="theme-grid">
-        <!-- Starter Theme -->
         <label class="theme-card" data-theme="starter">
           <input type="radio" name="theme" value="starter">
           <div class="theme-thumb" style="background: linear-gradient(135deg, #1a3e1a, #162816);"></div>
@@ -121,7 +117,6 @@
           </div>
         </label>
 
-        <!-- Common Theme -->
         <label class="theme-card" data-theme="common">
           <input type="radio" name="theme" value="common">
           <div class="theme-thumb" style="background: linear-gradient(135deg, rgba(20,20,40,0.8), rgba(10,10,30,0.9));"></div>
@@ -131,7 +126,6 @@
           </div>
         </label>
 
-        <!-- Rare Theme -->
         <label class="theme-card" data-theme="rare">
           <input type="radio" name="theme" value="rare">
           <div class="theme-thumb" style="background: linear-gradient(135deg, #2d1b3d, #0d0513);"></div>
@@ -162,17 +156,15 @@
     function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); document.getElementById('coinDisplay').textContent = v + ' Coins'; }
     if (localStorage.getItem(COIN_KEY) === null) setCoins(500); else setCoins(getCoins());
 
-    // === THEME SYSTEM ===
+
     const themeCards = document.querySelectorAll('.theme-card');
     const body = document.body;
 
     function applyTheme(theme) {
-      // Remove all theme classes
       body.classList.remove('theme-starter', 'theme-common', 'theme-rare');
       if (theme && theme !== 'common') {
         body.classList.add(`theme-${theme}`);
       }
-      // Update active card
       themeCards.forEach(card => {
         card.classList.toggle('active', card.dataset.theme === theme);
         card.querySelector('input').checked = (card.dataset.theme === theme);
@@ -182,7 +174,7 @@
     function load() {
       const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
       document.getElementById('displayName').value = s.displayName || '';
-      applyTheme(s.theme || 'common'); // default to common
+      applyTheme(s.theme || 'common'); 
     }
 
     themeCards.forEach(card => {

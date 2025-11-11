@@ -46,7 +46,6 @@
     .title{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.3rem;margin:2rem 0 0.5rem;text-shadow:1px 1px 0 #000;}
     .subtitle{color:#aaa;font-size:0.95rem;margin-bottom:1rem;}
 
-    /* WIZARD STYLES */
     .wizard {
       max-width: 900px;
       margin: 2rem auto;
@@ -556,7 +555,6 @@
       20%, 40%, 60%, 80% { transform: translateX(8px); }
     }
 
-    /* Center start button */
     #slide-start .wizard-actions { display:flex; justify-content:center; }
   </style>
 </head>
@@ -694,10 +692,6 @@
   </div>
 
   <script>
-    /* ==============================================================
-       FULL TOURNAMENT WIZARD + BATTLE ENGINE + PUNCH/THUNDER + RANDOM AI
-       + POKÉMON CRIES + REAL POKÉMON MUSIC
-       ============================================================== */
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
 
@@ -745,7 +739,7 @@
     // Music selection
     const musicOptions = document.querySelectorAll('.music-option');
     const confirmMusicBtn = document.getElementById('confirmMusicBtn');
-    let selectedMusicType = 'classic'; // default
+    let selectedMusicType = 'classic'; 
 
     let carouselIndex = 0;
     let selectedPokemon = null;
@@ -764,7 +758,7 @@
       if (!soundsEnabled) return;
       
       try {
-        // Use official Pokémon cries from PokéAPI
+  
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
         const data = await response.json();
         const cryUrl = data.cries?.latest || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemonId}.gif`; // fallback
@@ -776,12 +770,12 @@
           return;
         }
         
-        // Fallback: Generate Pikachu-like cry for any Pokémon
+    
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         
-        // Dynamic frequency based on Pokémon ID
+      
         const baseFreq = 800 + (pokemonId * 10) % 400;
         osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, ctx.currentTime + 0.1);
@@ -796,7 +790,6 @@
         osc.start();
         osc.stop(ctx.currentTime + 0.4);
       } catch (e) {
-        // Ultimate fallback: Pikachu cry pattern
         tone(850, 0.1, 0.25, 'sawtooth');
         setTimeout(() => tone(950, 0.12, 0.28, 'sawtooth'), 100);
         setTimeout(() => tone(750, 0.15, 0.3, 'sawtooth'), 220);
@@ -867,14 +860,13 @@
       }
     }
 
-    // Enhanced Music System with Real Pokémon Music
     function playMusic(type){
       if (!musicEnabled) return;
       stopMusic();
       
       if (selectedMusicType === 'real' && type === 'battle') {
-        // Real Pokémon Battle Music (using a popular public domain/remix)
-        const realBattleMusic = new Audio('https://raw.githubusercontent.com/PokeAPI/cries/main/mp3/1.mp3'); // Placeholder - replace with actual Pokémon battle theme URL
+     
+        const realBattleMusic = new Audio('https://raw.githubusercontent.com/PokeAPI/cries/main/mp3/1.mp3'); 
         realBattleMusic.volume = 0.15;
         realBattleMusic.loop = true;
         realBattleMusic.play().catch(e => {
@@ -885,7 +877,6 @@
         return;
       }
       
-      // Classic synth music (original)
       playClassicMusic(type);
     }
 
@@ -934,7 +925,6 @@
     soundBtn.onclick = () => { soundsEnabled = !soundsEnabled; localStorage.setItem('soundsEnabled', soundsEnabled); updateIcons(); };
     updateIcons();
 
-    // Music Selection Handler
     musicOptions.forEach(option => {
       option.onclick = () => {
         musicOptions.forEach(opt => opt.classList.remove('selected'));
@@ -948,9 +938,6 @@
       playSound('confirm');
     };
 
-// --------------------------------------------------------------
-  //  ATTACK ANIMATION – ENHANCED PUNCH & THUNDER
-  // --------------------------------------------------------------
   function createAttackEffect(fromEl, toEl, type = 'fire') {
     const fromRect = fromEl.getBoundingClientRect();
     const toRect   = toEl.getBoundingClientRect();
@@ -961,9 +948,6 @@
     const endX   = toRect.left   + toRect.width / 2   - bfRect.left;
     const endY   = toRect.top    + toRect.height / 2  - bfRect.top;
 
-    // -----------------------------------------------------------------
-    //  1. PUNCH – a flying fist that rotates and leaves a motion-blur
-    // -----------------------------------------------------------------
     if (type === 'punch') {
       const fist = document.createElement('div');
       fist.style.position = 'absolute';
@@ -978,7 +962,6 @@
       fist.style.zIndex = '100';
       battlefield.appendChild(fist);
 
-      // motion-blur trail (3 faint copies)
       for (let i = 1; i <= 3; i++) {
         const trail = fist.cloneNode();
         trail.style.opacity = 0.4 - i * 0.1;
@@ -999,7 +982,7 @@
         fist.style.transform = `translate(${(endX - startX) * 0.9}px, ${(endY - startY) * 0.9}px) rotate(45deg) scale(1.3)`;
       }, 10);
 
-      // impact flash + screen shake
+  
       setTimeout(() => {
         const impact = document.createElement('div');
         impact.className = 'impact-flash';
@@ -1016,11 +999,8 @@
       return;
     }
 
-    // -----------------------------------------------------------------
-    //  2. THUNDER – multiple zig-zag bolts + storm-cloud flash
-    // -----------------------------------------------------------------
+
     if (type === 'thunder') {
-      // storm-cloud flash (covers whole arena)
       const flash = document.createElement('div');
       flash.style.position = 'absolute';
       flash.style.inset = '0';
@@ -1035,7 +1015,6 @@
         setTimeout(() => flash.style.opacity = '0', 80);
       }, 50);
 
-      // create 3-5 lightning bolts
       const boltCount = 3 + Math.floor(Math.random() * 3);
       for (let i = 0; i < boltCount; i++) {
         const bolt = document.createElement('div');
@@ -1047,7 +1026,6 @@
         bolt.style.transform = `rotate(${Math.random() * 60 - 30}deg)`;
         battlefield.appendChild(bolt);
 
-        // random zig-zag points
         const points = [];
         const segments = 6 + Math.floor(Math.random() * 4);
         for (let s = 0; s <= segments; s++) {
@@ -1064,7 +1042,7 @@
         }, i * 80);
       }
 
-      // final impact
+     
       setTimeout(() => {
         const impact = document.createElement('div');
         impact.className = 'impact-flash';
@@ -1083,9 +1061,6 @@
       return;
     }
 
-    // -----------------------------------------------------------------
-    //  3. FIRE – unchanged (kept for reference)
-    // -----------------------------------------------------------------
     const dx = endX - startX;
     const dy = endY - startY;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -1219,7 +1194,6 @@
     prevBtn.onclick = () => { carouselIndex = (carouselIndex - 1 + ownedPokemon.length) % ownedPokemon.length; updateCarousel(); playSound('select'); };
     nextBtn.onclick = () => { carouselIndex = (carouselIndex + 1) % ownedPokemon.length; updateCarousel(); playSound('select'); };
     confirmPokemonBtn.onclick = async () => {
-      // Play Pokémon cry on confirm!
       await playPokemonCry(selectedPokemon.id);
       
       equippedId = selectedPokemon.id;
@@ -1297,7 +1271,6 @@
       }, 800);
     };
 
-    // BATTLE ENGINE
     let player = {id:0, name:'', hp:100, maxHp:100};
     let opponent = null;
     let battleActive = false;
@@ -1345,7 +1318,7 @@
       moveButtons.forEach(b=>b.disabled=true);
       battleLog.innerHTML = '';
       log(`<span class="system">=== ROUND-ROBIN TOURNAMENT BEGIN ===</span>`);
-      playMusic('battle'); // Uses selected music type
+      playMusic('battle'); 
       await startNextMatch();
     }
 
@@ -1485,7 +1458,7 @@
         moveButtons.forEach(b => b.disabled = true);
         await new Promise(r => setTimeout(r, 900));
 
-        // Opponent random attack
+      
         const oppMoveKey = moveList[Math.floor(Math.random() * moveList.length)];
         const oppMove = moves[oppMoveKey];
         if (!oppMove.run) {
@@ -1578,7 +1551,6 @@
       }, 5000);
     }
 
-    // Init
     loadPokemonCarousel();
   </script>
 </body>

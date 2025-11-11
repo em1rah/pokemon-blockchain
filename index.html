@@ -19,7 +19,6 @@
       background: #0b1021;
     }
 
-    /* ===== LEFT: BACKGROUND IMAGE (2/3) ===== */
     .bg-image {
       flex: 2;
       background: url('images/431.jpg') center/cover no-repeat;
@@ -59,7 +58,6 @@
       text-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
 
-    /* ===== RIGHT: FORM PANEL (1/3) WITH POKÉMON SPRITE ===== */
     .form-panel {
       flex: 1;
       min-width: 360px;
@@ -75,28 +73,6 @@
       animation: fadeInRight 1s ease-out;
       overflow: hidden;
     }
-
-    /* Floating Pokémon Sprite */
-    /* .pokemon-sprite {
-      position: absolute;
-      top: 15%;
-      right: -10%;
-      width: 180px;
-      height: auto;
-      animation: floatPokemon 4s ease-in-out infinite, swing 2s ease-in-out infinite alternate;
-      z-index: 5;
-      pointer-events: none;
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
-    }
-
-    @keyframes floatPokemon {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-15px) rotate(5deg); }
-    }
-    @keyframes swing {
-      from { transform: rotate(-5deg); }
-      to { transform: rotate(5deg); }
-    } */
 
     .container {
       width: 100%;
@@ -226,7 +202,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 992px) {
       body { flex-direction: column; }
       .bg-image { 
@@ -264,7 +239,6 @@
 </head>
 <body>
 
-  <!-- LEFT: Background Image + Title -->
   <div class="bg-image">
     <div class="bg-overlay">
       <h1>PikaPlay</h1>
@@ -272,19 +246,11 @@
     </div>
   </div>
 
-  <!-- RIGHT: Form Panel with Floating Pokémon -->
   <div class="form-panel">
-    <!-- Floating Pikachu Sprite -->
 
          <div style="display:flex">
  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" 
          alt="Pikachu" class="pokemon-sprite">
-          <!-- <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/26.gif" 
-         alt="Pikachu" class="pokemon-sprite"> -->
-          <!-- <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/6.gif" 
-         alt="Pikachu" class="pokemon-sprite"> -->
-          <!-- <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/16.gif" 
-         alt="Pikachu" class="pokemon-sprite"> -->
          </div>
     <div class="container">
       <div class="header">
@@ -322,7 +288,6 @@
   </div>
 
   <script>
-    // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -337,7 +302,6 @@
       document.querySelector('[data-form="login"]').click();
     });
 
-    // MetaMask Connection
     async function connectMetaMask(statusEl, action) {
       const eth = window.ethereum;
       if (!eth) {
@@ -357,18 +321,16 @@
         const addr = accounts[0];
         const shortAddr = `${addr.slice(0,6)}...${addr.slice(-4)}`;
 
-        // Optional: Sign a welcome message
         try {
           await eth.request({
             method: 'personal_sign',
             params: [addr, `Welcome to PikaPlay! ${action === 'register' ? 'Registering' : 'Logging in'} as trainer.`]
           });
-        } catch (_) { /* Ignore signature denial */ }
+        } catch (_) {  }
 
         statusEl.textContent = `Connected: ${shortAddr}`;
         statusEl.style.color = '#4CAF50';
 
-        // Save session and redirect
         localStorage.setItem('trainerSession', JSON.stringify({
           type: 'metamask',
           address: addr,
@@ -385,7 +347,6 @@
       }
     }
 
-    // Button handlers
     document.getElementById('metamaskLogin').onclick = () => 
       connectMetaMask(document.getElementById('loginStatus'), 'login');
 

@@ -554,13 +554,11 @@
       return;
     }
 
-    // PRESERVE LOCAL-ONLY (starters, common) + MERGE ON-CHAIN (rare)
     const localOnly = ownedLocal.filter(p => {
       const details = getPurchaseDetails(p.id);
-      return details && details.currency !== 'token'; // Keep non-token purchases
+      return details && details.currency !== 'token'; 
     });
 
-    // Combine: local-only + on-chain (rare)
     ownedLocal = [...localOnly, ...ownedOnChain];
     localStorage.setItem('owned', JSON.stringify(ownedLocal));
     loadOwned();
@@ -588,9 +586,6 @@
   }
 
   function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
-    // ──────────────────────────────
-    // POKÉMON
-    // ──────────────────────────────
     const starters = [
       {id:1,name:'Bulbasaur', type:'Grass'},
       {id:4,name:'Charmander', type:'Fire'},
@@ -912,15 +907,13 @@ ownedLocal.forEach(p => {
       }
     };
 
-    
-// ========== FIXED sellPokemon ==========
+
   window.sellPokemon = async (id, name) => {
     if (!confirm(`Sell ${name}?`)) return;
 
     const details = getPurchaseDetails(id);
     if (!details) return showError('Unknown Pokémon');
 
-    // === LOCAL (starters / common) ===
     if (details.currency !== 'token') {
       const sellPrice = details.currency === 'free' ? 100 : Math.floor(details.price * 0.5);
       coins += sellPrice;
@@ -936,7 +929,6 @@ ownedLocal.forEach(p => {
       return;
     }
 
-    // === ON-CHAIN (rare/token) ===
     try {
       const tx = await nft.sell(id);
       await tx.wait();
