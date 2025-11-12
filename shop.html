@@ -423,6 +423,7 @@
     <div class="status">
       <span class="coins" id="coinDisplay">500 Coins</span>
       <span class="free-balance" id="freeDisplay">0 TOKEN</span>
+      <button class="connect-btn" id="faucetBtn" style="background:#2196f3;display:none;">Claim 1000 TOKEN</button>
       <span class="wallet" id="walletDisplay"></span>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
       <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -455,7 +456,8 @@
   const ERC20_ABI = [
     'function balanceOf(address) view returns (uint256)',
     'function allowance(address,address) view returns (uint256)',
-    'function approve(address,uint256) external'
+    'function approve(address,uint256) external',
+    'function faucetMint(address) external'
   ];
 
   const NFT_ABI = [
@@ -525,6 +527,7 @@
       walletDisplay.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
       document.getElementById('connectBtn').style.display = 'none';
       document.getElementById('logoutBtn').style.display = 'inline-block';
+      document.getElementById('faucetBtn').style.display = 'inline-block';
 
       await updateTokenBalance();
       await syncOwnedFromChain();
@@ -533,6 +536,15 @@
     } catch (e) { showError('Connect failed: ' + (e?.message || e)); }
   };
   document.getElementById('logoutBtn').onclick = () => location.reload();
+  document.getElementById('faucetBtn').onclick = async () => {
+    if (!token || !userAddress) return showError('Connect wallet first');
+    try {
+      const tx = await token.faucetMint(userAddress);
+      await tx.wait();
+      await updateTokenBalance();
+      alert('Claimed 1000 TOKEN');
+    } catch (e) { showError('Claim failed: ' + (e?.error?.message || e?.message || e)); }
+  };
 
   /* ---------- SYNC OWNED (on-chain) ---------- */
   async function syncOwnedFromChain() {
