@@ -292,68 +292,57 @@
   </div>
 
   
-  <script>
-    const session = JSON.parse(localStorage.getItem('trainerSession'));
-    if (!session) location.href = 'index.html';
+ <script>
 
-    const trainerName = document.getElementById('trainerName');
-    trainerName.textContent = session.type === 'metamask' 
-      ? `${session.address.slice(0,6)}...${session.address.slice(-4)}`
-      : session.address.split('@')[0];
+  const session = JSON.parse(localStorage.getItem('trainerSession'));
+  if (!session) location.href = 'index.html';
 
-  
-    const walletDisplay = document.getElementById('walletDisplay');
+  const trainerName = document.getElementById('trainerName');
+  trainerName.textContent = session.type === 'metamask' 
+    ? `${session.address.slice(0,6)}...${session.address.slice(-4)}`
+    : session.address.split('@')[0];
 
-    // === Player & Coins ===
-    let player = { id: 25, name: "Pikachu", hp: 100, maxHp: 100 };
-    const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
-    const ns = (k) => `${USER_ID}:${k}`;
-    const COIN_KEY = ns('coins');
-    const STARTER_KEY = ns('starterClaimed');
-    const SETTINGS_KEY = ns('settings');
-    const WALLET = session.type === 'metamask' ? session.address : null;
-    if (WALLET) walletDisplay.textContent = WALLET.slice(0,6)+"..."+WALLET.slice(-4);
+  const walletDisplay = document.getElementById('walletDisplay');
 
-    function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
-    function setCoins(v){ 
-      localStorage.setItem(COIN_KEY, String(v));
-      localStorage.setItem('coins', String(v));
-      document.getElementById('coinDisplay').textContent = v + ' Coins';
-      document.getElementById('trainerCoins').textContent = v;
+  // === Player & Coins ===
+  let player = { id: 25, name: "Pikachu", hp: 100, maxHp: 100 };
+  const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
+  const ns = (k) => `${USER_ID}:${k}`;
+  const COIN_KEY = ns('coins');
+  const STARTER_KEY = ns('starterClaimed');
+  const SETTINGS_KEY = ns('settings');
+  const WALLET = session.type === 'metamask' ? session.address : null;
+  if (WALLET) walletDisplay.textContent = WALLET.slice(0,6)+"..."+WALLET.slice(-4);
+
+  function getCoins(){ return parseInt(localStorage.getItem(COIN_KEY) || '0'); }
+  function setCoins(v){ 
+    localStorage.setItem(COIN_KEY, String(v));
+    localStorage.setItem('coins', String(v));
+    document.getElementById('coinDisplay').textContent = v + ' Coins';
+    document.getElementById('trainerCoins').textContent = v;
+  }
+  if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
+
+
+  const menuMap = {
+    continueBtn : 'home.html',   
+    arenaBtn    : 'arena.html',
+    shopBtn     : 'shop.html',
+    settingsBtn : 'settings.html'
+  };
+
+  Object.entries(menuMap).forEach(([btnId, targetPage]) => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.onclick = () => location.href = targetPage;
     }
-    if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
+  });
 
-
-   
-
-
-    // === Navigation ===
-    document.getElementById('navArena').setAttribute('href','arena.html');
-    document.getElementById('navShop').setAttribute('href','shop.html');
-    document.getElementById('navSettings').setAttribute('href','settings.html');
-    document.getElementById('logoutBtn').onclick = () => {
-      localStorage.removeItem('trainerSession');
-      location.href = 'index.html';
-    };
-
-    // === Game Menu Buttons ===
-    document.getElementById('continueBtn').onclick = () => {
-      location.href = 'arena.html';
-    };
-    document.getElementById('arenaBtn').onclick = () => {
-      location.href = 'arena.html';
-    };
-    document.getElementById('shopBtn').onclick = () => {
-      location.href = 'shop.html';
-    };
-    
-    document.getElementById('settingsBtn').onclick = () => {
-      location.href = 'settings.html';
-    };
-
-    // === Settings ===
-    function loadSettings(){
-    }
-  </script>
+  document.getElementById('logoutBtn').onclick = () => {
+    localStorage.removeItem('trainerSession');
+    location.href = 'index.html';
+  };
+  function loadSettings(){}
+</script>
 </body>
 </html>
