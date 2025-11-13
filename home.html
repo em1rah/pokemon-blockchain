@@ -23,41 +23,30 @@
   body::before{
     content:'';
     position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-  background: url('images/shinnok_s_spire_by_deexie_d86or9a-fullview.jpg') center/cover no-repeat;
-      opacity: 0.35; 
-    z-index:-2;
-    pointer-events:none;
+    top:0;left:0;width:100%;height:100%;
+    background: url('images/shinnok_s_spire_by_deexie_d86or9a-fullview.jpg') center/cover no-repeat;
+    opacity:0.35;z-index:-2;pointer-events:none;
   }
-
 
   body::after{
     content:'';
     position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
+    top:0;left:0;width:100%;height:100%;
     background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.05)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">POKÉMON</text></svg>') repeat;
-    opacity:0.2;
-    z-index:-1;
-    pointer-events:none;
+    opacity:0.2;z-index:-1;pointer-events:none;
   }
 
   body > header, body > .container, body > .game-menu{
-    position:relative;
-    z-index:1;
+    position:relative;z-index:1;
   }
 
   header h1, nav a, .name, label, .btn, .tab, .price { font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; }
   header h1 { font-family:'Press Start 2P',cursive; letter-spacing:.5px; }
+
   /* Sidebar */
   .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
   .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .sidebar .brand h1{font-size:1.3rem;color:#ffcb05;margin:0}
+    .sidebar .brand h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;margin:0}
   .menu{padding:12px}
   .menu a{display:block;color:#ffcb05;text-decoration:none;font-weight:700;padding:10px 12px;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin-bottom:10px;transition:.2s}
   .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(4px)}
@@ -134,38 +123,21 @@
   .menu-btn::before{
     content:'';
     position:absolute;
-    left:0;
-    top:0;
-    height:100%;
-    width:0;
+    left:0;top:0;height:100%;width:0;
     background:rgba(255,203,5,.2);
     transition:width .3s;
   }
-
-  .menu-btn:hover::before{
-    width:100%;
-  }
-
+  .menu-btn:hover::before{width:100%;}
   .menu-btn:hover{
     background:rgba(255,203,5,.15);
     border-color:#fff;
     transform:translateX(10px);
     box-shadow:0 0 15px rgba(255,203,5,.5);
   }
+  .menu-btn:active{transform:translateX(5px);}
 
-  .menu-btn:active{
-    transform:translateX(5px);
-  }
-
-  .menu-icon{
-    font-size:1.2rem;
-    min-width:30px;
-    text-align:center;
-  }
-
-  .menu-text{
-    flex:1;
-  }
+  .menu-icon{font-size:1.2rem;min-width:30px;text-align:center;}
+  .menu-text{flex:1;}
 
   .trainer-info{
     position:absolute;
@@ -180,67 +152,124 @@
     gap:8px;
     min-width:200px;
   }
+  .info-item{display:flex;justify-content:space-between;font-size:0.7rem;font-family:'Press Start 2P',cursive;}
+  .info-label{color:#aaa;}
+  .info-value{color:#ffcb05;}
 
-  .info-item{
+  /* ---------- BIG PIKACHU + SPEECH BUBBLE ---------- */
+  .pikachu-wrapper{
+    position:absolute;
+    left:2rem;
+    bottom:2rem;
     display:flex;
-    justify-content:space-between;
-    font-size:0.7rem;
+    align-items:flex-end;
+    gap:1.5rem;
+    animation:fadeIn .8s ease-out forwards;
+  }
+  .pikachu{
+    width:260px;
+    height:260px;
+    object-fit:contain;
+    filter:drop-shadow(0 8px 16px rgba(0,0,0,.7));
+    transform:scale(1);
+    transition:transform .2s;
+  }
+  .pikachu:hover{transform:scale(1.05);}
+
+  /* Speech bubble – classic Pokémon style */
+  .speech-bubble{
+    position:relative;
+    background:#fff;
+    color:#111;
+    padding:1.2rem 1.8rem;
+    border-radius:1.8rem;
     font-family:'Press Start 2P',cursive;
+    font-size:1.1rem;
+    max-width:260px;
+    box-shadow:0 6px 12px rgba(0,0,0,.5);
+    animation:bubblePop .6s ease-out forwards;
+    margin-bottom:150px;
+    right:550px;
+  }
+  .speech-bubble::before{
+    content:'';
+    position:absolute;
+    bottom:0;
+    left:-1.2rem;
+    width:0;height:0;
+    border:1.2rem solid transparent;
+    border-right-color:#fff;
+    border-left:0;
+    filter:drop-shadow(-4px 4px 4px rgba(0,0,0,.2));
   }
 
-  .info-label{
-    color:#aaa;
+  /* ---------- POKEMON SELECTOR CIRCLES ---------- */
+  .pokemon-selector{
+    display:flex;
+    gap:8px;
+    align-items:flex-end;
+    animation:fadeInUp .8s ease-out .2s forwards;
+    opacity:0;
   }
 
-  .info-value{
-    color:#ffcb05;
+  .pokemon-option{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    border:3px solid rgba(255,203,5,.4);
+    cursor:pointer;
+    transition:all .3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position:relative;
+    overflow:hidden;
+    background:rgba(255,255,255,.1);
+    backdrop-filter:blur(10px);
   }
 
-  /* Tabs */
-  .tab-content{display:none;padding:2rem;border-radius:20px;margin:1rem;background:rgba(0,0,0,.7);box-shadow:0 15px 35px rgba(0,0,0,.6);}
-  .tab-content.active{display:block;}
+  .pokemon-option:hover{
+    transform:scale(1.15) rotate(10deg);
+    border-color:#ffcb05;
+    box-shadow:0 0 25px rgba(255,203,5,.6);
+  }
 
-  /* Arena */
-  .arena{background:linear-gradient(to bottom,rgba(0,0,0,.8),rgba(0,0,0,.95));}
-  .battlefield{display:flex;justify-content:space-around;align-items:flex-end;width:100%;max-width:900px;margin:30px 0;position:relative;}
-  .pokemon{position:relative;text-align:center;min-width:180px;}
-  .pokemon img{width:200px;height:200px;object-fit:contain;transition:transform .2s;filter: drop-shadow(0 6px 12px rgba(0,0,0,.6));}
-  .pokemon.hit img{animation:shake .4s;}
-  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}50%{transform:translateX(8px);}75%{transform:translateX(-8px);}}
-  .hp-bar{background:#333;border:2px solid #ffcb05;border-radius:10px;height:20px;width:160px;margin:10px auto;position:relative;overflow:hidden;}
-  .hp-fill{height:100%;background:#4caf50;border-radius:8px;transition:width .5s ease,background .3s;}
-  .hp-text{position:absolute;top:0;left:0;right:0;text-align:center;font-weight:600;font-size:13px;color:white;text-shadow:1px 1px 2px #000;}
-  .name{font-weight:700;color:#ffcb05;font-size:1.3rem;text-shadow:1px 1px 3px #000;margin-bottom:4px;}
+  .pokemon-option.active{
+    border-color:#ffcb05;
+    box-shadow:0 0 20px rgba(255,203,5,.8);
+    background:rgba(255,203,5,.2);
+  }
 
-  .moves{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;width:100%;max-width:500px;}
-  .move-btn{padding:14px;background:rgba(255,255,255,.1);border:2px solid #ffcb05;border-radius:12px;color:white;font-weight:600;cursor:pointer;transition:.3s;}
-  .move-btn:hover{background:rgba(255,203,5,.2);}
-  .move-btn:disabled{background:#444;cursor:not-allowed;opacity:.6;}
+  .pokemon-option img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    padding:4px;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  }
 
-  .log{background:rgba(0,0,0,.7);padding:16px;border-radius:12px;max-height:140px;overflow-y:auto;font-size:15px;margin-top:20px;width:100%;max-width:900px;border:1px solid rgba(255,203,5,.3);}
-  .log p{margin:6px 0;opacity:.9;}
-  .log .player{color:#4caf50;}
-  .log .opponent{color:#ff5252;}
-  .log .system{color:#ffcb05;font-weight:600;}
+  @keyframes fadeInUp{
+    from{opacity:0;transform:translateY(30px);}
+    to{opacity:1;transform:translateY(0);}
+  }
 
-
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(20px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  @keyframes bubblePop{
+    0%{opacity:0;transform:scale(0.6);}
+    70%{transform:scale(1.1);}
+    100%{opacity:1;transform:scale(1);}
+  }
+ 
 
   .logout{margin:2rem auto;display:block;padding:.9rem 2.5rem;background:#f44336;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;}
   .logout:hover{background:#d32f2f;}
-
-  .coins{display:inline-block;background:#ffeb3b;color:#1a2a6c;padding:6px 12px;border-radius:12px;font-weight:700;margin-left:10px;font-size:0.9rem;}
-  .wallet{margin-left:12px;font-size:.9rem;color:#ddd}
-  .settings-btn{margin-left:12px;color:#ffcb05;text-decoration:none;font-weight:600;}
-  .settings-btn:hover{color:#fff}
-  .logout-btn{margin-left:12px;background:#f44336;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
-
 </style>
 </head>
 <body>
   <aside class="sidebar">
-    <div class="brand"><h1>PikaPlay Trainer</h1></div>
+    <div class="brand"><h1>Pikaplay Home</h1></div>
     <div class="menu">
-       <a href="home.html">🏠 Home</a>
+        <a href="home.html">🏠 Home</a>
       <a href="arena.html">⚔ Arena</a>
       <a href="shop.html">🛒 Shop</a>
       <a href="settings.html">⚙ Settings</a>
@@ -255,9 +284,8 @@
   <div class="game-menu container-shift" id="gameMenu">
     <div class="pokemon-logo-large"></div>
     <div class="game-subtitle"></div>
-    
-    <div class="main-menu">
 
+    <div class="main-menu">
       <button class="menu-btn" id="continueBtn">
         <span class="menu-icon">▶</span>
         <span class="menu-text">CONTINUE</span>
@@ -267,16 +295,50 @@
         <span class="menu-icon">⚔</span>
         <span class="menu-text">BATTLE ARENA</span>
       </button>
-      
+
       <button class="menu-btn" id="shopBtn">
         <span class="menu-icon">🛒</span>
         <span class="menu-text">POKÉMON SHOP</span>
       </button>
-      
+
       <button class="menu-btn" id="settingsBtn">
         <span class="menu-icon">⚙</span>
         <span class="menu-text">SETTINGS</span>
       </button>
+    </div>
+
+    <div class="pikachu-wrapper">
+      <img class="pikachu"
+           src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif"
+           alt="Pikachu" id="mainPikachu">
+      
+      <!-- POKEMON SELECTOR CIRCLES -->
+      <div class="pokemon-selector" id="pokemonSelector">
+        <div class="pokemon-option active" data-pokemon-id="25">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="2">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/2.gif" alt="Bulbasaur">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="4">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif" alt="Charmander">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="7">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif" alt="Squirtle">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="18">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/18.gif" alt="Eevee">
+        </div>
+         <div class="pokemon-option" data-pokemon-id="26">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/26.gif" alt="Eevee">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="117">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/117.gif" alt="Eevee">
+        </div>
+        
+      </div>
+
+      <div class="speech-bubble">Welcome to PikaPlay!</div>
     </div>
 
     <div class="trainer-info">
@@ -291,9 +353,7 @@
     </div>
   </div>
 
-  
- <script>
-
+<script>
   const session = JSON.parse(localStorage.getItem('trainerSession'));
   if (!session) location.href = 'index.html';
 
@@ -323,6 +383,33 @@
   }
   if (localStorage.getItem(COIN_KEY) === null) { setCoins(500); } else { setCoins(getCoins()); }
 
+  // === POKEMON SELECTOR FUNCTIONALITY ===
+  const mainPikachu = document.getElementById('mainPikachu');
+  const pokemonSelector = document.getElementById('pokemonSelector');
+  const pokemonOptions = pokemonSelector.querySelectorAll('.pokemon-option');
+
+  function updateMainPokemon(pokemonId) {
+    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pokemonId}.gif`;
+    mainPikachu.src = spriteUrl;
+    mainPikachu.alt = `${pokemonOptions[pokemonId === 25 ? 0 : pokemonId === 1 ? 1 : pokemonId === 4 ? 2 : pokemonId === 7 ? 3 : 4].dataset.pokemonId}`;
+    
+    // Update player object
+    player.id = pokemonId;
+    
+   
+    pokemonOptions.forEach(opt => opt.classList.remove('active'));
+    document.querySelector(`[data-pokemon-id="${pokemonId}"]`).classList.add('active');
+  }
+
+  pokemonOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      const pokemonId = parseInt(option.dataset.pokemonId);
+      updateMainPokemon(pokemonId);
+    });
+  });
+
+  
+  updateMainPokemon(25);
 
   const menuMap = {
     continueBtn : 'home.html',   
@@ -342,7 +429,6 @@
     localStorage.removeItem('trainerSession');
     location.href = 'index.html';
   };
-  function loadSettings(){}
 </script>
 </body>
 </html>
