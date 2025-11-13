@@ -113,31 +113,62 @@
       text-align: center;
     }
 
-    /* POKÉMON CAROUSEL */
-    .pokemon-carousel-container {
-      position: relative;
-      margin: 20px 0;
-      overflow: hidden;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.3);
-      border: 2px solid rgba(255,203,5,0.3);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
+/* POKÉMON CAROUSEL – 3-card view with focus on centre */
+.pokemon-carousel-container {
+  position: relative;
+ 
+  margin: 20px 0;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid rgba(255,203,5,0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  overflow: hidden;              
+}
+.pokemon-carousel {
+ 
+  display: flex;
+  width: 1500px;  
+                 margin-left:100px;
+  transition: transform 0.55s cubic-bezier(0.25,0.8,0.25,1);
+  gap: 20px;                        
+}
+.carousel-card {
+  min-width: 33.333%;            
+  flex: 0 0 33.333%;
+ 
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg,#1e1e1e,#0f0f0f);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+  transition: transform 0.5s cubic-bezier(0.25,0.8,0.25,1),
+              opacity 0.5s ease,
+              filter 0.5s ease,
+              box-shadow 0.5s ease;
+  transform: scale(0.86);
+  opacity: 0.48;
+  filter: blur(1.2px);
+  user-select: none;
+}
 
-    .pokemon-carousel {
-      display: flex;
-      transition: transform 0.5s ease;
-    }
+/* ---- ACTIVE (centre) ---- */
+.carousel-card.active {
+  transform: scale(1);
+  opacity: 1;
+  filter: blur(0);
+  box-shadow: 0 22px 44px rgba(255,203,5,0.35),
+              0 0 35px rgba(255,203,5,0.25);
+  border: 2px solid rgba(255,203,5,0.85);
+  z-index: 10;
+}
 
-    .carousel-card {
-      min-width: 100%;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, #1e1e1e, #0f0f0f);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-    }
+/* ---- ADJACENT (previous / next) ---- */
+.carousel-card.adjacent {
+  transform: scale(0.92);
+  opacity: 0.72;
+  filter: blur(0.6px);
+}
 
     .card-header {
       height: 180px;
@@ -1237,71 +1268,101 @@
   }
 
     // Load carousel
-    async function loadPokemonCarousel() {
-      carousel.innerHTML = '';
-      pokemonDetails = [];
+ async function loadPokemonCarousel() {
+  carousel.innerHTML = '';
+  pokemonDetails = [];
 
-      for (const p of ownedPokemon) {
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
-        const data = await res.json();
-        const speciesRes = await fetch(data.species.url);
-        const species = await speciesRes.json();
-        const flavor = species.flavor_text_entries.find(e => e.language.name === 'en')?.flavor_text.replace(/\f/g, ' ') || 'A mysterious Pokémon.';
+  // ---- build cards -------------------------------------------------
+  for (const p of ownedPokemon) {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
+    const data = await res.json();
+    const speciesRes = await fetch(data.species.url);
+    const species = await speciesRes.json();
+    const flavor = species.flavor_text_entries.find(e => e.language.name === 'en')?.flavor_text.replace(/\f/g, ' ') || 'A mysterious Pokémon.';
+    const types = data.types.map(t => t.type.name);
+    const stats = {
+      hp: data.stats[0].base_stat,
+      atk: data.stats[1].base_stat,
+      def: data.stats[2].base_stat,
+      spa: data.stats[3].base_stat,
+      spd: data.stats[4].base_stat,
+      spe: data.stats[5].base_stat
+    };
+    const paddedId = String(p.id).padStart(3, '0');
+    pokemonDetails.push({ ...p, types, stats, flavor, paddedId, cries: data.cries });
 
-        const types = data.types.map(t => t.type.name);
-        const stats = {
-          hp: data.stats[0].base_stat,
-          atk: data.stats[1].base_stat,
-          def: data.stats[2].base_stat,
-          spa: data.stats[3].base_stat,
-          spd: data.stats[4].base_stat,
-          spe: data.stats[5].base_stat
-        };
+    const card = document.createElement('div');
+    card.className = 'carousel-card';
+    const primaryType = types[0];
+    const headerClass = primaryType === 'water' ? 'squirtle' :
+                       primaryType === 'fire' ? 'charmander' :
+                       primaryType === 'grass' ? 'bulbasaur' : '';
+    card.innerHTML = `
+      <div class="card-header ${headerClass}">
+        <img class="card-pokemon-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" alt="${p.name}">
+      </div>
+      <div class="card-body">
+        <div class="card-name">${p.name.toUpperCase()}</div>
+        <div class="card-id">#${paddedId}</div>
+        <div class="card-type">${types.map(t => t.toUpperCase()).join(' / ')}</div>
+        <div class="card-stats">
+          <div class="stat"><div class="stat-label">HP</div><div class="stat-bar"><div class="stat-fill" style="width:${(stats.hp/255)*100}%"></div></div></div>
+          <div class="stat"><div class="stat-label">ATK</div><div class="stat-bar"><div class="stat-fill" style="width:${(stats.atk/255)*100}%"></div></div></div>
+          <div class="stat"><div class="stat-label">DEF</div><div class="stat-bar"><div class="stat-fill" style="width:${(stats.def/255)*100}%"></div></div></div>
+        </div>
+        <div class="card-flavor">${flavor}</div>
+        <div class="card-pokeball"></div>
+      </div>
+    `;
+    carousel.appendChild(card);
+  }
 
-        const paddedId = String(p.id).padStart(3, '0');
+    // ---- navigation --------------------------------------------------
+  const cards = document.querySelectorAll('.carousel-card');
 
-        pokemonDetails.push({ ...p, types, stats, flavor, paddedId, cries: data.cries });
+  function updateCarousel() {
+    const total = ownedPokemon.length;
+    const center = carouselIndex;
 
-        const card = document.createElement('div');
-        card.className = 'carousel-card';
+    // translate so that the centre card sits in the middle
+    const offset = -(center * 33.333);   // 33.333% per card
+    carousel.style.transform = `translateX(${offset}%)`;
 
-        const primaryType = types[0];
-        const headerClass = primaryType === 'water' ? 'squirtle' : 
-                           primaryType === 'fire' ? 'charmander' : 
-                           primaryType === 'grass' ? 'bulbasaur' : '';
-
-        card.innerHTML = `
-          <div class="card-header ${headerClass}">
-            <img class="card-pokemon-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" alt="${p.name}">
-          </div>
-          <div class="card-body">
-            <div class="card-name">${p.name.toUpperCase()}</div>
-            <div class="card-id">#${paddedId}</div>
-            <div class="card-type">${types.map(t => t.toUpperCase()).join(' / ')}</div>
-            <div class="card-stats">
-              <div class="stat">
-                <div class="stat-label">HP</div>
-                <div class="stat-bar"><div class="stat-fill" style="width:${(stats.hp/255)*100}%"></div></div>
-              </div>
-              <div class="stat">
-                <div class="stat-label">ATK</div>
-                <div class="stat-bar"><div class="stat-fill" style="width:${(stats.atk/255)*100}%"></div></div>
-              </div>
-              <div class="stat">
-                <div class="stat-label">DEF</div>
-                <div class="stat-bar"><div class="stat-fill" style="width:${(stats.def/255)*100}%"></div></div>
-              </div>
-            </div>
-            <div class="card-flavor">${flavor}</div>
-            <div class="card-pokeball"></div>
-          </div>
-        `;
-        carousel.appendChild(card);
+    cards.forEach((c, i) => {
+      c.classList.remove('active', 'adjacent');
+      const diff = i - center;
+      // centre
+      if (diff === 0) {
+        c.classList.add('active');
+        confirmPokemonBtn.disabled = false;
+        selectedPokemon = pokemonDetails[i];
       }
+      // previous / next
+      else if (Math.abs(diff) === 1 ||
+               (center === 0 && i === total - 1) ||
+               (center === total - 1 && i === 0)) {
+        c.classList.add('adjacent');
+      }
+    });
+  }
 
-      updateCarousel();
-      playSound('appear');
-    }
+  prevBtn.onclick = () => {
+    carouselIndex = (carouselIndex - 1 + ownedPokemon.length) % ownedPokemon.length;
+    updateCarousel();
+    playSound('select');
+  };
+  nextBtn.onclick = () => {
+    carouselIndex = (carouselIndex + 1) % ownedPokemon.length;
+    updateCarousel();
+    playSound('select');
+  };
+
+  // initialise
+  carouselIndex = ownedPokemon.findIndex(p => p.id === equippedId);
+  if (carouselIndex === -1) carouselIndex = 0;
+  updateCarousel();
+  playSound('appear');
+}
 
     function updateCarousel() {
       carousel.style.transform = `translateX(${-carouselIndex * 100}%)`;
