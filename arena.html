@@ -673,12 +673,127 @@
        <div class="command-bar">
   <div class="command-title">Choose your move</div>
 
-  <div class="moves">
-    <button class="move-btn" data-move="fire"><span class="glow"></span><span class="ripple"></span>Fire</button>
-    <button class="move-btn" data-move="punch"><span class="glow"></span><span class="ripple"></span>Punch</button>
-    <button class="move-btn" data-move="thunder"><span class="glow"></span><span class="ripple"></span>Thunder</button>
-    <button class="move-btn" data-move="run"><span class="glow"></span><span class="ripple"></span>Run Away</button>
-  </div>
+ <div class="moves" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:20px;">
+<button class="move-btn" data-move="fire"
+    style="
+      position:relative; overflow:hidden; cursor:pointer;
+      min-width:140px; padding:14px 20px;
+      background:linear-gradient(135deg,#ff4d4d,#b30000);
+      color:#fff; font-weight:800; font-size:1rem;
+      border:none; border-radius:12px;
+      box-shadow:0 4px 12px rgba(255,77,77,.6),
+                 inset 0 -2px 6px rgba(0,0,0,.3);
+      transition:transform .15s, box-shadow .15s;
+    "
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(255,77,77,.8), inset 0 -2px 6px rgba(0,0,0,.3)'"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(255,77,77,.6), inset 0 -2px 6px rgba(0,0,0,.3)'"
+  >
+    <span style="position:absolute; inset:0; opacity:0; background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.4) 0%,transparent 50%); transition:opacity .3s;" class="glow"></span>
+    <span style="position:absolute; inset:50%; width:0; height:0; background:rgba(255,255,255,.5); border-radius:50%; transform:translate(-50%,-50%); transition:.6s;" class="ripple"></span>
+
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;">
+      <path d="M8.5 14.5C6.5 11.5 6 8 6 6c0 0 1.5 1.5 3 3 1.5-1.5 3-3 3-3 0 2-1 4.5-2.5 6.5C11 14.5 12 16 12 16s1-1.5 2.5-3.5c1.5 2 2.5 4.5 2.5 4.5 0-2-1-4.5-3-6.5-2 2-3 4.5-3 4.5z"/>
+      <path d="M12 22c-2.5-1.5-4-4-4-7 0-3 1.5-5.5 3.5-7"/>
+    </svg>
+    Fire
+  </button>
+
+  <!-- ==== PUNCH ==== -->
+  <button class="move-btn" data-move="punch"
+    style="
+      position:relative; overflow:hidden; cursor:pointer;
+      min-width:140px; padding:14px 20px;
+      background:linear-gradient(135deg,#ffaa00,#cc7700);
+      color:#fff; font-weight:800; font-size:1rem;
+      border:none; border-radius:12px;
+      box-shadow:0 4px 12px rgba(255,170,0,.6),
+                 inset 0 -2px 6px rgba(0,0,0,.3);
+      transition:transform .15s, box-shadow .15s;
+    "
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(255,170,0,.8), inset 0 -2px 6px rgba(0,0,0,.3)'"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(255,170,0,.6), inset 0 -2px 6px rgba(0,0,0,.3)'"
+  >
+    <span style="position:absolute; inset:0; opacity:0; background:radial-gradient(circle at 70% 70%,rgba(255,255,255,.4) 0%,transparent 50%); transition:opacity .3s;" class="glow"></span>
+    <span style="position:absolute; inset:50%; width:0; height:0; background:rgba(255,255,255,.5); border-radius:50%; transform:translate(-50%,-50%); transition:.6s;" class="ripple"></span>
+
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;">
+      <!-- Fist -->
+      <path d="M18 11h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1"/>
+      <path d="M14 9h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1"/>
+      <path d="M10 7h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1"/>
+      <path d="M6 5h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6"/>
+      <!-- Motion lines (impact) -->
+      <path d="M3 12h2"/>
+      <path d="M2 15h2"/>
+      <path d="M4 9h2"/>
+    </svg>
+    Punch
+  </button>
+
+  <!-- ==== THUNDER ==== -->
+  <button class="move-btn" data-move="thunder"
+    style="
+      position:relative; overflow:hidden; cursor:pointer;
+      min-width:140px; padding:14px 20px;
+      background:linear-gradient(135deg,#ffff4d,#cccc00);
+      color:#333; font-weight:800; font-size:1rem;
+      border:none; border-radius:12px;
+      box-shadow:0 4px 12px rgba(255,255,77,.7),
+                 inset 0 -2px 6px rgba(0,0,0,.2);
+      transition:transform .15s, box-shadow .15s;
+    "
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(255,255,77,.9), inset 0 -2px 6px rgba(0,0,0,.2)'"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(255,255,77,.7), inset 0 -2px 6px rgba(0,0,0,.2)'"
+  >
+    <span style="
+      position:absolute; inset:0; opacity:0;
+      background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.5) 0%,transparent 50%);
+      transition:opacity .3s;
+    " class="glow"></span>
+    <span style="
+      position:absolute; inset:50%; width:0; height:0;
+      background:rgba(255,255,255,.6); border-radius:50%;
+      transform:translate(-50%,-50%); transition:.6s;
+    " class="ripple"></span>
+
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:6px;">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+    </svg>
+    Thunder
+  </button>
+
+  <!-- ==== RUN AWAY ==== -->
+  <button class="move-btn" data-move="run"
+    style="
+      position:relative; overflow:hidden; cursor:pointer;
+      min-width:140px; padding:14px 20px;
+      background:linear-gradient(135deg,#999,#555);
+      color:#fff; font-weight:800; font-size:1rem;
+      border:none; border-radius:12px;
+      box-shadow:0 4px 12px rgba(150,150,150,.6),
+                 inset 0 -2px 6px rgba(0,0,0,.3);
+      transition:transform .15s, box-shadow .15s;
+    "
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(150,150,150,.8), inset 0 -2px 6px rgba(0,0,0,.3)'"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(150,150,150,.6), inset 0 -2px 6px rgba(0,0,0,.3)'"
+  >
+    <span style="
+      position:absolute; inset:0; opacity:0;
+      background:radial-gradient(circle at 20% 80%,rgba(255,255,255,.3) 0%,transparent 50%);
+      transition:opacity .3s;
+    " class="glow"></span>
+    <span style="
+      position:absolute; inset:50%; width:0; height:0;
+      background:rgba(255,255,255,.4); border-radius:50%;
+      transform:translate(-50%,-50%); transition:.6s;
+    " class="ripple"></span>
+
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:6px;">
+      <path d="M13 17h8M13 12h8M13 7h8M3 17l4-4-4-4"/>
+    </svg>
+    Run Away
+  </button>
+</div>
 </div>
       </div>
 
