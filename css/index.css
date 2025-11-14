@@ -1,0 +1,328 @@
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      overflow: hidden;
+      display: flex;
+      background: #0b1021;
+    }
+
+    .bg-image {
+      flex: 2;
+      background: url('/images/431.jpg') center/cover no-repeat;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.4s ease;
+    }
+    .bg-image::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(11,16,33,0.85), rgba(0,0,0,0.5));
+      z-index: 1;
+    }
+    .bg-overlay {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 2rem;
+      animation: fadeInLeft 1s ease-out;
+      width: 100%;
+      max-width: 800px;
+    }
+    .bg-overlay h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 3.8rem;
+      color: #ffcb05;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.7);
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+    .bg-overlay p {
+      font-size: 1.35rem;
+      color: #f0f0f0;
+      max-width: 80%;
+      margin: 0 auto 2.5rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    .music-control {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 203, 5, 0.95);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        0 10px 30px rgba(255, 203, 5, 0.4),
+        0 0 0 0 rgba(255, 203, 5, 0.3);
+      animation: pulse-glow 2s ease-in-out infinite;
+      backdrop-filter: blur(10px);
+    }
+    .music-control:hover {
+      transform: translateX(-50%) translateY(-5px) scale(1.05);
+      box-shadow: 
+        0 15px 40px rgba(255, 203, 5, 0.5),
+        0 0 0 15px rgba(255, 203, 5, 0.2);
+    }
+    .music-control.playing {
+      background: rgba(76, 175, 80, 0.95);
+      box-shadow: 
+        0 10px 30px rgba(76, 175, 80, 0.4),
+        0 0 0 0 rgba(76, 175, 80, 0.3);
+      animation: pulse-glow-green 2s ease-in-out infinite;
+    }
+    .music-control.playing:hover {
+      box-shadow: 
+        0 15px 40px rgba(76, 175, 80, 0.5),
+        0 0 0 15px rgba(76, 175, 80, 0.2);
+    }
+    .music-control .icon {
+      width: 28px;
+      height: 28px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      transition: transform 0.3s ease;
+    }
+    .music-control.playing .icon {
+      animation: bounce 1s ease-in-out infinite;
+    }
+
+    .form-panel {
+      flex: 1;
+      min-width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: rgba(10, 10, 20, 0.92);
+      backdrop-filter: blur(16px);
+      position: relative;
+      z-index: 10;
+      animation: fadeInRight 1s ease-out;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(20, 25, 50, 0.8);
+      padding: 2.8rem 2.2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 203, 5, 0.4);
+      animation: float 6s ease-in-out infinite;
+      position: relative;
+      z-index: 10;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { 
+        box-shadow: 
+          0 10px 30px rgba(255, 203, 5, 0.4),
+          0 0 0 0 rgba(255, 203, 5, 0.3); 
+      }
+      50% { 
+        box-shadow: 
+          0 10px 30px rgba(255, 203, 5, 0.4),
+          0 0 0 15px rgba(255, 203, 5, 0.15); 
+      }
+    }
+
+    @keyframes pulse-glow-green {
+      0%, 100% { 
+        box-shadow: 
+          0 10px 30px rgba(76, 175, 80, 0.4),
+          0 0 0 0 rgba(76, 175, 80, 0.3); 
+      }
+      50% { 
+        box-shadow: 
+          0 15px 40px rgba(76, 175, 80, 0.4),
+          0 0 0 15px rgba(76, 175, 80, 0.15); 
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .header img {
+      width: 42px;
+      filter: brightness(0) invert(1);
+      margin-bottom: 0.5rem;
+    }
+    .header h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1.9rem;
+      color: #ffcb05;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .header p {
+      font-size: 0.98rem;
+      color: #ddd;
+      margin-top: 0.6rem;
+    }
+
+    .toggle-tabs {
+      display: flex;
+      background: rgba(0,0,0,0.35);
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 2rem;
+    }
+    .tab {
+      flex: 1;
+      padding: 0.8rem;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.96rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .tab.active {
+      background: #ffcb05;
+      color: #1a2a6c;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(255, 203, 5, 0.4);
+    }
+
+    .metamask-btn {
+      width: 100%;
+      padding: 1.1rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.12rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #1a73e8;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .metamask-btn img {
+      width: 28px;
+      height: 28px;
+    }
+    .metamask-btn:hover {
+      background: #1557b0;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(26, 115, 232, 0.5);
+    }
+
+    .metamask-status {
+      margin-top: 1rem;
+      font-size: 0.96rem;
+      text-align: center;
+      min-height: 1.6em;
+      padding: 0.6rem;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .form { display: none; animation: fadeIn 0.5s ease; }
+    .form.active { display: block; }
+
+    .links {
+      text-align: center;
+      margin-top: 1.6rem;
+      font-size: 0.92rem;
+    }
+    .links a {
+      color: #ffcb05;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .links a:hover { text-decoration: underline; }
+
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-60px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(60px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 992px) {
+      body { flex-direction: column; }
+      .bg-image { 
+        flex: none; 
+        height: 45vh; 
+        min-height: 300px;
+        justify-content: flex-end;
+        padding-bottom: 3rem;
+      }
+      .form-panel { 
+        flex: none; 
+        min-width: 100%; 
+        padding: 2rem 1.5rem;
+      }
+      .pokemon-sprite {
+        width: 140px;
+        top: 10%;
+        right: 5%;
+      }
+      .bg-overlay h1 { font-size: 2.8rem; }
+      .bg-overlay p { font-size: 1.2rem; }
+      .music-control { bottom: 1rem; width: 60px; height: 60px; }
+      .music-control .icon { width: 24px; height: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 2rem 1.5rem; }
+      .bg-overlay h1 { font-size: 2.2rem; }
+      .metamask-btn { font-size: 1rem; padding: 1rem; }
+      .pokemon-sprite {
+        width: 110px;
+        top: 8%;
+        right: 2%;
+      }
+      .toggle-tabs { padding: 4px; }
+      .tab { font-size: 0.9rem; padding: 0.7rem; }
+      .music-control { width: 55px; height: 55px; }
+      .music-control .icon { width: 22px; height: 22px;}
+    }
+    #fire-fx {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;             
+  pointer-events: none;   
+  background: transparent;
+  mix-blend-mode: screen; 
+}
