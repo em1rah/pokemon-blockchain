@@ -25,6 +25,7 @@
       background: url('images/431.jpg') center/cover no-repeat;
       position: relative;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       transition: all 0.4s ease;
@@ -42,6 +43,8 @@
       text-align: center;
       padding: 2rem;
       animation: fadeInLeft 1s ease-out;
+      width: 100%;
+      max-width: 800px;
     }
     .bg-overlay h1 {
       font-family: 'Press Start 2P', cursive;
@@ -55,8 +58,58 @@
       font-size: 1.35rem;
       color: #f0f0f0;
       max-width: 80%;
-      margin: 0 auto;
+      margin: 0 auto 2.5rem;
       text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    .music-control {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 203, 5, 0.95);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        0 10px 30px rgba(255, 203, 5, 0.4),
+        0 0 0 0 rgba(255, 203, 5, 0.3);
+      animation: pulse-glow 2s ease-in-out infinite;
+      backdrop-filter: blur(10px);
+    }
+    .music-control:hover {
+      transform: translateX(-50%) translateY(-5px) scale(1.05);
+      box-shadow: 
+        0 15px 40px rgba(255, 203, 5, 0.5),
+        0 0 0 15px rgba(255, 203, 5, 0.2);
+    }
+    .music-control.playing {
+      background: rgba(76, 175, 80, 0.95);
+      box-shadow: 
+        0 10px 30px rgba(76, 175, 80, 0.4),
+        0 0 0 0 rgba(76, 175, 80, 0.3);
+      animation: pulse-glow-green 2s ease-in-out infinite;
+    }
+    .music-control.playing:hover {
+      box-shadow: 
+        0 15px 40px rgba(76, 175, 80, 0.5),
+        0 0 0 15px rgba(76, 175, 80, 0.2);
+    }
+    .music-control .icon {
+      width: 28px;
+      height: 28px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      transition: transform 0.3s ease;
+    }
+    .music-control.playing .icon {
+      animation: bounce 1s ease-in-out infinite;
     }
 
     .form-panel {
@@ -91,6 +144,37 @@
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-8px); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { 
+        box-shadow: 
+          0 10px 30px rgba(255, 203, 5, 0.4),
+          0 0 0 0 rgba(255, 203, 5, 0.3); 
+      }
+      50% { 
+        box-shadow: 
+          0 10px 30px rgba(255, 203, 5, 0.4),
+          0 0 0 15px rgba(255, 203, 5, 0.15); 
+      }
+    }
+
+    @keyframes pulse-glow-green {
+      0%, 100% { 
+        box-shadow: 
+          0 10px 30px rgba(76, 175, 80, 0.4),
+          0 0 0 0 rgba(76, 175, 80, 0.3); 
+      }
+      50% { 
+        box-shadow: 
+          0 15px 40px rgba(76, 175, 80, 0.4),
+          0 0 0 15px rgba(76, 175, 80, 0.15); 
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
     .header {
@@ -209,6 +293,8 @@
         flex: none; 
         height: 45vh; 
         min-height: 300px;
+        justify-content: flex-end;
+        padding-bottom: 3rem;
       }
       .form-panel { 
         flex: none; 
@@ -222,6 +308,8 @@
       }
       .bg-overlay h1 { font-size: 2.8rem; }
       .bg-overlay p { font-size: 1.2rem; }
+      .music-control { bottom: 1rem; width: 60px; height: 60px; }
+      .music-control .icon { width: 24px; height: 24px; }
     }
 
     @media (max-width: 480px) {
@@ -235,6 +323,8 @@
       }
       .toggle-tabs { padding: 4px; }
       .tab { font-size: 0.9rem; padding: 0.7rem; }
+      .music-control { width: 55px; height: 55px; }
+      .music-control .icon { width: 22px; height: 22px;}
     }
   </style>
 </head>
@@ -244,15 +334,20 @@
     <div class="bg-overlay">
       <h1>PikaPlay</h1>
       <p>Catch 'em all. Battle. Become a Master.</p>
+      <div class="music-control" id="musicControl" style="bottom:-30px">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+      </div>
     </div>
+    
   </div>
 
   <div class="form-panel">
-
-         <div style="display:flex">
- <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" 
-         alt="Pikachu" class="pokemon-sprite">
-         </div>
+    <div style="display:flex">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" 
+           alt="Pikachu" class="pokemon-sprite">
+    </div>
     <div class="container">
       <div class="header">
         <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffcb05'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/></svg>" alt="Pokeball">
@@ -288,7 +383,18 @@
     </div>
   </div>
 
+  <!-- ==== Pokémon Background Music – Fixed with Real URLs ==== -->
+  <audio id="pokemonMusic" loop preload="auto" crossorigin="anonymous">
+    <!-- Primary: Classic Pokémon Theme (TelevisionTunes – public & CORS-friendly) -->
+    <source src="https://www.televisiontunes.com/uploads/audio/Pokemon.mp3" type="audio/mpeg">
+    <!-- Fallback: Instrumental Version (same host) -->
+    <source src="https://www.televisiontunes.com/uploads/audio/Pokemon%20-%20Instrumental.mp3" type="audio/mpeg">
+    <!-- Ultimate Fallback: Internet Archive Pokémon Theme -->
+    <source src="https://archive.org/download/tvtunes_11549/Pokemon.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
+    // Tab switching functionality
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -303,6 +409,69 @@
       document.querySelector('[data-form="login"]').click();
     });
 
+    // Music control functionality
+    const musicControl = document.getElementById('musicControl');
+    const pokemonMusic = document.getElementById('pokemonMusic');
+    const playIcon = musicControl.querySelector('.icon');
+    let isPlaying = false;
+
+    // SVG icons (play = music note, pause = bars)
+    const PLAY_ICON  = '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>';
+    const PAUSE_ICON = '<rect x="6" y="6" width="4" height="12" rx="1"/><rect x="14" y="6" width="4" height="12" rx="1"/>';
+
+    function setIcon(svgPath) {
+      playIcon.innerHTML = svgPath;
+    }
+
+    // Unlock audio on first user interaction (iOS/Android fix)
+    let unlocked = false;
+    function unlockAudio() {
+      if (unlocked) return;
+      const silent = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAA');
+      silent.play().catch(() => {});
+      unlocked = true;
+    }
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('click', unlockAudio, { once: true });
+
+    musicControl.addEventListener('click', () => {
+      if (isPlaying) {
+        // Stop music
+        pokemonMusic.pause();
+        pokemonMusic.currentTime = 0;
+        musicControl.classList.remove('playing');
+        setIcon(PLAY_ICON);
+        isPlaying = false;
+      } else {
+        // Play music
+        pokemonMusic.play()
+          .then(() => {
+            musicControl.classList.add('playing');
+            setIcon(PAUSE_ICON);
+            isPlaying = true;
+          })
+          .catch(err => {
+            console.warn('Audio play failed:', err);
+            // Silent retry after unlock
+            setTimeout(() => {
+              if (!unlocked) unlockAudio();
+              pokemonMusic.play().catch(() => {});
+            }, 100);
+          });
+      }
+    });
+
+    // Auto-start on first interaction (smooth UX)
+    let firstInteraction = true;
+    document.body.addEventListener('click', function autoStart(e) {
+      if (!firstInteraction) return;
+      firstInteraction = false;
+      if (!isPlaying && !e.target.closest('#musicControl')) {
+        musicControl.click();
+      }
+    }, { once: true });
+
+    // MetaMask connection functionality
     async function connectMetaMask(statusEl, action) {
       const eth = window.ethereum;
       if (!eth) {
