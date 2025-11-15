@@ -1381,7 +1381,10 @@
     const msg = isWin ? 'CHAMPION!' : 'DEFEATED…';
     const extra = isWin ? `<div class="reward">+${reward} Coins</div>` : '';
     trophyOverlay.innerHTML = `
-      <div class="trophy-box ${cls}">
+    
+      <div class="trophy-box ${cls}" >
+         <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" 
+           alt="Pikachu" class="pokemon-sprite">
         ${icon}
         <div class="msg">${msg}</div>
         ${extra}
