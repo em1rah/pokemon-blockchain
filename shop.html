@@ -410,9 +410,42 @@
       transition: opacity 0.3s ease !important;
       image-rendering: pixelated;
     }
+
+    .top-bar{
+      position:sticky;top:0;left:0;right:0;
+      background:#0b1021;border-bottom:1px solid rgba(255,255,255,.08);
+      padding:0.85rem 1rem;display:flex;gap:1rem;align-items:center;
+      z-index:19;margin-left:230px;
+    }
+    .search-wrapper{
+      flex:1;max-width:420px;position:relative;margin-left: 630px;
+    }
+    #searchInput{
+      width:100%;padding:0.6rem 2.8rem 0.6rem 1rem;
+      border:2px solid rgba(255,203,5,.4);border-radius:12px;
+      background:rgba(0,0,0,.4);color:#fff;font-size:0.95rem;
+      outline:none;transition:.2s;
+    }
+    #searchInput:focus{border-color:#ffcb05;background:rgba(0,0,0,.6);}
+    .search-icon{
+      position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);
+      color:#ffcb05;font-size:1.1rem;pointer-events:none;
+    }
+    #sortSelect{
+      padding:0.6rem 1rem;border:2px solid rgba(255,203,5,.4);
+      border-radius:12px;background:rgba(0,0,0,.4);color:#ffcb05;
+      font-weight:700;outline:none;cursor:pointer;transition:.2s;
+    }
+    #sortSelect:focus{border-color:#ffcb05;}
+    @media(max-width:768px){
+      .top-bar{flex-direction:column;gap:0.5rem;margin-left:0;}
+      .search-wrapper{max-width:none;}
+    }
   </style>
 </head>
 <body>
+
+ 
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Shop</h1></div>
     <div class="menu">
@@ -430,8 +463,22 @@
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </div>
   </aside>
-
+ <div class="top-bar">
+    <div class="search-wrapper">
+      <input type="text" id="searchInput" placeholder="Search Pokémon…" autocomplete="off">
+      <i class="fas fa-search search-icon"></i>
+    </div>
+    <select id="sortSelect">
+      <option value="id-asc" style="font-family:'Press Start 2P',cursive;">ID ↑</option>
+      <option value="id-desc" style="font-family:'Press Start 2P',cursive;">ID ↓</option>
+      <option value="name-asc" style="font-family:'Press Start 2P',cursive;">Name A-Z</option>
+      <option value="name-desc" style="font-family:'Press Start 2P',cursive;">Name Z-A</option>
+      <option value="price-asc" style="font-family:'Press Start 2P',cursive;">Price ↑</option>
+      <option value="price-desc" style="font-family:'Press Start 2P',cursive;">Price ↓</option>
+    </select>
+  </div>
   <div class="container">
+    
     <div class="title">Starters</div>
     <div class="subtitle">Claim up to three free starters</div>
     <div class="grid" id="starterGrid"></div>
@@ -1029,6 +1076,171 @@
       }
     }, true);
   });
+
+  /* ---------- SEARCH & SORT ---------- */
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect   = document.getElementById('sortSelect');
+
+  // Cache the original arrays 
+  const dataCache = {
+    starters: [...starters],
+    common:   [...common],
+    rare:     [...rare],
+    owned:    []   // will be filled after first load
+  };
+
+  // Helper – compare function for sorting
+  function getSortFn(key) {
+    const [field, dir] = key.split('-');
+    const asc = dir === 'asc' ? 1 : -1;
+    return (a, b) => {
+      let va = a[field] ?? 0;
+      let vb = b[field] ?? 0;
+      if (field === 'price') {
+        const dA = getPurchaseDetails(a.id);
+        const dB = getPurchaseDetails(b.id);
+        va = dA ? dA.price : 0;
+        vb = dB ? dB.price : 0;
+      }
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      return (va > vb ? 1 : va < vb ? -1 : 0) * asc;
+    };
+  }
+  // Re-render a specific grid with filtered + sorted items
+  function renderGrid(gridId, sourceArray, type, extraFn = null) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+
+    const term = searchInput.value.trim().toLowerCase();
+    let filtered = sourceArray.filter(p => {
+      const name = p.name.toLowerCase();
+      const idStr = String(p.id);
+      return name.includes(term) || idStr.includes(term);
+    });
+
+    const sortKey = sortSelect.value;
+    if (sortKey) filtered.sort(getSortFn(sortKey));
+
+    if (!filtered.length) {
+      grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon found.</p>`;
+      return;
+    }
+
+    filtered.forEach(p => {
+      const card = extraFn ? extraFn(p) : createCard(p, type);
+      grid.appendChild(card);
+    });
+  }
+
+  // Wrapper for each section
+  function refreshStarters() { renderGrid('starterGrid', dataCache.starters, 'starter', p => {
+    const claimed = claimedStarters.includes(p.id) || claimedStarters.length >= 3;
+    const card = createCard(p, 'starter');
+    const btn = card.querySelector('button');
+    if (claimed) { btn.disabled = true; btn.textContent = 'Claimed'; }
+    return card;
+  });}
+
+  function refreshCommon()   { renderGrid('shopGrid', dataCache.common, 'common'); }
+  async function refreshRare() {
+    const grid = document.getElementById('rareGrid'); grid.innerHTML = '';
+    const term = searchInput.value.trim().toLowerCase();
+    const sortKey = sortSelect.value;
+
+    let list = [...dataCache.rare];
+    if (term) list = list.filter(p => p.name.toLowerCase().includes(term) || String(p.id).includes(term));
+    if (sortKey) list.sort(getSortFn(sortKey));
+
+    for (const p of list) {
+      let listing = {price:0, seller:ethers.constants.AddressZero};
+      try { listing = await nft.listings(p.id); } catch(e){}
+      const price = Number(ethers.utils.formatUnits(listing.price, 18));
+      grid.appendChild(createCard(p, 'token', price>0?{price,seller:listing.seller}:null));
+    }
+  }
+  function refreshOwned() {
+    // owned list is dynamic 
+    dataCache.owned = [...ownedLocal];
+    renderGrid('myGrid', dataCache.owned, null, p => {
+      const pokemonType = getPokemonType(p.id);
+      const hp = getPokemonHP(p.id);
+      const attack = getAttack(pokemonType);
+      const card = document.createElement('div');
+      card.className = 'card has-owned';
+
+      const staticImg = img(p.id);
+      const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+
+      let extraBtn = '';
+      const isStarter = starters.some(s => s.id === p.id);
+      const isCommon  = common.some(c => c.id === p.id);
+      if (!isStarter && !isCommon) {
+        if (p.price !== undefined && p.price > 0) {
+          extraBtn = `<button class="sell-btn" onclick="cancelListing(${p.id})">Cancel Sale</button>`;
+        } else if (p.price !== undefined) {
+          extraBtn = `<button class="sell-btn" onclick="promptList(${p.id},'${p.name}')">List for Sale</button>`;
+        } else {
+          extraBtn = `<button class="sell-btn" onclick="sellPokemon(${p.id},'${p.name}')">Sell (50% refund)</button>`;
+        }
+      }
+
+      card.innerHTML = `
+        <div class="owned-tag"><i class="fa-solid fa-check"></i> Owned</div>
+        <div class="rarity-badge"><i class="fa-solid fa-trophy"></i><span>COLLECTION</span></div>
+        <div class="card-header"><div class="card-name">${p.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
+        <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+        <div class="card-image-area">
+          <img src="${staticImg}" data-gif="${gifImg}" alt="${p.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+        </div>
+        <div class="card-info">
+          <div class="attack-section">
+            <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]||''}</span>`).join('')}</div>
+            <div class="attack-name">${attack.name}</div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
+          </div>
+          <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
+          ${extraBtn}
+          <div class="set-symbol">
+            <img src="images/favicon.png" alt="Symbol" style="width:2em;height:2em;vertical-align:middle;transition:transform .4s ease;display:inline-block;"
+                 onmouseover="this.style.transform='rotate(360deg) scale(1.5)'"
+                 onmouseout="this.style.transform='rotate(0deg) scale(1)'">
+          </div>
+        </div>
+      `;
+      return card;
+    });
+  }
+
+  // Debounced live search (300 ms)
+  let searchTimer;
+  function onSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      refreshStarters();
+      refreshCommon();
+      refreshRare();
+      refreshOwned();
+    }, 300);
+  }
+  searchInput.addEventListener('input', onSearch);
+  sortSelect.addEventListener('change', () => {
+    refreshStarters();
+    refreshCommon();
+    refreshRare();
+    refreshOwned();
+  });
+
+  const originalLoadAll = loadAll;
+  window.loadAll = function () {
+    originalLoadAll();
+       dataCache.owned = [...ownedLocal];
+    onSearch(); // applies current search/sort instantly
+  };
+
+  /* ---------- INIT ---------- */
+  updateCoinDisplay();
+  loadAll();   
 </script>
 </body>
 </html>
