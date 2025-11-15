@@ -775,7 +775,9 @@
         </div>
         <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
         ${btnHTML}
-        <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+      <div class="set-symbol">
+    <img src="images/favicon.png" alt="Symbol" style="width: 1.5em; height: 1.5em; vertical-align: middle;">
+</div>
       </div>
     `;
     return card;
@@ -863,7 +865,9 @@
         </div>
         <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
         ${extraBtn}
-        <div class="set-symbol"><i class="fa-solid fa-baseball"></i></div>
+          <div class="set-symbol">
+    <img src="images/favicon.png" alt="Symbol" style="width: 1.5em; height: 1.5em; vertical-align: middle;">
+</div>
       </div>
     `;
     grid.appendChild(card);
