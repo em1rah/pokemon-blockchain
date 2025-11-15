@@ -776,7 +776,19 @@
         <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
         ${btnHTML}
       <div class="set-symbol">
-    <img src="images/favicon.png" alt="Symbol" style="width: 1.5em; height: 1.5em; vertical-align: middle;">
+    <img 
+        src="images/favicon.png" 
+        alt="Symbol" 
+        style="
+            width: 2em; 
+            height: 2em; 
+            vertical-align: middle;
+            transition: transform 0.4s ease;
+            display: inline-block;
+        "
+        onmouseover="this.style.transform='rotate(360deg) scale(1.5)'"
+        onmouseout="this.style.transform='rotate(0deg) scale(1)'"
+    >
 </div>
       </div>
     `;
@@ -865,8 +877,20 @@
         </div>
         <div class="card-id">#${String(p.id).padStart(3,'0')} | ${p.name}</div>
         ${extraBtn}
-          <div class="set-symbol">
-    <img src="images/favicon.png" alt="Symbol" style="width: 1.5em; height: 1.5em; vertical-align: middle;">
+        <div class="set-symbol">
+    <img 
+        src="images/favicon.png" 
+        alt="Symbol" 
+        style="
+            width: 2em; 
+            height: 2em; 
+            vertical-align: middle;
+            transition: transform 0.4s ease;
+            display: inline-block;
+        "
+        onmouseover="this.style.transform='rotate(360deg) scale(1.5)'"
+        onmouseout="this.style.transform='rotate(0deg) scale(1)'"
+    >
 </div>
       </div>
     `;
