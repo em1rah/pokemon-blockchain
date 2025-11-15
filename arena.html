@@ -113,7 +113,7 @@
       text-align: center;
     }
 
-/* POKÉMON CAROUSEL – 3-card view with focus on centre */
+/* POKÉMON CAROUSEL*/
 .pokemon-carousel-container {
   position: relative;
  
@@ -152,7 +152,7 @@
   user-select: none;
 }
 
-/* ---- ACTIVE (centre) ---- */
+
 .carousel-card.active {
   transform: scale(1);
   opacity: 1;
@@ -163,7 +163,7 @@
   z-index: 10;
 }
 
-/* ---- ADJACENT (previous / next) ---- */
+
 .carousel-card.adjacent {
   transform: scale(0.92);
   opacity: 0.72;
@@ -469,15 +469,26 @@
     .move-btn .ripple::after{content:'';position:absolute;width:10px;height:10px;left:var(--rx,50%);top:var(--ry,50%);background:rgba(255,255,255,.35);border-radius:50%;transform:translate(-50%,-50%) scale(0);animation:ripple .6s ease-out}
     @keyframes ripple{to{transform:translate(-50%,-50%) scale(18);opacity:0}}
 
-    .log{background:rgba(0,0,0,.6);padding:12px;border-radius:12px;max-height:220px;overflow-y:auto;font-size:14px;margin:0 0 12px 0;border:1px solid rgba(255,203,5,.3);font-family:'Inter',system-ui}
+    .log{background:rgba(0,0,0,.6);padding:12px;border-radius:12px;max-height:220px;overflow-y:auto;font-size:16px;margin:0 0 12px 0;border:1px solid rgba(255,203,5,.3);font-family:'Inter',system-ui}
     .log p{margin:6px 0;opacity:.9;}
     .system{color:#ffcb05;font-weight:600}
     .trophy{vertical-align:middle;margin-left:6px}
 
-    #scoreboard table{width:100%;border-collapse:collapse;}
-    #scoreboard th, #scoreboard td{padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);}
-    #scoreboard thead{background:rgba(255,203,5,.2);}
-    #scoreboard tbody tr:nth-child(even){background:rgba(255,255,255,.05);}
+#scoreboard {
+  background:rgba(10,15,29,.95); 
+  border:2px solid rgba(255,203,5,.3); 
+  border-radius:16px; 
+  padding:16px; 
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+#scoreboard table {width:100%;border-collapse:collapse;font-size:.85rem;}
+#scoreboard th, #scoreboard td {padding:10px 6px;text-align:center;border-bottom:1px solid rgba(255,203,5,.15);color:#ddd;}
+#scoreboard thead {background:linear-gradient(135deg,rgba(255,203,5,.3),rgba(255,203,5,.15));}
+#scoreboard thead th {color:#ffcb05;font-weight:700;text-shadow:1px 1px 0 #000;}
+#scoreboard tbody tr:nth-child(even) {background:rgba(255,255,255,.04);}
+#scoreboard tbody tr:hover {background:rgba(255,203,5,.12);}
+#scoreboard tbody tr:first-child {background:linear-gradient(135deg,rgba(255,235,59,.4),rgba(255,203,5,.3)) !important;}
+#scoreboard tbody tr:first-child td {color:#ffeb3b;font-weight:700;text-shadow:1px 1px 0 #000;}
 
     @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-10px);}75%{transform:translateX(10px);}}
     @keyframes flash{0%,100%{opacity:1;filter:brightness(1);}50%{opacity:0.7;filter:brightness(1.5);}}
@@ -593,7 +604,7 @@
 #historyContainer::-webkit-scrollbar { width:8px; }
 #historyContainer::-webkit-scrollbar-thumb { background:#ffcb05; border-radius:4px; }
 
-/* Trophy / Defeat overlay */
+/* Trophy / Defeat */
 #trophyOverlay {
   position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.8);opacity:0;visibility:hidden;transition:opacity .4s;
@@ -632,7 +643,7 @@
 
     <!-- WIZARD -->
     <div id="setupWizard" class="wizard"  style="border:none">
-      <!-- Step 0 - Music Selection -->
+      <!-- Step 1 - Music Selection -->
       <div class="wizard-slide active" id="slide-music">
         <div class="slide-title">Step 1: Choose Battle Music</div>
         <div class="music-selector">
@@ -650,7 +661,7 @@
         </div>
       </div>
 
-      <!-- Step 1 -->
+      <!-- Step 2 -->
       <div class="wizard-slide" id="slide-pokemon" style="border:none">
         <div class="slide-title">Step 2: Choose Your Pokémon</div>
         <div class="pokemon-carousel-container">
@@ -663,7 +674,7 @@
         </div>
       </div>
 
-      <!-- Step 2 -->
+      <!-- Step 3 -->
       <div class="wizard-slide" id="slide-opponents">
         <div class="slide-title">Step 3: Select Opponent Count</div>
         <div class="opponent-preview" id="opponentPreview"></div>
@@ -680,7 +691,7 @@
         </div>
       </div>
 
-      <!-- Step 3 -->
+      <!-- Step 4 -->
       <div class="wizard-slide" id="slide-start">
         <div class="slide-title">Final Step: Launch Tournament!</div>
         <div class="tournament-summary">
@@ -697,7 +708,6 @@
     <!-- BATTLE ARENA -->
     <div class="arena-layout" id="battleArena" style="display:none;">
       <div class="main-col">
-          <!-- Background Selector Inside Command Bar -->
   <div class="bg-selector" style="margin: 12px auto 8px; max-width: 320px; display:flex; gap:12px; align-items:center;">
     <select id="bgSelect" style="width: 100%; padding: 8px 12px; font-family: 'Press Start 2P'; font-size: .85rem; background: rgba(0,0,0,.6); color: #ffcb05; border: 2px solid #ffcb05; border-radius: 10px; cursor: pointer; outline: none;">
    <option value="images/pok.png">Pokemon Arena</option>
@@ -711,7 +721,7 @@
   </button>
   </div>
 
-  <!-- History Modal (hidden by default) -->
+  <!-- History Modal -->
 <div id="historyModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);padding:2rem;">
   <div style="max-width:800px;margin:auto;background:rgba(10,15,29,.95);border:3px solid #ffcb05;border-radius:20px;padding:20px;position:relative;">
     <button id="closeHistory" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#ffcb05;font-size:1.5rem;cursor:pointer;">✕</button>
@@ -868,17 +878,19 @@
       </div>
 
       <aside class="side-col">
-        <div class="log" id="battleLog">
-          <p class="system">Prepare your team...</p>
-        </div>
-        <div id="scoreboard" style="display:none;">
+        <div id="scoreboard" >
           <div class="title" style="text-align:center;">Tournament Standings</div>
           <table>
-            <thead><tr><th>Rank</th><th>Trainer</th><th>W</th><th>L</th><th>Pts</th></tr></thead>
+            <thead><tr><th>Rank</th><th>Pokémon</th><th>Win</th><th>Lose</th><th>Pts</th></tr></thead>
             <tbody id="scoreboardBody"></tbody>
           </table>
         </div>
+        <div class="log" id="battleLog">
+          <p class="system">Prepare your team...</p>
+        </div>
+        
       </aside>
+      
     </div>
   </div>
 
@@ -1310,7 +1322,7 @@
       setTimeout(() => battlefield.classList.remove('screen-shake'), 500);
     }
   }
-  /* ==================== 5. HISTORY SYSTEM ==================== */
+  /* ==================== HISTORY SYSTEM ==================== */
   function loadHistory() {
     const raw = localStorage.getItem(HISTORY_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -1358,7 +1370,7 @@
   };
   window.addEventListener('click', e => { if (e.target === historyModal) historyModal.style.display = 'none'; });
 
-  /* ==================== 6. TROPHY / DEFEAT OVERLAY ==================== */
+  /* ==================== TROPHY / DEFEAT OVERLAY ==================== */
   const trophyOverlay = document.createElement('div');
   trophyOverlay.id = 'trophyOverlay';
   document.body.appendChild(trophyOverlay);
@@ -1436,8 +1448,7 @@
     const total = ownedPokemon.length;
     const center = carouselIndex;
 
-    // translate so that the centre card sits in the middle
-    const offset = -(center * 33.333);   // 33.333% per card
+    const offset = -(center * 33.333);  
     carousel.style.transform = `translateX(${offset}%)`;
 
     cards.forEach((c, i) => {
@@ -1610,11 +1621,14 @@
     function log(msg,cls=''){ const p=document.createElement('p'); p.innerHTML=msg; if(cls)p.className=cls; battleLog.appendChild(p); battleLog.scrollTop=battleLog.scrollHeight; }
 
     async function startTournament(){
+      currentReplayData = { turns: [], playerName: player.name, playerId: equippedId };
+  replayData = { replayData: { matches: [], turns: [] } };
+
       tournamentActive = true;
       battleActive = false;
       currentMatch = 0;
       playerStats = {wins:0, losses:0};
-      scoreboard.style.display = 'none';
+      // scoreboard.style.display = 'none';
       moveButtons.forEach(b=>b.disabled=true);
       battleLog.innerHTML = '';
       log(`<span class="system">=== ROUND-ROBIN TOURNAMENT BEGIN ===</span>`);
@@ -1820,19 +1834,28 @@
       else endTournament();
     }
 
-/* ==================== 8. BATTLE LOGIC – MODIFIED END-TOURNAMENT ==================== */
+/* ==================== BATTLE LOGIC ==================== */
   async function endTournament(){
     tournamentActive = false;
     stopMusic();
 
-    /* ---- 1. Build standings (same as before) ---- */
+    /* ----  Build standings  ---- */
     const standings = [
       {name: player.name, wins: playerStats.wins, losses: playerStats.losses, pts: playerStats.wins * 3},
       ...opponents.map(o => ({name: o.name, wins: o.wins, losses: o.losses, pts: o.wins * 3}))
     ];
     standings.sort((a,b) => b.pts - a.pts || b.wins - a.wins);
 
-    /* ---- 2. Save to history ---- */
+    /* ---- SHOW SCOREBOARD IMMEDIATELY ---- */
+  scoreboardBody.innerHTML = '';
+  standings.forEach((s,i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td>${s.name}${i===0 && s.name===player.name?' <i class="fas fa-crown" style="color:#ffeb3b;"></i>':''}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.pts}</td>`;
+    scoreboardBody.appendChild(tr);
+  });
+  scoreboard.style.display = 'block';
+
+    /* ----  Save to history ---- */
     const histEntry = {
       date: new Date().toLocaleString(),
       champion: standings[0].name,
@@ -1842,28 +1865,28 @@
     hist.unshift(histEntry);
     saveHistory(hist);
 
-    /* ---- 3. Show trophy / defeat ---- */
+    /* ---- Show trophy / defeat ---- */
     const youAreChampion = standings[0].name === player.name;
     const champReward = youAreChampion ? 500 : 0;
     if (youAreChampion) setCoins(getCoins() + champReward);
     showResult(youAreChampion, champReward);
 
-    /* ---- 4. Log final line ---- */
+    /* ----  Log final line ---- */
     log(`<span class="system">=== TOURNAMENT COMPLETE ===</span>`);
 
-    /* ---- 5. Auto-return to wizard after a few seconds ---- */
+    /* ----  Auto-return to wizard after a few seconds ---- */
     setTimeout(() => {
       wizard.style.display = 'block';
       battleArena.style.display = 'none';
       document.querySelectorAll('.wizard-slide').forEach(s => s.classList.remove('active'));
       document.getElementById('slide-music').classList.add('active');
       loadPokemonCarousel();
-    }, 6000);
+    }, 10000);
   }
-  document.getElementById('scoreboard').style.display = 'none';
+
     loadPokemonCarousel();
 
-    // Background selector logic (place after other DOM queries)
+    // Background selector logic
 const bgSelect = document.getElementById('bgSelect');
 
 function setBattlefieldBg(url) {
