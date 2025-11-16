@@ -765,83 +765,156 @@
     steel: '<i class="fa-solid fa-shield"></i>'
   };
 
-  /* ---------- CARD CREATION ---------- */
-  function createCard(poke, type, listing = null) {
-    const has = ownedLocal.some(o => o.id === poke.id);
-    const card = document.createElement('div');
-    const cardClass = type === 'starter' ? 'starter-card' : type === 'token' ? 'rare-card' : '';
-    card.className = `card ${cardClass} ${has ? 'has-owned' : ''}`;
+  // Pokémon Type Effectiveness
+const TYPE_CHART = {
+  Normal:   { weak: ['Fighting'], resist: [], immune: ['Ghost'] },
+  Fire:     { weak: ['Water', 'Ground', 'Rock'], resist: ['Fire', 'Grass', 'Ice', 'Bug', 'Steel', 'Fairy'], immune: [] },
+  Water:    { weak: ['Electric', 'Grass'], resist: ['Fire', 'Water', 'Ice', 'Steel'], immune: [] },
+  Grass:    { weak: ['Fire', 'Ice', 'Poison', 'Flying', 'Bug'], resist: ['Water', 'Grass', 'Electric', 'Ground'], immune: [] },
+  Electric: { weak: ['Ground'], resist: ['Electric', 'Flying', 'Steel'], immune: [] },
+  Ice:      { weak: ['Fire', 'Fighting', 'Rock', 'Steel'], resist: ['Ice'], immune: [] },
+  Fighting: { weak: ['Flying', 'Psychic', 'Fairy'], resist: ['Bug', 'Rock', 'Dark'], immune: [] },
+  Poison:   { weak: ['Ground', 'Psychic'], resist: ['Grass', 'Fighting', 'Poison', 'Bug', 'Fairy'], immune: [] },
+  Ground:   { weak: ['Water', 'Grass', 'Ice'], resist: ['Poison', 'Rock'], immune: ['Electric'] },
+  Flying:   { weak: ['Electric', 'Ice', 'Rock'], resist: ['Grass', 'Fighting', 'Bug'], immune: ['Ground'] },
+  Psychic:  { weak: ['Bug', 'Ghost', 'Dark'], resist: ['Fighting', 'Psychic'], immune: [] },
+  Bug:      { weak: ['Fire', 'Flying', 'Rock'], resist: ['Grass', 'Fighting', 'Ground'], immune: [] },
+  Rock:     { weak: ['Water', 'Grass', 'Fighting', 'Ground', 'Steel'], resist: ['Normal', 'Fire', 'Poison', 'Flying'], immune: [] },
+  Ghost:    { weak: ['Ghost', 'Dark'], resist: ['Poison', 'Bug'], immune: ['Normal', 'Fighting'] },
+  Dragon:   { weak: ['Ice', 'Dragon', 'Fairy'], resist: ['Fire', 'Water', 'Grass', 'Electric'], immune: [] },
+  Dark:     { weak: ['Fighting', 'Bug', 'Fairy'], resist: ['Ghost', 'Dark'], immune: ['Psychic'] },
+  Steel:    { weak: ['Fire', 'Fighting', 'Ground'], resist: ['Normal', 'Grass', 'Ice', 'Flying', 'Psychic', 'Bug', 'Rock', 'Dragon', 'Steel', 'Fairy'], immune: ['Poison'] },
+  Fairy:    { weak: ['Poison', 'Steel'], resist: ['Fighting', 'Bug', 'Dark'], immune: ['Dragon'] }
+};
 
-    const pokemonType = getPokemonType(poke.id);
-    const hp = getPokemonHP(poke.id);
-    const attack = getAttack(pokemonType);
-    const rarity = getRarity(type, poke.price);
-    const priceIcon = type === 'token' ? '<i class="fa-solid fa-gem"></i>' : '<i class="fa-solid fa-coins"></i>';
-    const priceText = type === 'token' ? `${poke.price} TOKEN` : `${poke.price} Coins`;
+const TYPE_ICONS = {
+  Normal: 'paw', Fire: 'fire', Water: 'droplet', Grass: 'leaf',
+  Electric: 'bolt', Ice: 'snowflake', Fighting: 'hand-fist',
+  Poison: 'skull-crossbones', Ground: 'mountain', Flying: 'dove',
+  Psychic: 'brain', Bug: 'spider', Rock: 'gem', Ghost: 'ghost',
+  Dragon: 'dragon', Dark: 'moon', Steel: 'shield', Fairy: 'sparkles'
+};
 
-    const staticImg = img(poke.id);
-    const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${poke.id}.gif`;
+function getWeaknessResistance(type) {
+  const chart = TYPE_CHART[type] || { weak: [], resist: [] };
+  const weak = chart.weak[0] || '—';
+  const resist = chart.resist[0] || '—';
+  return { weak, resist };
+}
 
-    // ---------- BUTTON ----------
-    let btnHTML = '';
-    if (type === 'starter') {
-      const claimed = claimedStarters.includes(poke.id) || claimedStarters.length >= 3;
-      btnHTML = `<button class="coin-btn" ${claimed?'disabled':''} onclick="${claimed?'':'claimStarter('+poke.id+',\''+poke.name+'\')'}">${claimed?'Claimed':'Claim'}</button>`;
-    } else if (type === 'common') {
-      btnHTML = `<button class="coin-btn" ${has?'disabled':''} onclick="${has?'':'buyCommon('+poke.id+',\''+poke.name+'\','+poke.price+')'}">${has?'Owned':'Buy'}</button>`;
-    } else if (type === 'token') {
-      if (listing && listing.price > 0) {
-        const isOwner = listing.seller.toLowerCase() === userAddress?.toLowerCase();
-        if (isOwner) {
-          btnHTML = `<button class="sell-btn" onclick="cancelListing(${poke.id})">Cancel</button>`;
-        } else {
-          btnHTML = `<button class="token-btn" onclick="buyListed(${poke.id})">Buy ${listing.price} TOKEN</button>`;
-        }
-      } else {
-        btnHTML = `<button class="token-btn" ${has?'disabled':''} onclick="${has?'':'buyRare('+poke.id+',\''+poke.name+'\','+poke.price+')'}">${has?'Owned':'Buy with TOKEN'}</button>`;
-      }
-    }
+/* ---------- CARD CREATION ---------- */
+function createCard(poke, type, listing = null) {
+  const pokemonType = getPokemonType(poke.id);
+  const { weak, resist } = getWeaknessResistance(pokemonType);
+  const has = ownedLocal.some(o => o.id === poke.id);
+  const card = document.createElement('div');
+  const cardClass = type === 'starter' ? 'starter-card' : type === 'token' ? 'rare-card' : '';
+  card.className = `card ${cardClass} ${has ? 'has-owned' : ''}`;
 
-    card.innerHTML = `
-      <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
-      <div class="card-header"><div class="card-name">${poke.name}</div><div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div></div>
-      <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase()=== 'normal' ? 'paw' : pokemonType.toLowerCase()=== 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
-      <div class="card-image-area">
-        <img src="${staticImg}" data-gif="${gifImg}" alt="${poke.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
-      </div>
-      <div class="card-info">
-        <div class="attack-section">
-          <div class="attack-cost">${attack.cost.map(e=>`<span class="energy-symbol">${energyIcons[e]}</span>`).join('')}</div>
-          <div class="attack-name">${attack.name}</div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;font-size:.75rem;">Damage</span><span class="attack-damage">${attack.damage}</span></div>
-        </div>
-        <div class="card-id">#${String(poke.id).padStart(3,'0')} | ${poke.name}</div>
-        <div class="weakness-resistance">
-          <span><i class="fa-solid fa-bolt"></i> Weak: ???</span>
-          <span><i class="fa-solid fa-shield"></i> Resist: ???</span>
-        </div>
-        <div class="card-price"><span class="price-icon">${priceIcon}</span><span>${priceText}</span></div>
-        ${btnHTML}
-      <div class="set-symbol">
-    <img 
-        src="images/favicon.png" 
-        alt="Symbol" 
-        style="
-            width: 2em; 
-            height: 2em; 
-            vertical-align: middle;
-            transition: transform 0.4s ease;
-            display: inline-block;
-        "
-        onmouseover="this.style.transform='rotate(360deg) scale(1.5)'"
-        onmouseout="this.style.transform='rotate(0deg) scale(1)'"
-    >
-</div>
-      </div>
-    `;
-    return card;
+  const hp = getPokemonHP(poke.id);
+  const attack = getAttack(pokemonType);
+  const rarity = getRarity(type, poke.price);
+  
+  const staticImg = img(poke.id);
+  const gifImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${poke.id}.gif`;
+
+
+  let priceHTML = '';
+  if (type === 'starter') {
+    priceHTML = `<div class="card-price">
+                   <span class="price-icon"><i class="fa-solid fa-gift"></i></span>
+                   <span style="color:#8bc34a;font-weight:700;">FREE</span>
+                 </div>`;
+  } else if (type === 'common') {
+    priceHTML = `<div class="card-price">
+                   <span class="price-icon"><i class="fa-solid fa-coins"></i></span>
+                   <span>${poke.price} Coins</span>
+                 </div>`;
+  } else if (type === 'token') {
+    const displayPrice = (listing && listing.price > 0) ? listing.price : poke.price;
+    priceHTML = `<div class="card-price">
+                   <span class="price-icon"><i class="fa-solid fa-gem"></i></span>
+                   <span>${displayPrice} TOKEN</span>
+                 </div>`;
   }
 
+  // ---------- BUTTON ----------
+  let btnHTML = '';
+  if (type === 'starter') {
+    const claimed = claimedStarters.includes(poke.id) || claimedStarters.length >= 3;
+    btnHTML = `<button class="coin-btn" ${claimed ? 'disabled' : ''} 
+                 onclick="${claimed ? '' : 'claimStarter(' + poke.id + ',\'' + poke.name + '\')'}">
+                 ${claimed ? 'Claimed' : 'Claim'}
+               </button>`;
+  } else if (type === 'common') {
+    btnHTML = `<button class="coin-btn" ${has ? 'disabled' : ''} 
+                 onclick="${has ? '' : 'buyCommon(' + poke.id + ',\'' + poke.name + '\',' + poke.price + ')'}">
+                 ${has ? 'Owned' : 'Buy'}
+               </button>`;
+  } else if (type === 'token') {
+    if (listing && listing.price > 0) {
+      const isOwner = listing.seller.toLowerCase() === userAddress?.toLowerCase();
+      if (isOwner) {
+        btnHTML = `<button class="sell-btn" onclick="cancelListing(${poke.id})">Cancel</button>`;
+      } else {
+        btnHTML = `<button class="token-btn" onclick="buyListed(${poke.id})">
+                     Buy ${listing.price} TOKEN
+                   </button>`;
+      }
+    } else {
+      btnHTML = `<button class="token-btn" ${has ? 'disabled' : ''} 
+                   onclick="${has ? '' : 'buyRare(' + poke.id + ',\'' + poke.name + '\',' + poke.price + ')'}">
+                   ${has ? 'Owned' : 'Buy with TOKEN'}
+                 </button>`;
+    }
+  }
+
+  // ------------------- FULL CARD HTML -------------------
+  card.innerHTML = `
+    <div class="rarity-badge"><span class="rarity-star">${rarity.stars}</span><span>${rarity.level}</span></div>
+    <div class="card-header">
+      <div class="card-name">${poke.name}</div>
+      <div class="card-hp"><i class="fa-solid fa-star"></i><span class="hp-value">${hp}</span></div>
+    </div>
+    <div class="card-type"><i class="fa-solid fa-${pokemonType.toLowerCase() === 'normal' ? 'paw' : pokemonType.toLowerCase() === 'psychic' ? 'brain' : pokemonType.toLowerCase()}"></i> ${pokemonType}</div>
+
+    <div class="card-image-area">
+      <img src="${staticImg}" data-gif="${gifImg}" alt="${poke.name}" loading="lazy" class="pokemon-img" onload="this.style.opacity=1" style="opacity:0;">
+    </div>
+
+    <div class="card-info">
+      <div class="attack-section">
+        <div class="attack-cost">${attack.cost.map(e => `<span class="energy-symbol">${energyIcons[e]}</span>`).join('')}</div>
+        <div class="attack-name">${attack.name}</div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:#aaa;font-size:.75rem;">Damage</span>
+          <span class="attack-damage">${attack.damage}</span>
+        </div>
+      </div>
+
+      <div class="card-id">#${String(poke.id).padStart(3, '0')} | ${poke.name}</div>
+
+      <div class="weakness-resistance">
+        <span><i class="fa-solid fa-bolt"></i> Weakness: <i class="fa-solid fa-${TYPE_ICONS[weak] || 'question'}"></i> ${weak || '—'}</span>
+        <span><i class="fa-solid fa-shield"></i> Resistance: <i class="fa-solid fa-${TYPE_ICONS[resist] || 'question'}"></i> ${resist || '—'}</span>
+      </div>
+
+      <!-- PRICE SECTION INSERTED HERE -->
+      ${priceHTML}
+      <!-- END PRICE SECTION -->
+
+      ${btnHTML}
+
+      <div class="set-symbol">
+        <img src="images/favicon.png" alt="Symbol"
+             style="width:2em;height:2em;vertical-align:middle;transition:transform .4s ease;display:inline-block;"
+             onmouseover="this.style.transform='rotate(360deg) scale(1.5)'"
+             onmouseout="this.style.transform='rotate(0deg) scale(1)'">
+      </div>
+    </div>
+  `;
+  return card;
+}
   /* ---------- LOAD GRIDS ---------- */
   function loadStarters() {
     const grid = document.getElementById('starterGrid'); grid.innerHTML = '';
@@ -873,6 +946,7 @@
   }
 
  async function loadOwned() {
+  
   const grid = document.getElementById('myGrid'); grid.innerHTML = '';
   if (!ownedLocal.length) {
     grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:2rem;">No Pokémon yet. Start collecting!</p>';
@@ -883,6 +957,7 @@
     const pokemonType = getPokemonType(p.id);
     const hp = getPokemonHP(p.id);
     const attack = getAttack(pokemonType);
+    const { weak, resist } = getWeaknessResistance(pokemonType);
     const card = document.createElement('div');
     card.className = 'card has-owned';
 
