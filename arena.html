@@ -1849,7 +1849,7 @@ if (bHp === 0 && aHp > 0) {
        if (opponent.hp === 0) { 
   playSound('victory'); 
   createPuffAnimation(document.getElementById('opponentPokemon'));
-  await new Promise(r => setTimeout(r, 1000)); // Give more time for animation
+  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
   await endMatch(true); 
   return; 
 }
@@ -1878,7 +1878,7 @@ if (bHp === 0 && aHp > 0) {
 if (player.hp === 0) { 
   playSound('defeat'); 
   createPuffAnimation(document.getElementById('playerPokemon'));
-  await new Promise(r => setTimeout(r, 1000)); // Give more time for animation
+  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
   await endMatch(false); 
   return; 
 }        } else {
@@ -1919,7 +1919,7 @@ if (player.hp === 0) {
   setTimeout(() => {
     puff.remove();
     pokemonElement.querySelector('img').style.opacity = '';
-  }, 1000);
+  }, 2000);
 }
 
     async function endMatch(playerWon, ran = false){
