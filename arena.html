@@ -676,7 +676,6 @@
 .puff-particle:nth-child(6) { left: 10%; top: 50%; animation: puffExplode 0.6s 0.2s ease-out forwards; }
 .puff-particle:nth-child(7) { left: 90%; top: 80%; animation: puffExplode 0.6s 0.24s ease-out forwards; }
 
-/* ========== ADD these styles to your <style> block ========== */
 .vs
 .vs-screen {
   display: flex;
@@ -693,7 +692,7 @@
   position: relative;
 }
 
-.vs-screen::before {
+/* .vs-screen::before {
   content: '';
   position: absolute;
   top: -50%; left: -50%;
@@ -702,7 +701,7 @@
               radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 0%, transparent 50%);
   animation: vsShimmer 6s infinite linear;
   pointer-events: none;
-}
+} */
 
 @keyframes vsShimmer { 0% { transform: translate(-50%,-50%) rotate(0deg); } 100% { transform: translate(-50%,-50%) rotate(360deg); } }
 
@@ -742,7 +741,7 @@
   from { text-shadow: 0 0 20px #ffcb05; }
   to   { text-shadow: 0 0 60px #ffcb05, 0 0 90px #ffcb05; }
 }
-/* ========== REPLACE the .vs-opponents CSS with this dynamic version ========== */
+
 .vs-opponents {
   display: flex;
   gap: var(--dynamic-gap, 12px);
@@ -786,6 +785,125 @@
   0%,100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
+
+#countdownOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg,
+    rgba(0,0,0,0.98) 0%,
+    rgba(10,10,25,0.99) 30%,
+    rgba(255,203,5,0.05) 50%,
+    rgba(10,10,25,0.99) 70%,
+    rgba(0,0,0,0.98) 100%);
+  backdrop-filter: blur(15px);
+  animation: overlayPulse 3s infinite alternate;
+}
+
+.overlay-content {
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: countdownPop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+#countdownNumber {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(8rem, 20vw, 18rem);
+  background: linear-gradient(45deg, #ffcb05, #ffaa00, #ff8f00, #ffcb05);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow:
+    0 0 10px #ffcb05,
+    0 0 20px #ffaa00,
+    0 0 30px rgba(255,203,5,0.6);
+  margin-bottom: 2rem;
+  animation:
+    glowPulse 1s ease-in-out infinite alternate,
+    rainbowShift 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(255,203,5,0.4));
+  position: relative;
+}
+
+#countdownNumber::before {
+  content: '';
+  position: absolute;
+  inset: -15px;
+  background: radial-gradient(circle, rgba(255,203,5,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: ringExpand 1.5s ease-out infinite;
+  z-index: -1;
+}
+
+#countdownLabel {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  color: #ffcb05;
+  text-shadow: 0 0 10px rgba(255,203,5,0.6);
+  letter-spacing: 4px;
+  opacity: 0.85;
+}
+
+@keyframes overlayPulse {
+  0% { filter: brightness(0.95) contrast(1); }
+  100% { filter: brightness(1.05) contrast(1.1); }
+}
+
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-180deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    text-shadow:
+      0 0 10px #ffcb05,
+      0 0 20px #ffaa00;
+  }
+  100% {
+    text-shadow:
+      0 0 20px #ffcb05,
+      0 0 30px #ffaa00,
+      0 0 40px rgba(255,203,5,0.4);
+  }
+}
+
+@keyframes rainbowShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes ringExpand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Dim the VS screen during countdown */
+#vsScreen.countdown-active {
+  filter: brightness(0.4) saturate(0.6) blur(3px);
+  transition: all 0.2s ease;
+}
   </style>
 </head>
 <body>
@@ -805,6 +923,13 @@
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </div>
   </aside>
+
+<div id="countdownOverlay">
+  <div class="overlay-content">
+    <div id="countdownNumber">3</div>
+    <div id="countdownLabel">BATTLE READY</div>
+  </div>
+</div>
 
   <div class="container">
     <div class="title">Round-Robin Battle Arena</div>
@@ -860,7 +985,7 @@
         </div>
       </div>
 
-      <!-- ========== REPLACE the entire #slide-start content with this ========== -->
+    
 <div class="wizard-slide" id="slide-start">
   <div class="slide-title">Final Step: Launch Tournament!</div>
   <div class="tournament-summary">
@@ -868,24 +993,22 @@
     <div><strong>Opponents:</strong> <span id="finalOpponentCount">0</span></div>
   </div>
 
-  <!-- NEW EPIC VS SCREEN -->
-  <div class="vs-screen" id="vsScreen">
-    <div style="display:flex">
+ <div class="vs-screen" id="vsScreen">
+  <div style="display:flex">
     <div class="vs-pokemon left">
       <img id="vsPlayerSprite" class="vs-sprite" src="" alt="Your Pokémon">
       <div class="vs-name" id="vsPlayerName">???</div>
     </div>
-    <div class="vs-center">
-       <div class="start-countdown" id="startCountdown">3</div>
+    <div class="vs-center" style="margin-top:60px">
+    
       <div class="vs-text">VS</div>
       <div class="vs-opponents" id="vsOpponentsContainer"></div>
     </div>
     <div class="vs-pokemon right">
       <div class="vs-opponents" id="vsOpponentsRight"></div>
     </div>
-    </div>
   </div>
-
+</div>
   
 
  
@@ -1091,7 +1214,6 @@
 
   <script>
 
-// ========== REPLACE the updateVSScreen function with this dynamic version ==========
 function updateVSScreen() {
   if (!selectedPokemon) return;
   
@@ -1107,11 +1229,11 @@ function updateVSScreen() {
   
   // Dynamic sizing based on opponent count
   if (oppCount <= 3) {
-    size = 105; // Bigger for 3 or fewer
+    size = 125; // Bigger for 3 or fewer
   } else if (oppCount <= 6) {
-    size = 90; // Medium for 4-6
+    size = 100; // Medium for 4-6
   } else {
-    size = 75; // Smaller for 7+
+    size = 95; // Smaller for 7+
   }
   
   // Dynamic gap based on size
@@ -1797,24 +1919,68 @@ confirmOpponentsBtn.onclick = () => {
   playSound('confirm');
 };
 
-    startTournamentBtn.onclick = async () => {
-      startTournamentBtn.disabled = true;
-      let count = 3;
-      const interval = setInterval(() => {
-        startCountdown.textContent = count;
-        playSound('select');
-        count--;
-        if (count < 0) {
-          clearInterval(interval);
-          startCountdown.textContent = 'GO!';
-          setTimeout(() => {
-            wizard.style.display = 'none';
-            battleArena.style.display = 'grid';
-            startTournament();
-          }, 800);
-        }
-      }, 800);
-    };
+startTournamentBtn.onclick = async () => {
+  startTournamentBtn.disabled = true;
+  
+  // Show full-screen countdown overlay
+  const overlay = document.getElementById('countdownOverlay');
+  const numberEl = document.getElementById('countdownNumber');
+  const labelEl = document.getElementById('countdownLabel');
+  const vsScreen = document.getElementById('vsScreen');
+  
+  overlay.style.display = 'flex';
+  vsScreen.classList.add('countdown-active');
+  
+  let count = 3;
+  
+  
+  const countdownLoop = async () => {
+    for (let i = 0; i <= 3; i++) {
+      // Update number
+      numberEl.textContent = count;
+      
+      // Update label based on count
+      if (count === 3) labelEl.textContent = 'BATTLE READY';
+      else if (count === 2) labelEl.textContent = 'SET';
+      else if (count === 1) labelEl.textContent = 'FIGHT';
+      else if (count === 0) labelEl.textContent = 'GO!';
+      
+      // Screen shake effect
+      if (count <= 2) {
+        document.body.classList.add('screen-shake');
+        setTimeout(() => document.body.classList.remove('screen-shake'), 300);
+      }
+      
+      playSound('select');
+      playPokemonCry(selectedPokemon.id);
+      
+      // Special effects for GO!
+      if (count === 0) {
+        numberEl.style.fontSize = 'clamp(10rem, 25vw, 22rem)';
+        numberEl.style.animation = 'glowPulse 0.5s ease-in-out infinite alternate, rainbowShift 1s ease-in-out infinite';
+      }
+      
+      await new Promise(r => setTimeout(r, count === 0 ? 1500 : 1200));
+      count--;
+    }
+    
+    // Hide overlay and transition to battle
+    overlay.style.opacity = '0';
+    vsScreen.classList.remove('countdown-active');
+    
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '1';
+      
+      // Transition to battle arena
+      wizard.style.display = 'none';
+      battleArena.style.display = 'grid';
+      startTournament();
+    }, 100);
+  };
+  
+  countdownLoop();
+};
 
     let player = {id:0, name:'', hp:100, maxHp:100};
     let opponent = null;
