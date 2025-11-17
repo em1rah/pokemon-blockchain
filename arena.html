@@ -1787,13 +1787,13 @@ if (bHp === 0 && aHp > 0) {
   playSound('victory');
   createPuffAnimation(document.getElementById('opponentPokemon'));
   log(`<span class="system"><strong style="color:#4caf50;">${a.name} wins!</strong></span>`);
-  await new Promise(r=>setTimeout(r, 800));
+  await new Promise(r=>setTimeout(r, 1000));
 } else {
   b.wins++; a.losses++;
   playSound('victory');
   createPuffAnimation(document.getElementById('playerPokemon'));
   log(`<span class="system"><strong style="color:#4caf50;">${b.name} wins!</strong></span>`);
-  await new Promise(r=>setTimeout(r, 800));
+  await new Promise(r=>setTimeout(r, 1000));
 }
 
       await new Promise(r=>setTimeout(r, 600));
@@ -1849,7 +1849,7 @@ if (bHp === 0 && aHp > 0) {
        if (opponent.hp === 0) { 
   playSound('victory'); 
   createPuffAnimation(document.getElementById('opponentPokemon'));
-  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
+  await new Promise(r => setTimeout(r, 1000)); // Give more time for animation
   await endMatch(true); 
   return; 
 }
@@ -1878,7 +1878,7 @@ if (bHp === 0 && aHp > 0) {
 if (player.hp === 0) { 
   playSound('defeat'); 
   createPuffAnimation(document.getElementById('playerPokemon'));
-  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
+  await new Promise(r => setTimeout(r, 1000)); // Give more time for animation
   await endMatch(false); 
   return; 
 }        } else {
