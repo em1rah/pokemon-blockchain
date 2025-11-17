@@ -676,7 +676,116 @@
 .puff-particle:nth-child(6) { left: 10%; top: 50%; animation: puffExplode 0.6s 0.2s ease-out forwards; }
 .puff-particle:nth-child(7) { left: 90%; top: 80%; animation: puffExplode 0.6s 0.24s ease-out forwards; }
 
+/* ========== ADD these styles to your <style> block ========== */
+.vs
+.vs-screen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  margin: 30px 0;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(255,203,5,0.1) 0%, rgba(255,203,5,0.05) 50%, rgba(255,203,5,0.1) 100%);
+  border: 3px solid rgba(255,203,5,0.4);
+  border-radius: 24px;
+  box-shadow: 0 0 40px rgba(255,203,5,0.3), inset 0 0 40px rgba(255,203,5,0.05);
+  overflow: hidden;
+  position: relative;
+}
 
+.vs-screen::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
+              radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 0%, transparent 50%);
+  animation: vsShimmer 6s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes vsShimmer { 0% { transform: translate(-50%,-50%) rotate(0deg); } 100% { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.vs-pokemon { display: flex; flex-direction: column; align-items: center; gap: 15px; flex: 1; }
+.vs-pokemon.left img { transform: scaleX(-1); }
+
+.vs-sprite {
+  width: 180px; height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8));
+  animation: bounceIn 0.9s ease-out;
+}
+
+.vs-name {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.2rem;
+  color: #ffcb05;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.vs-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.vs-text {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 3rem;
+  color: #ffcb05;
+  text-shadow: 0 0 30px #ffcb05, 0 0 60px #ffcb05;
+  animation: vsGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes vsGlow {
+  from { text-shadow: 0 0 20px #ffcb05; }
+  to   { text-shadow: 0 0 60px #ffcb05, 0 0 90px #ffcb05; }
+}
+/* ========== REPLACE the .vs-opponents CSS with this dynamic version ========== */
+.vs-opponents {
+  display: flex;
+  gap: var(--dynamic-gap, 12px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.vs-opp-mini {
+  border: 3px solid rgba(255,203,5,0.7);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  animation: miniFloat 2s ease-in-out infinite;
+}
+
+.vs-opp-mini img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: contain; 
+}
+
+.vs-opp-mini:nth-child(2) { animation-delay: 0.2s; }
+.vs-opp-mini:nth-child(3) { animation-delay: 0.4s; }
+.vs-opp-mini:nth-child(4) { animation-delay: 0.6s; }
+.vs-opp-mini:nth-child(5) { animation-delay: 0.1s; }
+.vs-opp-mini:nth-child(6) { animation-delay: 0.3s; }
+.vs-opp-mini:nth-child(7) { animation-delay: 0.5s; }
+.vs-opp-mini:nth-child(8) { animation-delay: 0.7s; }
+.vs-opp-mini:nth-child(9) { animation-delay: 0.0s; }
+.vs-opp-mini:nth-child(10) { animation-delay: 0.2s; }
+.vs-opp-mini:nth-child(11) { animation-delay: 0.4s; }
+.vs-opp-mini:nth-child(12) { animation-delay: 0.6s; }
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3) rotate(-180deg); }
+  60% { opacity: 1; transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes miniFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
   </style>
 </head>
 <body>
@@ -751,18 +860,39 @@
         </div>
       </div>
 
-      <!-- Step 4 -->
-      <div class="wizard-slide" id="slide-start">
-        <div class="slide-title">Final Step: Launch Tournament!</div>
-        <div class="tournament-summary">
-          <div><strong>Champion:</strong> <span id="finalPokemonName">???</span></div>
-          <div><strong>Opponents:</strong> <span id="finalOpponentCount">0</span></div>
-        </div>
-        <div class="start-countdown" id="startCountdown">3</div>
-        <div class="wizard-actions">
-          <button class="move-btn pulse" id="startTournamentBtn">START BATTLE</button>
-        </div>
-      </div>
+      <!-- ========== REPLACE the entire #slide-start content with this ========== -->
+<div class="wizard-slide" id="slide-start">
+  <div class="slide-title">Final Step: Launch Tournament!</div>
+  <div class="tournament-summary">
+    <div><strong>Champion:</strong> <span id="finalPokemonName">???</span></div>
+    <div><strong>Opponents:</strong> <span id="finalOpponentCount">0</span></div>
+  </div>
+
+  <!-- NEW EPIC VS SCREEN -->
+  <div class="vs-screen" id="vsScreen">
+    <div style="display:flex">
+    <div class="vs-pokemon left">
+      <img id="vsPlayerSprite" class="vs-sprite" src="" alt="Your Pokémon">
+      <div class="vs-name" id="vsPlayerName">???</div>
+    </div>
+    <div class="vs-center">
+       <div class="start-countdown" id="startCountdown">3</div>
+      <div class="vs-text">VS</div>
+      <div class="vs-opponents" id="vsOpponentsContainer"></div>
+    </div>
+    <div class="vs-pokemon right">
+      <div class="vs-opponents" id="vsOpponentsRight"></div>
+    </div>
+    </div>
+  </div>
+
+  
+
+ 
+  <div class="wizard-actions">
+    <button class="move-btn pulse" id="startTournamentBtn">START BATTLE</button>
+  </div>
+</div>
     </div>
 
     <!-- BATTLE ARENA -->
@@ -960,6 +1090,43 @@
   </div>
 
   <script>
+
+// ========== REPLACE the updateVSScreen function with this dynamic version ==========
+function updateVSScreen() {
+  if (!selectedPokemon) return;
+  
+  document.getElementById('vsPlayerName').textContent = selectedPokemon.name.toUpperCase();
+  document.getElementById('vsPlayerSprite').src =
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${selectedPokemon.id}.gif`;
+
+  const container = document.getElementById('vsOpponentsRight');
+  container.innerHTML = '';
+  
+  const oppCount = opponents.length;
+  let size = 60; // default
+  
+  // Dynamic sizing based on opponent count
+  if (oppCount <= 3) {
+    size = 105; // Bigger for 3 or fewer
+  } else if (oppCount <= 6) {
+    size = 90; // Medium for 4-6
+  } else {
+    size = 75; // Smaller for 7+
+  }
+  
+  // Dynamic gap based on size
+  const gap = Math.max(8, size * 0.2);
+  
+  opponents.forEach((opp, index) => {
+    const div = document.createElement('div');
+    div.className = 'vs-opp-mini';
+    div.style.width = `${size}px`;
+    div.style.height = `${size}px`;
+    div.style.setProperty('--dynamic-gap', `${gap}px`);
+    div.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${opp.id}.gif" alt="${opp.name}">`;
+    container.appendChild(div);
+  });
+}
     const session = JSON.parse(localStorage.getItem('trainerSession'));
     if (!session) location.href = 'index.html';
     const USER_ID = session.type === 'metamask' ? session.address.toLowerCase() : session.address.toLowerCase();
@@ -1621,10 +1788,14 @@
       }
     }
 
-    confirmOpponentsBtn.onclick = () => {
-      showSlide('slide-start');
-      playSound('confirm');
-    };
+  // ========== CALL updateVSScreen() whenever you reach the final step ==========
+confirmOpponentsBtn.onclick = () => {
+  showSlide('slide-start');
+  finalPokemonName.textContent = selectedPokemon.name;
+  finalOpponentCount.textContent = opponentCount;
+  updateVSScreen();           
+  playSound('confirm');
+};
 
     startTournamentBtn.onclick = async () => {
       startTournamentBtn.disabled = true;
