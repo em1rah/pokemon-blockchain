@@ -619,6 +619,64 @@
 .trophy-box.lose {color:#f44336;}
 .trophy-box .msg {font-family:'Press Start 2P';font-size:1.8rem;margin:12px 0;}
 .trophy-box .reward {font-size:1.2rem;color:#ddd;}
+
+/* HP-based opacity and defeat animations */
+.pokemon {
+  transition: opacity 0.5s ease;
+}
+
+.pokemon.low-hp {
+  opacity: 0.4;
+}
+
+.pokemon.critical-hp {
+  opacity: 0.2;
+}
+
+.puff-smoke {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.puff-particle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(200,200,200,0.4) 50%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+@keyframes puffExplode {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(90deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.5) rotate(720deg);
+  }
+}
+
+.puff-particle:nth-child(1) { left: 30%; top: 30%; animation: puffExplode 0.6s 0s ease-out forwards; }
+.puff-particle:nth-child(2) { left: 70%; top: 20%; animation: puffExplode 0.6s 0.08s ease-out forwards; }
+.puff-particle:nth-child(3) { left: 20%; top: 70%; animation: puffExplode 0.6s 0.12s ease-out forwards; }
+.puff-particle:nth-child(4) { left: 80%; top: 60%; animation: puffExplode 0.6s 0.16s ease-out forwards; }
+.puff-particle:nth-child(5) { left: 50%; top: 10%; animation: puffExplode 0.6s 0.04s ease-out forwards; }
+.puff-particle:nth-child(6) { left: 10%; top: 50%; animation: puffExplode 0.6s 0.2s ease-out forwards; }
+.puff-particle:nth-child(7) { left: 90%; top: 80%; animation: puffExplode 0.6s 0.24s ease-out forwards; }
+
+
   </style>
 </head>
 <body>
@@ -1615,12 +1673,22 @@
     const scoreboard = document.getElementById('scoreboard');
     const scoreboardBody = document.getElementById('scoreboardBody');
 
-    function updateHP(bar, txt, hp, max){
-      const pct = (hp/max)*100;
-      bar.style.width = pct+'%';
-      txt.textContent = `${hp}/${max}`;
-      bar.style.background = pct>50?'#4caf50':pct>25?'#ff9800':'#f44336';
+  function updateHP(bar, txt, hp, max, pokemonEl = null) {
+  const pct = (hp / max) * 100;
+  bar.style.width = pct + '%';
+  txt.textContent = `${hp}/${max}`;
+  bar.style.background = pct > 50 ? '#4caf50' : pct > 25 ? '#ff9800' : '#f44336';
+  
+  // Update opacity based on HP percentage
+  if (pokemonEl) {
+    pokemonEl.classList.remove('low-hp', 'critical-hp');
+    if (pct <= 25) {
+      pokemonEl.classList.add('critical-hp');
+    } else if (pct <= 50) {
+      pokemonEl.classList.add('low-hp');
     }
+  }
+}
     function log(msg,cls=''){ const p=document.createElement('p'); p.innerHTML=msg; if(cls)p.className=cls; battleLog.appendChild(p); battleLog.scrollTop=battleLog.scrollHeight; }
 
     async function startTournament(){
@@ -1713,35 +1781,44 @@
         await new Promise(r=>setTimeout(r, 600));
       }
 
-      if (bHp === 0 && aHp > 0) {
-        a.wins++; b.losses++;
-        playSound('victory');
-        log(`<span class="system"><strong style="color:#4caf50;">${a.name} wins!</strong></span>`);
-      } else {
-        b.wins++; a.losses++;
-        playSound('victory');
-        log(`<span class="system"><strong style="color:#4caf50;">${b.name} wins!</strong></span>`);
-      }
+    
+if (bHp === 0 && aHp > 0) {
+  a.wins++; b.losses++;
+  playSound('victory');
+  createPuffAnimation(document.getElementById('opponentPokemon'));
+  log(`<span class="system"><strong style="color:#4caf50;">${a.name} wins!</strong></span>`);
+  await new Promise(r=>setTimeout(r, 800));
+} else {
+  b.wins++; a.losses++;
+  playSound('victory');
+  createPuffAnimation(document.getElementById('playerPokemon'));
+  log(`<span class="system"><strong style="color:#4caf50;">${b.name} wins!</strong></span>`);
+  await new Promise(r=>setTimeout(r, 800));
+}
 
       await new Promise(r=>setTimeout(r, 600));
     }
 
-    function loadPlayer(){
-      const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
-      player.id = p.id; player.name = p.name;
-      playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
-      playerSprite.style.transform = 'scaleX(-1)';
-      playerName.textContent = p.name;
-      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-    }
+  function loadPlayer(){
+  const p = ownedPokemon.find(x=>x.id===equippedId) || ownedPokemon[0];
+  player.id = p.id; player.name = p.name;
+  playerSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.id}.gif`;
+  playerSprite.style.transform = 'scaleX(-1)';
+  playerName.textContent = p.name;
+  updateHP(playerHP, playerHPText, player.hp, player.maxHp, document.getElementById('playerPokemon'));
+}
 
-    function loadOpponent(o){
-      opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${o.id}.gif`;
-      opponentName.textContent = o.name;
-      updateHP(opponentHP, opponentHPText, o.hp, o.maxHp);
-      opponentSprite.style.opacity = '0'; opponentSprite.style.transform = 'scale(0)';
-      setTimeout(() => { opponentSprite.style.transition = 'all 0.5s ease'; opponentSprite.style.opacity = '1'; opponentSprite.style.transform = 'scale(1)'; }, 100);
-    }
+ function loadOpponent(o){
+  opponentSprite.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${o.id}.gif`;
+  opponentName.textContent = o.name;
+  updateHP(opponentHP, opponentHPText, o.hp, o.maxHp, document.getElementById('opponentPokemon'));
+  opponentSprite.style.opacity = '0'; opponentSprite.style.transform = 'scale(0)';
+  setTimeout(() => { 
+    opponentSprite.style.transition = 'all 0.5s ease'; 
+    opponentSprite.style.opacity = '1'; 
+    opponentSprite.style.transform = 'scale(1)'; 
+  }, 100);
+}
 
     moveButtons.forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -1769,8 +1846,13 @@
         setTimeout(() => oppEl.classList.remove('hit', 'shake'), 500);
         log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
         updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-        if (opponent.hp === 0) { playSound('victory'); await new Promise(r => setTimeout(r, 400)); await endMatch(true); return; }
-
+       if (opponent.hp === 0) { 
+  playSound('victory'); 
+  createPuffAnimation(document.getElementById('opponentPokemon'));
+  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
+  await endMatch(true); 
+  return; 
+}
         playerTurn = false;
         moveButtons.forEach(b => b.disabled = true);
         await new Promise(r => setTimeout(r, 900));
@@ -1793,8 +1875,13 @@
           setTimeout(() => playerEl.classList.remove('hit', 'shake'), 500);
           log(`You took <strong>${oppDmg}</strong> damage.`);
           updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-          if (player.hp === 0) { playSound('defeat'); await new Promise(r => setTimeout(r, 400)); await endMatch(false); return; }
-        } else {
+if (player.hp === 0) { 
+  playSound('defeat'); 
+  createPuffAnimation(document.getElementById('playerPokemon'));
+  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
+  await endMatch(false); 
+  return; 
+}        } else {
           log(`${opponent.name} tried to run but failed!`);
         }
 
@@ -1809,6 +1896,31 @@
         btn.style.setProperty('--ry', `${e.clientY - rect.top}px`);
       });
     });
+
+    function createPuffAnimation(pokemonElement) {
+  const puff = document.createElement('div');
+  puff.className = 'puff-smoke';
+  
+  // Create 7 smoke particles
+  for (let i = 0; i < 7; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'puff-particle';
+    puff.appendChild(particle);
+  }
+  
+  pokemonElement.style.position = 'relative';
+  pokemonElement.appendChild(puff);
+  
+  // Fade out pokemon sprite
+  pokemonElement.querySelector('img').style.transition = 'opacity 0.3s ease';
+  pokemonElement.querySelector('img').style.opacity = '0';
+  
+  // Remove everything after animation
+  setTimeout(() => {
+    puff.remove();
+    pokemonElement.querySelector('img').style.opacity = '';
+  }, 800);
+}
 
     async function endMatch(playerWon, ran = false){
       battleActive = false;
