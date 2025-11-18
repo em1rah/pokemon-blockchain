@@ -1989,6 +1989,7 @@ startTournamentBtn.onclick = async () => {
     let tournamentActive = false;
     let currentMatch = 0;
     let playerStats = {wins:0, losses:0};
+    let isProcessingTurn = false;
 
     const moves = {
       fire: { name: 'Fire', power: 30, color: '#ff5722', type: 'fire', size: 60 },
@@ -2159,82 +2160,101 @@ if (bHp === 0 && aHp > 0) {
   }, 100);
 }
 
-    moveButtons.forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!battleActive || !playerTurn) return;
-        const key = btn.dataset.move;
-        const move = moves[key];
-        if (move.run) {
-          log(`<strong>${player.name}</strong> ran away.`, 'system');
-          playAttackSound('run');
-          await endMatch(false, true);
-          return;
-        }
+moveButtons.forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!battleActive || !playerTurn || isProcessingTurn) return; // Add isProcessingTurn check
+    
+    isProcessingTurn = true; // Lock inputs immediately
+    
+    const key = btn.dataset.move;
+    const move = moves[key];
+    if (move.run) {
+      log(`<strong>${player.name}</strong> ran away.`, 'system');
+      playAttackSound('run');
+      await endMatch(false, true);
+      isProcessingTurn = false; // Unlock for next match
+      return;
+    }
 
-        document.getElementById('playerPokemon').classList.add('attack');
-        playAttackSound(key);
-        createAttackEffect(document.getElementById('playerPokemon'), document.getElementById('opponentPokemon'), move.type);
-        setTimeout(() => document.getElementById('playerPokemon').classList.remove('attack'), 500);
+    // Player attack
+    document.getElementById('playerPokemon').classList.add('attack');
+    playAttackSound(key);
+    createAttackEffect(document.getElementById('playerPokemon'), document.getElementById('opponentPokemon'), move.type);
+    setTimeout(() => document.getElementById('playerPokemon').classList.remove('attack'), 500);
 
-        const dmg = Math.floor(Math.random()*10) + move.power - 5;
-        opponent.hp = Math.max(0, opponent.hp - dmg);
-        log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
-        await new Promise(r => setTimeout(r, 300));
-        const oppEl = document.getElementById('opponentPokemon');
-        oppEl.classList.add('hit', 'shake'); playSound('hit');
-        setTimeout(() => oppEl.classList.remove('hit', 'shake'), 500);
-        log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
-        updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
-       if (opponent.hp === 0) { 
-  playSound('victory'); 
-  createPuffAnimation(document.getElementById('opponentPokemon'));
-  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
-  await endMatch(true); 
-  return; 
-}
-        playerTurn = false;
-        moveButtons.forEach(b => b.disabled = true);
-        await new Promise(r => setTimeout(r, 900));
+    const dmg = Math.floor(Math.random()*10) + move.power - 5;
+    opponent.hp = Math.max(0, opponent.hp - dmg);
+    log(`<strong>${player.name}</strong> used <span style="color:${move.color}">${move.name}</span>!`);
+    await new Promise(r => setTimeout(r, 300));
+    
+    const oppEl = document.getElementById('opponentPokemon');
+    oppEl.classList.add('hit', 'shake'); 
+    playSound('hit');
+    setTimeout(() => oppEl.classList.remove('hit', 'shake'), 500);
+    log(`${opponent.name} took <strong>${dmg}</strong> damage.`);
+    updateHP(opponentHP, opponentHPText, opponent.hp, opponent.maxHp);
+    
+    if (opponent.hp === 0) { 
+      playSound('victory'); 
+      createPuffAnimation(document.getElementById('opponentPokemon'));
+      await new Promise(r => setTimeout(r, 800));
+      await endMatch(true); 
+      isProcessingTurn = false;
+      return; 
+    }
+    
+    // Switch turn
+    playerTurn = false;
+    moveButtons.forEach(b => b.disabled = true);
+    await new Promise(r => setTimeout(r, 900));
 
+    // Opponent attack
+    const oppMoveKey = moveList[Math.floor(Math.random() * moveList.length)];
+    const oppMove = moves[oppMoveKey];
+    if (!oppMove.run) {
+      document.getElementById('opponentPokemon').classList.add('attack');
+      playAttackSound(oppMoveKey);
+      createAttackEffect(document.getElementById('opponentPokemon'), document.getElementById('playerPokemon'), oppMove.type);
+      setTimeout(() => document.getElementById('opponentPokemon').classList.remove('attack'), 500);
+
+      const oppDmg = Math.floor(Math.random()*10) + oppMove.power - 5;
+      player.hp = Math.max(0, player.hp - oppDmg);
+      log(`${opponent.name} used <span style="color:${oppMove.color}">${oppMove.name}</span>!`);
+      await new Promise(r => setTimeout(r, 300));
       
-        const oppMoveKey = moveList[Math.floor(Math.random() * moveList.length)];
-        const oppMove = moves[oppMoveKey];
-        if (!oppMove.run) {
-          document.getElementById('opponentPokemon').classList.add('attack');
-          playAttackSound(oppMoveKey);
-          createAttackEffect(document.getElementById('opponentPokemon'), document.getElementById('playerPokemon'), oppMove.type);
-          setTimeout(() => document.getElementById('opponentPokemon').classList.remove('attack'), 500);
+      const playerEl = document.getElementById('playerPokemon');
+      playerEl.classList.add('hit', 'shake'); 
+      playSound('hit');
+      setTimeout(() => playerEl.classList.remove('hit', 'shake'), 500);
+      log(`You took <strong>${oppDmg}</strong> damage.`);
+      updateHP(playerHP, playerHPText, player.hp, player.maxHp);
+      
+      if (player.hp === 0) { 
+        playSound('defeat'); 
+        createPuffAnimation(document.getElementById('playerPokemon'));
+        await new Promise(r => setTimeout(r, 800));
+        await endMatch(false); 
+        isProcessingTurn = false;
+        return; 
+      } 
+    } else {
+      log(`${opponent.name} tried to run but failed!`);
+    }
 
-          const oppDmg = Math.floor(Math.random()*10) + oppMove.power - 5;
-          player.hp = Math.max(0, player.hp - oppDmg);
-          log(`${opponent.name} used <span style="color:${oppMove.color}">${oppMove.name}</span>!`);
-          await new Promise(r => setTimeout(r, 300));
-          const playerEl = document.getElementById('playerPokemon');
-          playerEl.classList.add('hit', 'shake'); playSound('hit');
-          setTimeout(() => playerEl.classList.remove('hit', 'shake'), 500);
-          log(`You took <strong>${oppDmg}</strong> damage.`);
-          updateHP(playerHP, playerHPText, player.hp, player.maxHp);
-if (player.hp === 0) { 
-  playSound('defeat'); 
-  createPuffAnimation(document.getElementById('playerPokemon'));
-  await new Promise(r => setTimeout(r, 800)); // Give more time for animation
-  await endMatch(false); 
-  return; 
-}        } else {
-          log(`${opponent.name} tried to run but failed!`);
-        }
+    // Turn complete - unlock for next player turn
+    playerTurn = true;
+    moveButtons.forEach(b => b.disabled = false);
+    isProcessingTurn = false;
+  });
 
-        playerTurn = true;
-        moveButtons.forEach(b => b.disabled = false);
-      });
-
-      btn.addEventListener('mousemove', (e) => {
-        const rect = btn.getBoundingClientRect();
-        btn.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-        btn.style.setProperty('--rx', `${e.clientX - rect.left}px`);
-        btn.style.setProperty('--ry', `${e.clientY - rect.top}px`);
-      });
-    });
+  // Keep the mousemove event as-is
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+    btn.style.setProperty('--rx', `${e.clientX - rect.left}px`);
+    btn.style.setProperty('--ry', `${e.clientY - rect.top}px`);
+  });
+});
 
     function createPuffAnimation(pokemonElement) {
   const puff = document.createElement('div');
@@ -2262,6 +2282,7 @@ if (player.hp === 0) {
 }
 
     async function endMatch(playerWon, ran = false){
+      isProcessingTurn = false; // Reset flag immediately
       battleActive = false;
       moveButtons.forEach(b => b.disabled = true);
       if (playerWon && !ran){
