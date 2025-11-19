@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon Arena - 1v1 Battle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;background:radial-gradient(circle at center,#0a1f3d 0%,#000 100%)}
+    body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.08)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">BATTLE</text></svg>') repeat;pointer-events:none}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
+    .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .sidebar .brand h1{font-family:'Press Start 2P';color:#ffcb05;font-size:1.1rem}
+    .menu a{display:block;color:#ffcb05;padding:12px 16px;text-decoration:none;font-weight:700;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin:8px 12px;transition:.2s}
+    .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(6px)}
+    .menu a.active{background:#f17025;color:#fff}
+    .status{position:absolute;bottom:12px;left:12px;right:12px;display:flex;flex-direction:column;gap:8px}
+    .coins,.free-balance,.wallet{padding:8px 14px;border-radius:12px;font-weight:700;text-align:center;font-size:0.9rem}
+    .coins{background:#efe339;color:#000}
+    .free-balance{background:#9362ed;color:#fff}
+    .wallet{background:rgba(255,255,255,0.1);color:#ffcb05}
+    .connect-btn,.logout-btn{padding:10px 16px;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-top:8px}
+    .connect-btn{background:#4caf50;color:#fff}
+    .logout-btn{background:#f44336;color:#fff;display:none}
+    .container{margin-left:240px;padding:2rem;text-align:center}
+    .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.2rem;margin:1rem 0;text-shadow:0 0 20px #ffcb05}
+    .room-setup{max-width:500px;margin:3rem auto;padding:2.5rem;background:rgba(255,203,5,0.1);border:3px solid #ffcb05;border-radius:16px}
+    input{padding:14px;font-size:1.2rem;width:100%;margin:15px 0;border:2px solid #ffcb05;background:rgba(0,0,0,0.6);color:#fff;border-radius:12px}
+    button{padding:16px 32px;font-size:1.3rem;margin:10px;border:none;border-radius:12px;background:linear-gradient(135deg,#ff9800,#e65100);color:#fff;font-weight:700;cursor:pointer}
+    .team-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.5rem;max-width:900px;margin:2rem auto}
+    .team-card{border:4px solid rgba(255,203,5,0.4);border-radius:16px;padding:15px;cursor:pointer;background:rgba(0,0,0,0.4)}
+    .team-card:hover{border-color:#ffcb05;transform:scale(1.05)}
+    .team-card.selected{border-color:#4caf50;background:rgba(76,175,80,0.4);box-shadow:0 0 30px rgba(76,175,80,0.6)}
+    .team-card img{width:100%;height:150px;object-fit:contain}
+    .battle-area{display:none;grid-template-columns:1fr 1fr;gap:4rem;max-width:1200px;margin:2rem auto;align-items:center}
+    .player,.opponent{position:relative}
+    .pokemon-back img,.pokemon-front img{width:350px;height:350px;object-fit:contain}
+    .hp-bar{background:#222;height:44px;border:4px solid #ffcb05;border-radius:22px;overflow:hidden;margin:15px 0;position:relative}
+    .hp-fill{background:#4caf50;height:100%;width:100%;transition:width 0.8s ease}
+    .hp-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:700;font-size:1.5rem;color:#fff;text-shadow:2px 2px 0 #000}
+    .actions{margin-top:2rem}
+    .actions button{font-size:2rem;padding:30px;background:linear-gradient(135deg,#ff5722,#c41e00);width:80%;margin:0 auto;display:block}
+    .log{background:rgba(0,0,0,0.8);border:3px solid #ffcb05;border-radius:16px;padding:1.5rem;height:220px;overflow-y:auto;margin:2rem auto;max-width:1000px;font-size:1.1rem;line-height:1.8}
+    .confirm-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:4px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;z-index:9999;text-align:center}
+    .confirm-modal button{margin:10px;padding:15px 30px;font-size:1.4rem}
+    .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9998}
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="brand"><h1>Pikaplay Arena</h1></div>
+    <div class="menu">
+      <a href="home.html">Home</a>
+      <a href="shop.html">Marketplace</a>
+      <a href="arena.html" class="active">Battle Arena</a>
+    </div>
+    <div class="status">
+      <span class="coins" id="coinDisplay">Loading...</span>
+      <span class="free-balance" id="freeDisplay">0 TOKEN</span>
+      <span class="wallet" id="walletDisplay">Not connected</span>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
+
+  <div class="container">
+    <h1 class="title">POKÉMON BATTLE ARENA</h1>
+
+    <div id="roomSetup" class="room-setup">
+      <button onclick="createRoom()">CREATE ROOM</button>
+      <p style="margin:20px 0;font-size:1.4rem">OR</p>
+      <input type="text" id="roomCodeInput" placeholder="Enter room code">
+      <button onclick="joinRoom()">JOIN ROOM</button>
+      <div id="roomStatus" style="margin-top:20px;font-family:'Press Start 2P';font-size:1.2rem;color:#ffcb05"></div>
+    </div>
+
+    <div id="teamSelect" style="display:none">
+      <h2 style="color:#ffcb05;font-size:2rem;margin-bottom:2rem">Choose Your Pokémon</h2>
+      <div class="team-select" id="teamGrid"></div>
+      <button id="readyBtn" disabled style="margin-top:2rem;font-size:1.8rem;padding:20px 50px">READY!</button>
+    </div>
+
+    <div id="battleArea" class="battle-area" style="display:none">
+      <div class="player">
+        <h3 style="color:#4caf50;font-size:2rem">YOU</h3>
+        <div class="pokemon-back"><img id="playerImg"></div>
+        <div class="hp-bar"><div class="hp-fill" id="playerHpFill"></div><div class="hp-text" id="playerHpText">100/100 HP</div></div>
+        <h3 id="playerName" style="font-size:1.8rem"></h3>
+        <div class="actions" id="playerActions"></div>
+      </div>
+      <div class="opponent">
+        <h3 style="color:#f44336;font-size:2rem">OPPONENT</h3>
+        <div class="pokemon-front"><img id="oppoImg"></div>
+        <div class="hp-bar"><div class="hp-fill" id="oppoHpFill"></div><div class="hp-text" id="oppoHpText">100/100 HP</div></div>
+        <h3 id="oppoName" style="font-size:1.8rem"></h3>
+      </div>
+    </div>
+
+    <div class="log" id="battleLog">Waiting for opponent...</div>
+  </div>
+
+  <!-- CONFIRM OPPONENT MODAL (ONLY FOR HOST) -->
+  <div class="overlay" id="overlay"></div>
+  <div class="confirm-modal" id="confirmModal">
+    <h2 style="color:#ffcb05;font-size:2rem;margin-bottom:1rem">Opponent Wants to Battle!</h2>
+    <p style="font-size:1.3rem;margin:1rem 0">Player with ID:</p>
+    <p id="opponentId" style="font-family:monospace;font-size:1.5rem;color:#4caf50;margin:1rem 0"></p>
+    <div>
+      <button style="background:#4caf50" onclick="acceptOpponent()">Accept</button>
+      <button style="background:#f44336" onclick="rejectOpponent()">Reject</button>
+    </div>
+  </div>
+
+<script>
+let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
+document.getElementById('coinDisplay').textContent = (localStorage.getItem('coins') || '500') + ' Coins';
+
+function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
+function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
+
+function log(msg) {
+  const logEl = document.getElementById('battleLog');
+  logEl.innerHTML += '<div>' + msg + '</div>';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+let peer = null, conn = null, roomCode = null, isHost = false;
+let myPokemon = null, opponentPokemon = null, myTurn = false;
+let pendingOpponent = null; // For host confirmation
+
+function createRoom() {
+  roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
+  if (!roomCode) return;
+  isHost = true;
+  peer = new Peer(roomCode);
+  document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:2rem">${roomCode}</b><br>Waiting for challenger...`;
+  log(`Room ${roomCode} is open!`);
+
+  peer.on('open', () => {
+    peer.on('connection', (incoming) => {
+      pendingOpponent = incoming;
+      document.getElementById('opponentId').textContent = incoming.peer.substring(0, 12) + '...';
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('confirmModal').style.display = 'block';
+      log('Someone is trying to join...');
+    });
+  });
+}
+
+function joinRoom() {
+  roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  if (!roomCode) return alert("Enter room code!");
+
+  peer = new Peer();
+  peer.on('open', (myId) => {
+    conn = peer.connect(roomCode);
+    conn.on('open', () => {
+      log('Connected! Waiting for host to accept...');
+      document.getElementById('roomSetup').style.display = 'none';
+      document.getElementById('teamSelect').style.display = 'block';
+      loadTeamSelect();
+    });
+  });
+}
+
+function acceptOpponent() {
+  conn = pendingOpponent;
+  setupConnection(conn);
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+  log('Opponent accepted! Choose your Pokémon.');
+}
+
+function rejectOpponent() {
+  pendingOpponent.close();
+  pendingOpponent = null;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+  log('Opponent rejected.');
+}
+
+function setupConnection(c) {
+  conn = c;
+  conn.on('open', () => {
+    document.getElementById('roomSetup').style.display = 'none';
+    document.getElementById('teamSelect').style.display = 'block';
+    loadTeamSelect();
+  });
+
+  conn.on('data', (data) => {
+    if (data.type === 'ready') {
+      opponentPokemon = data.poke;
+      document.getElementById('oppoImg').src = img(opponentPokemon.id);
+      document.getElementById('oppoName').textContent = opponentPokemon.name;
+      log(`Opponent sent out ${opponentPokemon.name}!`);
+      if (myPokemon) startBattle();
+    }
+    if (data.type === 'attack') receiveAttack(data.damage);
+  });
+}
+
+function loadTeamSelect() {
+  if (ownedLocal.length === 0) {
+    document.getElementById('teamGrid').innerHTML = '<p style="grid-column:1/-1;color:#ffcb05">No Pokémon! Buy some first!</p>';
+    return;
+  }
+  const grid = document.getElementById('teamGrid');
+  ownedLocal.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.innerHTML = `<img src="${img(p.id)}"><br><b>${p.name}</b>`;
+    card.onclick = () => {
+      document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
+      card
+      card.classList.add('selected');
+      myPokemon = p;
+      document.getElementById('readyBtn').disabled = false;
+    };
+    grid.appendChild(card);
+  });
+
+  document.getElementById('readyBtn').onclick = () => {
+    conn.send({type: 'ready', poke: myPokemon});
+    document.getElementById('playerImg').src = backImg(myPokemon.id);
+    document.getElementById('playerName').textContent = myPokemon.name;
+    document.getElementById('teamSelect').style.display = 'none';
+    document.getElementById('battleArea').style.display = 'grid';
+    log(`You sent out ${myPokemon.name}!`);
+    if (opponentPokemon) startBattle();
+  };
+}
+
+function startBattle() {
+  log('<b style="color:#ffcb05;font-size:1.5rem">⚔ BATTLE START! ⚔</b>');
+  myTurn = Math.random() < 0.5;
+  myTurn ? log('You go first!') : log('Opponent goes first...');
+  if (myTurn) showAttackButton();
+}
+
+function showAttackButton() {
+  document.getElementById('playerActions').innerHTML = '<button onclick="attack()">ATTACK!</button>';
+}
+
+function attack() {
+  if (!myTurn) return;
+  const damage = 30 + Math.floor(Math.random() * 25);
+  conn.send({type: 'attack', damage});
+  log(`You attacked! Dealt <b>${damage}</b> damage!`);
+  const newHp = Math.max(0, parseInt(document.getElementById('oppoHpText').textContent) - damage);
+  document.getElementById('oppoHpFill').style.width = newHp + '%';
+  document.getElementById('oppoHpText').textContent = newHp + '/100 HP';
+  myTurn = false;
+  if (newHp <= 0) setTimeout(() => alert('🎉 YOU WIN! 🎉'), 1000);
+}
+
+function receiveAttack(damage) {
+  log(`Opponent attacked! Took <b>${damage}</b> damage!`);
+  const newHp = Math.max(0, parseInt(document.getElementById('playerHpText').textContent) - damage);
+  document.getElementById('playerHpFill').style.width = newHp + '%';
+  document.getElementById('playerHpText').textContent = newHp + '/100 HP';
+  if (newHp <= 0) {
+    setTimeout(() => alert('😭 You lost...'), 1000);
+  } else {
+    myTurn = true;
+    showAttackButton();
+  }
+}
+</script>
+</body>
+</html>
