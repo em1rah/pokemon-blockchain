@@ -1,250 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pikaplay - Transaction History</title>
-
-  <!-- ETHERS.JS v6 – WORKING LINK (November 2025) -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#0a0e1a;--card:#14182f;--accent:#ffcb05;--green:#4caf50;--red:#f44336;--orange:#ff9800}
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:#fff;min-height:100vh;background:radial-gradient(circle at top left, #1a1a2e, #0f0f1f)}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:#0b1021;border-right:1px solid #333;padding:20px 0}
-    .sidebar h1{font-family:'Press Start 2P';color:var(--accent);padding:0 20px 30px;font-size:1.4rem}
-    .sidebar a{display:block;padding:15px 20px;color:var(--accent);text-decoration:none;font-weight:600;transition:.2s}
-    .sidebar a.active,.sidebar a:hover{background:rgba(255,203,5,.2);border-left:4px solid var(--accent)}
-    .container{margin-left:240px;padding:3rem 2rem;min-height:100vh}
-    h1{font-family:'Press Start 2P';color:var(--accent);text-align:center;font-size:2.8rem;margin-bottom:1rem;text-shadow:0 0 30px #ffcb05}
-    .stats{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:3rem 0}
-    .stat{background:var(--card);padding:2rem;border-radius:20px;border:3px solid var(--accent);text-align:center;min-width:220px;box-shadow:0 0 20px rgba(255,203,5,.3)}
-    .stat h3{font-size:2.8rem;margin:10px 0;color:var(--accent)}
-    .tx-list{max-width:1100px;margin:0 auto}
-    .tx{background:var(--card);border-left:6px solid var(--accent);padding:1.5rem;margin:1.5rem 0;border-radius:12px;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;transition:.3s}
-    .tx:hover{transform:translateY(-5px);box-shadow:0 15px 30px rgba(255,203,5,.2)}
-    .tx.pending{border-color:var(--orange)}
-    .tx.success{border-color:var(--green)}
-    .tx.failed{border-color:var(--red)}
-    .tx img{width:80px;height:80px;object-fit:contain;border-radius:12px;background:#000;border:2px solid var(--accent)}
-    .info{flex:1}
-    .title{font-size:1.4rem;font-weight:bold;color:var(--accent);margin-bottom:8px}
-    .desc{color:#ccc;font-size:1.1rem}
-    .hash a{color:#4fc3f7;text-decoration:none}
-    .gas{color:#ffcb05;font-weight:bold}
-    .status-badge{padding:8px 16px;border-radius:30px;font-weight:bold}
-    .success-bg{background:#1b5e20;color:#4caf50}
-    .pending-bg{background:#e65100;color:#fff;animation:pulse 2s infinite}
-    .failed-bg{background:#b71c1c;color:#ff8a80}
-    .empty{text-align:center;padding:6rem;color:#777;font-size:1.3rem}
-    .wallet-info{position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.6);padding:10px 16px;border-radius:12px;font-family:monospace;z-index:100}
-    .connect-btn{background:#4caf50;color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:bold;margin-left:10px}
-    .logout-btn{background:#f44336;display:none;}
-    @keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon Trainer – Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="icon" href="images/favicon.png" sizes="32x32">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-<div class="sidebar">
-  <h1>Pikaplay</h1>
-  <a href="home.html" class="active">Transaction History</a>
-  <a href="shop.html">Marketplace</a>
-  <a href="arena.html">Game Play</a>
-</div>
+  <aside class="sidebar">
+    <div class="brand"><h1>Pikaplay Home</h1></div>
+    <div class="menu">
+        <a href="home.html" style="background-color: rgb(241, 112, 37);color:white">🏠 Home</a>
+        <a href="shop.html">🛒 Marketplace</a>
+      <a href="arena.html">⚔ Game Play</a>
+     
+    </div>
+    <div class="status">
+      <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;align-self: center;border-radius: 50%;">
+      <span class="coins" id="coinDisplay">∞ Coins</span>
+      <span class="wallet" id="walletDisplay"></span>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
 
-<div class="container">
-  <h1>Transaction History</h1>
+  <div class="game-menu container-shift" id="gameMenu">
+    <div class="pokemon-logo-large"></div>
+    <div class="game-subtitle"></div>
 
-  <div id="walletInfo" class="wallet-info">
-    <span id="walletDisplay">Not connected</span>
-    <button id="connectBtn" class="connect-btn">Connect Wallet</button>
-    <button id="logoutBtn" class="connect-btn logout-btn">Logout</button>
-  </div>
+    <div class="main-menu">
+      <button class="menu-btn" id="continueBtn">
+        <span class="menu-icon">▶</span>
+        <span class="menu-text">CONTINUE</span>
+      </button>
 
-  <div class="stats">
-    <div class="stat"><h3 id="total">0</h3><div>Total Transactions</div></div>
-    <div class="stat"><h3 id="success">0</h3><div>Successful</div></div>
-    <div class="stat"><h3 id="gas">0 ETH</h3><div>Total Gas Spent</div></div>
-  </div>
+      
+      <button class="menu-btn" id="shopBtn">
+        <span class="menu-icon">🛒</span>
+        <span class="menu-text">POKÉMON SHOP</span>
+      </button>
 
-  <div class="tx-list" id="list">
-    <div class="empty">Connect your wallet to see transactions...</div>
-  </div>
-</div>
+      <button class="menu-btn" id="arenaBtn">
+        <span class="menu-icon">⚔</span>
+        <span class="menu-text">BATTLE ARENA</span>
+      </button>
 
-<script>
-const STORAGE_KEY = "pika_txs_final";
-const NFT_ADDRESS = "0x766dc5E64851d68b3Ff82dB43Cf21AdcC8F991cC";
 
-let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-let provider, userAddress;
+     
+    </div>
 
-const pokemonNames = {1:"Bulbasaur",4:"Charmander",7:"Squirtle",25:"Pikachu",144:"Articuno",145:"Zapdos",146:"Moltres",150:"Mewtwo",151:"Mew",243:"Raikou",244:"Entei",245:"Suicune",249:"Lugia",250:"Ho-Oh"};
-
-function pokemonImg(id) {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
-}
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-}
-
-function render() {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-  if (transactions.length === 0) {
-    list.innerHTML = `<div class="empty">No transactions yet — go catch some Pokémon!</div>`;
-    return;
-  }
-  transactions.forEach(tx => {
-    const el = document.createElement("div");
-    el.className = `tx ${tx.status}`;
-    el.innerHTML = `
-      ${tx.pokemonId ? `<img src="${pokemonImg(tx.pokemonId)}">` : `<i class="fas fa-coins fa-4x" style="color:#ffcb05"></i>`}
-      <div class="info">
-        <div class="title">${tx.title}</div>
-        <div class="desc">
-          ${tx.amount ? tx.amount + " • " : ""}
-          <span class="gas">${tx.gas ? tx.gas + " ETH gas" : "Pending..."}</span>
-          ${tx.hash ? ` • <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" class="hash">${tx.hash.slice(0,12)}...</a>` : ""}
+    <div class="pikachu-wrapper">
+      <img class="pikachu"
+           src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif"
+           alt="Pikachu" id="mainPikachu">
+      
+      <!-- POKEMON SELECTOR CIRCLES -->
+      <div class="pokemon-selector" id="pokemonSelector">
+        <div class="pokemon-option active" data-pokemon-id="25">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" alt="Pikachu">
         </div>
+        <div class="pokemon-option" data-pokemon-id="2">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/2.gif" alt="Bulbasaur">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="4">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif" alt="Charmander">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="7">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif" alt="Squirtle">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="18">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/18.gif" alt="Eevee">
+        </div>
+         <div class="pokemon-option" data-pokemon-id="26">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/26.gif" alt="Eevee">
+        </div>
+        <div class="pokemon-option" data-pokemon-id="117">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/117.gif" alt="Eevee">
+        </div>
+        
       </div>
-      <div style="text-align:right">
-        <div style="color:#aaa;margin-bottom:8px">${new Date(tx.time).toLocaleString()}</div>
-        <div class="status-badge ${tx.status}-bg">${tx.status.toUpperCase()}</div>
+
+      <div class="speech-bubble">Welcome to PikaPlay!</div>
+    </div>
+
+    <div class="trainer-info">
+      <div class="info-item">
+        <span class="info-label">Trainer:</span>
+        <span class="info-value" id="trainerName">---</span>
       </div>
-    `;
-    list.appendChild(el);
-  });
-
-  document.getElementById("total").textContent = transactions.length;
-  document.getElementById("success").textContent = transactions.filter(t => t.status === "success").length;
-  const totalGas = transactions.reduce((s, t) => s + (parseFloat(t.gas) || 0), 0).toFixed(6);
-  document.getElementById("gas").textContent = totalGas + " ETH";
-}
-
-// ==================== WALLET CONNECT ====================
-document.getElementById("connectBtn").onclick = async () => {
-  if (!window.ethereum) return alert("MetaMask not found!");
-  try {
-    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xaa36a7" }] });
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    initWallet(accounts[0]);
-  } catch (e) {
-    alert("Connection failed: " + (e.message || e));
-  }
-};
-
-document.getElementById("logoutBtn").onclick = () => location.reload();
-
-async function initWallet(address) {
-  userAddress = address.toLowerCase();
-  provider = new ethers.BrowserProvider(window.ethereum);
-
-  document.getElementById("walletDisplay").textContent = address.slice(0,6) + "..." + address.slice(-4);
-  document.getElementById("connectBtn").style.display = "none";
-  document.getElementById("logoutBtn").style.display = "inline-block";
-
-  render();
-  startListening();
-}
-
-// Auto-connect if already connected
-if (window.ethereum) {
-  window.ethereum.request({ method: "eth_accounts" }).then(accs => {
-    if (accs.length > 0) initWallet(accs[0]);
-  });
-}
-
-// ==================== REAL-TIME LISTENER (2025 PROOF) ====================
-function startListening() {
-  if (!provider || !userAddress) return;
-
-  provider.on("pending", async (txHash) => {
-    try {
-      const tx = await provider.getTransaction(txHash);
-      if (!tx || tx.from.toLowerCase() !== userAddress) return;
-      if (transactions.some(t => t.hash === tx.hash)) return;
-
-      const pending = {
-        title: "Transaction pending...",
-        pokemonId: null,
-        amount: null,
-        status: "pending",
-        time: Date.now(),
-        gas: null,
-        hash: tx.hash
-      };
-
-      // Decode NFT contract calls
-      if (tx.to && tx.to.toLowerCase() === NFT_ADDRESS.toLowerCase() && tx.data) {
-        try {
-          const iface = new ethers.Interface([
-            "function mintWithToken(address,uint256,string,uint256)",
-            "function buyListed(uint256)",
-            "function listForSale(uint256,uint256)",
-            "function cancelListing(uint256)",
-            "function sellAndRefund(uint256)"
-          ]);
-          const decoded = iface.parseTransaction({ data: tx.data });
-
-          switch (decoded.name) {
-            case "mintWithToken":
-              const id = Number(decoded.args[1]);
-              pending.title = `Minting ${pokemonNames[id] || "Pokémon #"+id}`;
-              pending.pokemonId = id;
-              pending.amount = ethers.formatUnits(decoded.args[3], 18) + " TOKEN";
-              break;
-            case "buyListed":
-              pending.title = `Buying Pokémon #${decoded.args[0]}`;
-              pending.pokemonId = Number(decoded.args[0]);
-              break;
-            case "listForSale":
-              pending.title = `Listing Pokémon #${decoded.args[0]}`;
-              pending.pokemonId = Number(decoded.args[0]);
-              break;
-            case "cancelListing":
-              pending.title = `Cancelling listing #${decoded.args[0]}`;
-              pending.pokemonId = Number(decoded.args[0]);
-              break;
-            case "sellAndRefund":
-              pending.title = `Selling Pokémon #${decoded.args[0]}`;
-              pending.pokemonId = Number(decoded.args[0]);
-              break;
-          }
-        } catch {}
-      }
-
-      transactions.unshift(pending);
-      save();
-      render();
-
-      // Wait for confirmation
-      provider.once(tx.hash, receipt => {
-        const entry = transactions.find(t => t.hash === tx.hash);
-        if (entry) {
-          entry.status = receipt.status === 1 ? "success" : "failed";
-          entry.gas = ethers.formatEther(receipt.gasUsed * receipt.gasPrice);
-          save();
-          render();
-        }
-      });
-
-    } catch (e) { console.log(e); }
-  });
-}
-
-// Sync across tabs
-window.addEventListener("storage", e => {
-  if (e.key === STORAGE_KEY) {
-    transactions = JSON.parse(e.newValue || "[]");
-    render();
-  }
-});
-
-// Initial render
-render();
-</script>
+      <div class="info-item">
+        <span class="info-label">Coins:</span>
+        <span class="info-value" id="trainerCoins">0</span>
+      </div>
+    </div>
+  </div>
+<script src="js/home.js"></script>
 </body>
 </html>
