@@ -482,6 +482,8 @@
   filter: brightness(0.4) saturate(0.6) blur(3px);
   transition: all 0.2s ease;
 }
+
+
   </style>
 </head>
 <body>
@@ -1302,24 +1304,26 @@ function updateVSScreen() {
   trophyOverlay.id = 'trophyOverlay';
   document.body.appendChild(trophyOverlay);
 
-  function showResult(isWin, reward = 0) {
-    const icon = isWin ? '<i class="fas fa-trophy"></i>' : '<i class="fas fa-skull-crossbones"></i>';
-    const cls = isWin ? 'win' : 'lose';
-    const msg = isWin ? 'CHAMPION!' : 'DEFEATED…';
-    const extra = isWin ? `<div class="reward">+${reward} Coins</div>` : '';
-    trophyOverlay.innerHTML = `
-    
-      <div class="trophy-box ${cls}" >
-         <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif" 
-           alt="Pikachu" class="pokemon-sprite">
-        ${icon}
-        <div class="msg">${msg}</div>
-        ${extra}
-        <button class="move-btn" style="margin-top:20px;" onclick="document.getElementById('trophyOverlay').style.visibility='hidden';document.getElementById('trophyOverlay').style.opacity='0';">Continue</button>
-      </div>`;
-    trophyOverlay.style.opacity = '1';
-    trophyOverlay.style.visibility = 'visible';
-  }
+function showResult(isWin, reward = 0) {
+  const icon = isWin ? '<i class="fas fa-trophy"></i>' : '<i class="fas fa-skull-crossbones"></i>';
+  const cls = isWin ? 'win' : 'lose';
+  const msg = isWin ? 'CHAMPION!' : 'DEFEATED…';
+  
+  // FIXED: Always show the reward/penalty clearly
+  const extra = isWin 
+    ? `<div class="reward">+${reward} Coins</div>`
+    : `<div class="reward" style="color:#f44336;">-${reward} Coins</div>`;
+
+  trophyOverlay.innerHTML = `
+    <div class="trophy-box ${cls}">
+      ${icon}
+      <div class="msg">${msg}</div>
+      ${extra}
+      <button class="move-btn" style="margin-top:20px;" onclick="document.getElementById('trophyOverlay').style.visibility='hidden';document.getElementById('trophyOverlay').style.opacity='0';">Continue</button>
+    </div>`;
+  trophyOverlay.style.opacity = '1';
+  trophyOverlay.style.visibility = 'visible';
+}
 
     // Load carousel
  async function loadPokemonCarousel() {
@@ -1919,10 +1923,35 @@ moveButtons.forEach(btn => {
     saveHistory(hist);
 
     /* ---- Show trophy / defeat ---- */
-    const youAreChampion = standings[0].name === player.name;
-    const champReward = youAreChampion ? 500 : 0;
-    if (youAreChampion) setCoins(getCoins() + champReward);
-    showResult(youAreChampion, champReward);
+          const youAreChampion = standings[0].name === player.name;
+    let reward = 0;
+    
+    if (youAreChampion) {
+      reward = 500;
+      setCoins(getCoins() + reward);
+      log(`<span class="system"><strong style="color:#4caf50;">🏆 CHAMPION! +${reward} Coins</strong></span>`);
+    } else {
+      reward = 300;
+      const currentCoins = getCoins();
+      if (currentCoins >= reward) {
+        setCoins(currentCoins - reward);
+      } else {
+        setCoins(0);
+      }
+      log(`<span class="system"><strong style="color:#f44336;">-${reward} Coins</strong></span>`);
+    }
+    
+    showResult(youAreChampion, reward);
+
+    // Update the reward text inside the trophy overlay
+    document.querySelector('.trophy-box .reward')?.remove(); // remove old one if exists
+    if (!youAreChampion) {
+      const rewardEl = document.createElement('div');
+      rewardEl.className = 'reward';
+      rewardEl.style.color = '#f44336';
+      rewardEl.textContent = rewardMessage;
+      document.querySelector('.trophy-box').appendChild(rewardEl);
+    }
 
     /* ----  Log final line ---- */
     log(`<span class="system">=== TOURNAMENT COMPLETE ===</span>`);
