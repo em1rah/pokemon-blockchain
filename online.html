@@ -11,21 +11,23 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;background:radial-gradient(circle at center,#0a1f3d 0%,#000 100%)}
-    body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.08)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">BATTLE</text></svg>') repeat;pointer-events:none}
+    /* body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.08)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">BATTLE</text></svg>') repeat;pointer-events:none} */
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
     .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
     .sidebar .brand h1{font-family:'Press Start 2P';color:#ffcb05;font-size:1.1rem}
     .menu a{display:block;color:#ffcb05;padding:12px 16px;text-decoration:none;font-weight:700;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin:8px 12px;transition:.2s}
     .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(6px)}
     .menu a.active{background:#f17025;color:#fff}
-    .status{position:absolute;bottom:12px;left:12px;right:12px;display:flex;flex-direction:column;gap:8px}
-    .coins,.free-balance,.wallet{padding:8px 14px;border-radius:12px;font-weight:700;text-align:center;font-size:0.9rem}
-    .coins{background:#efe339;color:#000}
-    .free-balance{background:#9362ed;color:#fff}
-    .wallet{background:rgba(255,255,255,0.1);color:#ffcb05}
-    .connect-btn,.logout-btn{padding:10px 16px;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-top:8px}
-    .connect-btn{background:#4caf50;color:#fff}
-    .logout-btn{background:#f44336;color:#fff;display:none}
+   .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
+    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
+    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem;}
+    .connect-btn{background:#4caf50;color:#fff;}
+    .connect-btn:hover{background:#45a049;transform:translateY(-1px);}
+    .logout-btn{background:#f44336;color:#fff;display:none;}
+    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px);}
+
     .container{margin-left:240px;padding:2rem;text-align:center}
     .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.2rem;margin:1rem 0;text-shadow:0 0 20px #ffcb05}
     .room-setup{max-width:500px;margin:3rem auto;padding:2.5rem;background:rgba(255,203,5,0.1);border:3px solid #ffcb05;border-radius:16px}
@@ -58,26 +60,30 @@
       <a href="home.html">🏠 Home</a>
         <a href="shop.html">🛒 Marketplace</a>
       <a href="arena.html" >⚔ Game Play</a>
-      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">Online Arena</a>
+      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">⚔ Online Play</a>
     </div>
-    <div class="status">
-      <span class="coins" id="coinDisplay">Loading...</span>
+
+      <div class="status">
+            <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;align-self: center;border-radius: 50%;">
+
+      <span class="coins" id="coinDisplay">500 Coins</span>
       <span class="free-balance" id="freeDisplay">0 TOKEN</span>
-      <span class="wallet" id="walletDisplay">Not connected</span>
+      <button class="connect-btn" id="faucetBtn" style="background:#2196f3;display:none;">Claim 1000 TOKEN</button>
+      <span class="wallet" id="walletDisplay"></span>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </div>
   </aside>
 
   <div class="container">
-    <h1 class="title">POKÉMON BATTLE ARENA</h1>
+    <h1 class="title">ONLINE BATTLE ARENA</h1>
 
     <div id="roomSetup" class="room-setup">
       <button onclick="createRoom()">CREATE ROOM</button>
       <p style="margin:20px 0;font-size:1.4rem">OR</p>
       <input type="text" id="roomCodeInput" placeholder="Enter room code">
       <button onclick="joinRoom()">JOIN ROOM</button>
-      <div id="roomStatus" style="margin-top:20px;font-family:'Press Start 2P';font-size:1.2rem;color:#ffcb05"></div>
+      <div id="roomStatus" style="margin-top:20px;font-size:1.2rem;color:#ffcb05"></div>
     </div>
 
     <div id="teamSelect" style="display:none">
@@ -139,7 +145,7 @@ function createRoom() {
   if (!roomCode) return;
   isHost = true;
   peer = new Peer(roomCode);
-  document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:2rem">${roomCode}</b><br>Waiting for challenger...`;
+  document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:20px">${roomCode}</b><br>Waiting for challenger...`;
   log(`Room ${roomCode} is open!`);
 
   peer.on('open', () => {
