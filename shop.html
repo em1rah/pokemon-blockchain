@@ -55,7 +55,114 @@
     .subtitle{color:#aaa;font-size:0.95rem;margin-bottom:1rem;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
+/* === TOP BAR WITH TX HISTORY BUTTON === */
+    .top-bar{
+      position:sticky;top:0;left:0;right:0;
+      background:#0b1021;border-bottom:1px solid rgba(255,255,255,.08);
+      padding:0.85rem 1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;
+      z-index:19;margin-left:230px;
+    }
+    .search-wrapper{flex:1;max-width:420px;position:relative;}
+    #searchInput{
+      width:100%;padding:0.6rem 2.8rem 0.6rem 1rem;
+      border:2px solid rgba(255,203,5,.4);border-radius:12px;
+      background:rgba(0,0,0,.4);color:#fff;font-size:0.95rem;
+      outline:none;transition:.2s;
+    }
+    #searchInput:focus{border-color:#ffcb05;background:rgba(0,0,0,.6);}
+    .search-icon{position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);color:#ffcb05;font-size:1.1rem;pointer-events:none;}
+    .top-bar-controls{display:flex;gap:1rem;align-items:center;}
+    #txHistoryBtn{
+      position:relative;background:rgba(255,203,5,0.2);color:#ffcb05;
+      border:2px solid #ffcb05;border-radius:12px;padding:0.6rem 1rem;
+      font-weight:700;cursor:pointer;transition:.3s;font-size:0.9rem;
+    }
+    #txHistoryBtn:hover{background:#ffcb05;color:#000;}
+    .badge{
+      position:absolute;top:-8px;right:-8px;background:#f44336;color:#fff;
+      font-size:0.7rem;width:20px;height:20px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+    }
 
+    /* === TRANSACTION HISTORY MODAL === */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;
+            align-items:center;justify-content:center;}
+    .modal.active{display:flex;}
+    .modal-content{
+      background:#0b1021;border:3px solid #ffcb05;border-radius:16px;
+      width:90%;max-width:600px;max-height:80vh;overflow-y:auto;
+      box-shadow:0 0 30px rgba(255,203,5,0.4);
+    }
+    .modal-header{
+      padding:1rem 1.5rem;border-bottom:2px solid #ffcb05;
+      display:flex;justify-content:space-between;align-items:center;
+      font-family:'Press Start 2P';color:#ffcb05;font-size:1.1rem;
+    }
+    .modal-close{cursor:pointer;font-size:1.5rem;}
+    .tx-list{padding:1rem;}
+   .tx-item {
+      background: rgba(255,203,5,0.05);
+      border-left: 4px solid #ffcb05;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .tx-header {
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.3);
+    }
+    .tx-header:hover { background: rgba(255,203,5,0.1); }
+    .tx-action { font-weight: 700; }
+    .tx-success { color: #8bc34a; }
+    .tx-fail { color: #f44336; }
+    .tx-time { font-size: 0.8rem; color: #aaa; }
+    .tx-toggle { font-size: 1.2rem; transition: transform 0.3s; }
+    .tx-toggle.open { transform: rotate(90deg); }
+
+    .tx-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.4s ease;
+      background: rgba(0,0,0,0.4);
+      padding: 0 1rem;
+    }
+    .tx-details.open {
+      max-height: 500px;
+      padding: 1rem;
+    }
+    .tx-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      font-size: 0.9rem;
+    }
+   .tx-detail-row:last-child { border-bottom: none; }
+    .tx-pokemon-img {
+      width: 140px; height: 140px; object-fit: contain;
+      border: 3px solid #ffcb05; border-radius: 16px;
+      margin: 1rem auto; display: block;
+      image-rendering: pixelated;
+      box-shadow: 0 0 20px rgba(255,203,5,0.4);
+    }
+    .tx-pokemon-name {
+      text-align: center; font-size: 1.3rem; font-family: 'Press Start 2P';
+      color: #ffcb05; margin: 0.5rem 0; text-shadow: 2px 2px 0 #000;
+    }
+    .tx-hash-link {
+      color: #ffcb05; text-decoration: underline; font-family: monospace;
+    }
+    .tx-hash-link:hover { color: #fff; }
+    .tx-action{font-weight:700;}
+    .tx-success{color:#8bc34a;}
+    .tx-fail{color:#f44336;}
+    .tx-hash{font-family:monospace;font-size:0.8rem;color:#aaa;word-break:break-all;}
+    .tx-time{font-size:0.75rem;color:#666;}
     .card {
       position: relative;
       overflow: hidden;
@@ -465,20 +572,42 @@
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </div>
   </aside>
- <div class="top-bar">
+<!-- ONLY ONE TOP BAR -->
+  <div class="top-bar">
     <div class="search-wrapper">
       <input type="text" id="searchInput" placeholder="Search Pokémon…" autocomplete="off">
       <i class="fas fa-search search-icon"></i>
     </div>
-    <select id="sortSelect">
-      <option value="id-asc" style="font-family:'Press Start 2P',cursive;">ID ↑</option>
-      <option value="id-desc" style="font-family:'Press Start 2P',cursive;">ID ↓</option>
-      <option value="name-asc" style="font-family:'Press Start 2P',cursive;">Name A-Z</option>
-      <option value="name-desc" style="font-family:'Press Start 2P',cursive;">Name Z-A</option>
-      <option value="price-asc" style="font-family:'Press Start 2P',cursive;">Price ↑</option>
-      <option value="price-desc" style="font-family:'Press Start 2P',cursive;">Price ↓</option>
-    </select>
+    <div class="top-bar-controls">
+      <select id="sortSelect">
+        <option value="id-asc">ID ↑</option>
+        <option value="id-desc">ID ↓</option>
+        <option value="name-asc">Name A-Z</option>
+        <option value="name-desc">Name Z-A</option>
+        <option value="price-asc">Price ↑</option>
+        <option value="price-desc">Price ↓</option>
+      </select>
+      <button id="txHistoryBtn">
+        <i class="fas fa-history"></i> History
+        <span class="badge" id="txBadge" style="display:none;">0</span>
+      </button>
+    </div>
   </div>
+
+<!-- TRANSACTION MODAL -->
+  <div class="modal" id="txModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Transaction History</h2>
+        <span class="modal-close" id="closeModal">×</span>
+      </div>
+      <div class="tx-list" id="txList">
+        <p style="text-align:center;color:#aaa;">No transactions yet</p>
+      </div>
+    </div>
+  </div>
+
+ 
   <div class="container">
     
     <div class="title">Starters</div>
@@ -530,10 +659,148 @@
   let coins = parseInt(localStorage.getItem('coins') || '500');
   let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
   let claimedStarters = JSON.parse(localStorage.getItem('claimedStarters') || '[]');
+  
+  let txHistory = JSON.parse(localStorage.getItem('txHistory') || '[]');
 
   const coinDisplay = document.getElementById('coinDisplay');
   const freeDisplay = document.getElementById('freeDisplay');
   const walletDisplay = document.getElementById('walletDisplay');
+  const txList = document.getElementById('txList');
+  const txBadge = document.getElementById('txBadge');
+  const txModal = document.getElementById('txModal');
+
+// ==================== TRANSACTION HISTORY ====================
+// let txHistory = JSON.parse(localStorage.getItem('txHistory') || '[]');
+
+ // FIXED: addTx now stores Pokémon name + ID properly
+  async function addTx(hash, status, action, details = '', pokeId = null) {
+    if (!provider) return; // safety
+
+    let receipt, tx, block;
+    try {
+      receipt = await provider.getTransactionReceipt(hash);
+      tx = await provider.getTransaction(hash);
+      block = await provider.getBlock(tx.blockNumber);
+    } catch(e) { console.error("Failed to fetch tx details", e); }
+
+    const gasUsed = receipt ? receipt.gasUsed.toString() : 'unknown';
+    const gasPrice = tx ? ethers.utils.formatEther(tx.gasPrice) : '0';
+    const costEth = tx && receipt ? ethers.utils.formatEther(tx.gasPrice.mul(receipt.gasUsed)) : '0';
+
+    const entry = {
+      hash,
+      status,
+      action,
+      details,
+      pokeId,
+      pokeName: pokeId ? getNameFromId(pokeId) : null,
+      time: Date.now(),
+      gasUsed,
+      gasPrice: parseFloat(gasPrice).toFixed(6),
+      costEth: parseFloat(costEth).toFixed(6),
+      blockNumber: tx?.blockNumber || 'pending',
+      timestamp: block?.timestamp ? block.timestamp * 1000 : Date.now()
+    };
+
+    txHistory.unshift(entry);
+    localStorage.setItem('txHistory', JSON.stringify(txHistory));
+    updateTxBadge();
+    renderTxHistory();
+  }
+
+  
+  function updateTxBadge() {
+    txBadge.textContent = txHistory.length;
+    txBadge.style.display = txHistory.length ? 'flex' : 'none';
+  }
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return `${s}s ago`;
+    if (s < 3600) return `${Math.floor(s/60)}m ago`;
+    if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+    return `${Math.floor(s/86400)}d ago`;
+  }
+
+
+function renderTxHistory() {
+    if (!txHistory.length) {
+      txList.innerHTML = '<p style="text-align:center;color:#aaa;">No transactions yet</p>';
+      return;
+    }
+
+    txList.innerHTML = txHistory.map((tx, i) => {
+      const img = tx.pokeId ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${tx.pokeId}.png` : '';
+      const gif = tx.pokeId ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${tx.pokeId}.gif` : '';
+
+      return `
+        <div class="tx-item">
+          <div class="tx-header" onclick="toggleTx(${i})">
+            <div>
+              <span class="tx-action ${tx.status}">${tx.action}</span><br>
+              ${tx.pokeName ? `<small style="color:#ffcb05;">${tx.pokeName}</small><br>` : ''}
+              <span class="tx-time">${timeAgo(tx.time)}</span>
+            </div>
+            <i class="fas fa-chevron-right tx-toggle" id="toggle-${i}"></i>
+          </div>
+
+          <div class="tx-details" id="details-${i}">
+            ${tx.pokeId ? `
+              <div class="tx-pokemon-name">${tx.pokeName} #${String(tx.pokeId).padStart(3,'0')}</div>
+              <img src="${img}" data-gif="${gif}" class="tx-pokemon-img"
+                   onmouseenter="this.src=this.dataset.gif" 
+                   onmouseleave="this.src='${img}'">
+            ` : ''}
+
+            <div class="tx-detail-row">
+              <span>Transaction Hash</span>
+              <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" class="tx-hash-link">
+                ${tx.hash.slice(0,12)}...${tx.hash.slice(-10)}
+              </a>
+            </div>
+            ${tx.details ? `<div class="tx-detail-row"><span>Details</span><span>${tx.details}</span></div>` : ''}
+            <div class="tx-detail-row"><span>Gas Used</span><span>${tx.gasUsed}</span></div>
+            <div class="tx-detail-row"><span>Gas Price</span><span>${tx.gasPrice} ETH</span></div>
+            <div class="tx-detail-row"><span>Total Cost</span><span>${tx.costEth} ETH</span></div>
+            <div class="tx-detail-row"><span>Block</span><span>#${tx.blockNumber}</span></div>
+            <div class="tx-detail-row"><span>Status</span>
+              <span class="${tx.status}">${tx.status === 'tx-success' ? 'Success' : 'Failed'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.toggleTx = (i) => {
+    const details = document.getElementById(`details-${i}`);
+    const toggle = document.getElementById(`toggle-${i}`);
+    details.classList.toggle('open');
+    toggle.classList.toggle('open');
+  };
+
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return `${s}s ago`;
+    if (s < 3600) return `${Math.floor(s/60)}m ago`;
+    if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+    return `${Math.floor(s/86400)}d ago`;
+  }
+
+  async function wrapTx(promise, action, details = '', pokeId = null) {
+    try {
+      const tx = await promise;
+      const receipt = await tx.wait();
+      await addTx(tx.hash, 'tx-success', action, details, pokeId);
+      return receipt;
+    } catch (e) {
+      await addTx('failed', 'tx-fail', action, e?.message || 'User rejected');
+      throw e;
+    }
+  }
+
+  document.getElementById('txHistoryBtn').onclick = () => txModal.classList.add('active');
+  document.getElementById('closeModal').onclick = () => txModal.classList.remove('active');
+  txModal.onclick = e => { if (e.target === txModal) txModal.classList.remove('active'); };
 
   /* ---------- UI HELPERS ---------- */
   function showError(msg) {
@@ -1010,83 +1277,70 @@ async function loadOwned() {
     loadAll();
   };
 
+// FIXED: All actions now pass pokeId + name correctly
   window.buyRare = async (id, name, price) => {
     if (!userAddress) return showError('Connect wallet');
-    if (ownedLocal.some(o=>o.id===id)) return showError('Already owned');
+    if (ownedLocal.some(o => o.id === id)) return showError('Already owned');
     try {
       const amount = ethers.utils.parseUnits(price.toString(), 18);
       const bal = await token.balanceOf(userAddress);
       if (bal.lt(amount)) return showError('Not enough TOKEN');
 
-      const allow = await token.allowance(userAddress, NFT_ADDRESS);
-      if (allow.lt(amount)) {
-        const tx = await token.approve(NFT_ADDRESS, ethers.constants.MaxUint256);
-        await tx.wait();
-        alert('Approved token spending');
+      if ((await token.allowance(userAddress, NFT_ADDRESS)).lt(amount)) {
+        await wrapTx(token.approve(NFT_ADDRESS, ethers.constants.MaxUint256), 'Approve TOKEN');
       }
 
-      const tx = await nft.mintWithToken(userAddress, id, name, amount);
-      await tx.wait();
+      await wrapTx(
+        nft.mintWithToken(userAddress, id, name, amount),
+        'Bought Rare Pokémon',
+        `${name} for ${price} TOKEN`,
+        id
+      );
 
       await syncOwnedFromChain();
       await updateTokenBalance();
-      alert(`Minted ${name}!`);
-    } catch (e) { showError('Mint failed: ' + (e?.error?.message || e?.message || e)); }
+    } catch (e) {}
   };
 
   window.promptList = async (id, name) => {
-    const price = prompt(`List ${name} for sale – price in TOKEN (whole numbers):`);
-    if (!price) return;
-    const p = parseInt(price);
+    const input = prompt(`List ${name} for sale – price in TOKEN (whole numbers):`);
+    if (!input) return;
+    const p = parseInt(input);
     if (isNaN(p) || p <= 0) return showError('Invalid price');
-    try {
-      const tx = await nft.listForSale(id, ethers.utils.parseUnits(p.toString(), 18));
-      await tx.wait();
-      await syncOwnedFromChain();
-      alert(`${name} listed for ${p} TOKEN`);
-    } catch (e) { showError('List failed: ' + (e?.error?.message || e?.message || e)); }
+    await wrapTx(
+      nft.listForSale(id, ethers.utils.parseUnits(p.toString(), 18)),
+      'Listed for Sale',
+      `${name} → ${p} TOKEN`
+    );
+    await syncOwnedFromChain();
   };
 
   window.cancelListing = async (id) => {
-    try {
-      const tx = await nft.cancelListing(id);
-      await tx.wait();
-      await syncOwnedFromChain();
-      alert('Listing cancelled');
-    } catch (e) { showError('Cancel failed: ' + (e?.error?.message || e?.message || e)); }
+    await wrapTx(nft.cancelListing(id), 'Cancel Listing', `Token #${id}`);
+    await syncOwnedFromChain();
   };
 
-  window.buyListed = async (id) => {
-    try {
-      const listing = await nft.listings(id);
-      const price = listing.price;
-      if (price.eq(0)) return showError('Not for sale');
-
-      const tx = await nft.buyListed(id);
-      await tx.wait();
-
-      await syncOwnedFromChain();
-      await updateTokenBalance();
-      alert(`Bought Pokémon #${id}!`);
-    } catch (e) { showError('Buy failed: ' + (e?.error?.message || e?.message || e)); }
+ window.buyListed = async (id) => {
+    const name = getNameFromId(id);
+    const listing = await nft.listings(id);
+    const price = Number(ethers.utils.formatUnits(listing.price, 18));
+    await wrapTx(nft.buyListed(id), 'Bought from Marketplace', `${name} for ${price} TOKEN`, id);
+    await syncOwnedFromChain();
+    await updateTokenBalance();
   };
 
   window.sellPokemon = async (id, name) => {
     if (!confirm(`Sell ${name} and get 50% refund?`)) return;
-    try {
-      const tx = await nft.sellAndRefund(id);
-      await tx.wait();
-      ownedLocal = ownedLocal.filter(o => o.id !== id);
-      localStorage.setItem('owned', JSON.stringify(ownedLocal));
-      await syncOwnedFromChain();
-      await updateTokenBalance();
-      alert(`Sold ${name} – 50% refunded`);
-    } catch (e) { showError('Sell failed: ' + (e?.error?.message || e?.message || e)); }
+    await wrapTx(nft.sellAndRefund(id), 'Sold & Refunded (50%)', name, id);
+    ownedLocal = ownedLocal.filter(o => o.id !== id);
+    localStorage.setItem('owned', JSON.stringify(ownedLocal));
+    await syncOwnedFromChain();
+    await updateTokenBalance();
   };
 
-  /* ---------- INIT ---------- */
-  updateCoinDisplay();
-  loadAll();
+  // /* ---------- INIT ---------- */
+  // updateCoinDisplay();
+  // loadAll();
 
   // GIF hover
   document.addEventListener('DOMContentLoaded', () => {
@@ -1277,8 +1531,13 @@ function refreshOwned() {
   };
 
   /* ---------- INIT ---------- */
-  updateCoinDisplay();
-  loadAll();   
+function init() {
+    updateCoinDisplay();
+    renderTxHistory();
+    updateTxBadge();
+    loadAll();
+  }
+  init();
 </script>
 </body>
 </html>
