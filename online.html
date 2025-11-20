@@ -43,9 +43,8 @@
     .team-card.selected{border-color:#4caf50;background:rgba(76,175,80,0.4);box-shadow:0 0 30px rgba(76,175,80,0.6)}
     .team-card img{width:100%;height:150px;object-fit:contain}
 
-    /* CLASSIC POKÉMON BATTLE ARENA */
+    /* BATTLE ARENA */
     .battle-area {
-      display: none;
       position: relative;
       width: 1000px;
       height: 560px;
@@ -56,99 +55,35 @@
       box-shadow: 0 0 50px rgba(255,203,5,0.8);
     }
 
-    /* Player - Bottom Left Platform */
-    .player-base {
-      position: absolute;
-      bottom: 80px;
-      left: 80px;
-      width: 300px;
-      text-align: center;
-    }
-    .pokemon-back img {
-      width: 280px;
-      height: 280px;
-      image-rendering: pixelated;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-    }
+    .player-base { position: absolute; bottom: 80px; left: 80px; width: 300px; text-align: center; }
+    .pokemon-back img { width: 280px; height: 280px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
 
-    /* Opponent - Top Right Platform */
-    .opponent-base {
-      position: absolute;
-      top: 60px;
-      right: 80px;
-      width: 300px;
-      text-align: center;
-    }
-    .pokemon-front img {
-      width: 240px;
-      height: 240px;
-      image-rendering: pixelated;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-    }
+    .opponent-base { position: absolute; top: 60px; right: 80px; width: 300px; text-align: center; }
+    .pokemon-front img { width: 240px; height: 240px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
 
-    /* Classic HP Box */
     .hp-box {
-      background: rgba(0,0,0,0.9);
-      border: 5px solid #fff;
-      border-radius: 12px;
-      padding: 10px 16px;
-      width: 300px;
-      margin: 12px auto 0;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 0.95rem;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.9); border: 5px solid #fff; border-radius: 12px; padding: 10px 16px;
+      width: 300px; margin: 12px auto 0; font-family: 'Press Start 2P'; font-size: 0.95rem; box-shadow: 0 6px 20px rgba(0,0,0,0.8);
     }
-    .hp-bar-small {
-      height: 22px;
-      background: #222;
-      border: 3px solid #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 8px 0;
-    }
+    .hp-bar-small { height: 22px; background: #222; border: 3px solid #fff; border-radius: 10px; overflow: hidden; margin: 8px 0; }
     .hp-fill-small {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #92d04b, #4caf50);
-      transition: width 0.8s ease;
+      height: 100%; width: 100%; background: linear-gradient(90deg, #92d04b, #4caf50); transition: width 0.8s ease;
     }
     .hp-fill-small.warning { background: #ff9800; }
     .hp-fill-small.danger { background: #ff4444; }
 
-    .player h2, .opponent h2 {
-      font-family: 'Press Start 2P';
-      font-size: 1.7rem;
-      margin-bottom: 6px;
-      text-shadow: 3px 3px 0 #000;
-    }
+    .player h2, .opponent h2 { font-family: 'Press Start 2P'; font-size: 1.7rem; margin-bottom: 6px; text-shadow: 3px 3px 0 #000; }
     .player h2 { color: #4caf50; }
     .opponent h2 { color: #f44336; }
 
-    /* Attack Button - Perfectly Placed on Right */
-    #playerActions {
-      position: absolute;
-      bottom: 60px;
-      right: 80px;
-      z-index: 10;
-    }
+    #playerActions { position: absolute; bottom: 60px; right: 80px; z-index: 10; }
     .attack-btn {
-      padding: 15px 30px;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 20px;
-      background: linear-gradient(135deg, #ff1744, #c62828);
-      color: white;
-      border: 2px solid #ffcb05;
-      border-radius: 24px;
-      cursor: pointer;
-      box-shadow: 0 12px 35px rgba(255,23,68,0.8);
-      transition: all 0.25s;
-      text-transform: uppercase;
-      letter-spacing: 4px;
+      padding: 15px 30px; font-family: 'Press Start 2P', cursive; font-size: 20px;
+      background: linear-gradient(135deg, #ff1744, #c62828); color: white; border: 2px solid #ffcb05;
+      border-radius: 24px; cursor: pointer; box-shadow: 0 12px 35px rgba(255,23,68,0.8);
+      transition: all 0.25s; text-transform: uppercase; letter-spacing: 4px;
     }
-    .attack-btn:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 25px 50px rgba(255,23,68,1);
-    }
+    .attack-btn:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(255,23,68,1); }
     .attack-btn:active { transform: translateY(4px); }
 
     .log{
@@ -160,6 +95,12 @@
     .confirm-modal,.overlay{display:none;position:fixed;z-index:9999}
     .confirm-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
     .overlay{inset:0;background:rgba(0,0,0,0.8);z-index:9998}
+
+    @keyframes shake {
+      0%,100% { transform: translate(0,0); }
+      10%,30%,50%,70%,90% { transform: translate(-10px,0); }
+      20%,40%,60%,80% { transform: translate(10px,0); }
+    }
   </style>
 </head>
 <body>
@@ -199,9 +140,7 @@
       <button id="readyBtn" disabled style="margin-top:2rem;font-size:1.8rem;padding:20px 50px">READY!</button>
     </div>
 
-    <!-- PERFECT CLASSIC BATTLE ARENA -->
-    <div id="battleArea" class="battle-area">
-      <!-- Player -->
+    <div id="battleArea" class="battle-area" style="display:none">
       <div style="position:absolute;bottom:70px;left:70px">
         <h2 class="player">YOU</h2>
         <div class="player-base">
@@ -214,7 +153,6 @@
         </div>
       </div>
 
-      <!-- Opponent -->
       <div style="position:absolute;top:50px;right:70px">
         <h2 class="opponent">OPPONENT</h2>
         <div class="opponent-base">
@@ -227,7 +165,6 @@
         </div>
       </div>
 
-      <!-- Attack Button - Right Side, Not Floating -->
       <div id="playerActions"></div>
     </div>
 
@@ -244,6 +181,7 @@
   </div>
 
 <script>
+// ==================== FULL SCRIPT WITH ANIMATED ATTACKS ====================
 const ICE_SERVERS = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -264,6 +202,74 @@ function log(msg) {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
+// =============== RANDOM ATTACK ANIMATIONS ===============
+const ATTACK_TYPES = [
+  { name: "FIRE BLAST", color: "#ff4400", emoji: "🔥", particles: 28 },
+  { name: "THUNDERBOLT", color: "#ffdd00", emoji: "⚡", particles: 22 },
+  { name: "HYDRO PUMP", color: "#00aaff", emoji: "💧", particles: 32 },
+  { name: "ICE BEAM", color: "#00ffff", emoji: "❄️", particles: 25 },
+  { name: "EARTHQUAKE", color: "#8B4513", emoji: "🌍", particles: 20 },
+  { name: "HYPER BEAM", color: "#ff00ff", emoji: "💥", particles: 38 },
+  { name: "SHADOW BALL", color: "#4444ff", emoji: "🟣", particles: 22 },
+  { name: "MEGA PUNCH", color: "#ffffff", emoji: "👊", particles: 18 }
+];
+
+function playAttackAnimation(isPlayerAttacking) {
+  const arena = document.getElementById('battleArea');
+  const effect = document.createElement('div');
+  effect.style.position = 'absolute';
+  effect.style.pointerEvents = 'none';
+  effect.style.inset = '0';
+  effect.style.zIndex = '15';
+  arena.appendChild(effect);
+
+  const attack = ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)];
+
+  for (let i = 0; i < attack.particles; i++) {
+    const p = document.createElement('div');
+    p.textContent = attack.emoji;
+    p.style.position = 'absolute';
+    p.style.fontSize = `${Math.random() * 40 + 30}px`;
+    p.style.opacity = '0.9';
+    p.style.pointerEvents = 'none';
+    p.style.filter = `drop-shadow(0 0 15px ${attack.color})`;
+
+    const startX = isPlayerAttacking ? Math.random() * 350 + 50 : Math.random() * 350 + 550;
+    const startY = isPlayerAttacking ? 400 + Math.random() * 100 : Math.random() * 200 + 50;
+    const endX = isPlayerAttacking ? Math.random() * 350 + 550 : Math.random() * 350 + 50;
+    const endY = isPlayerAttacking ? Math.random() * 200 + 100 : 400 + Math.random() * 100;
+
+    p.style.left = startX + 'px';
+    p.style.top = startY + 'px';
+    effect.appendChild(p);
+
+    p.animate([
+      { transform: `translate(0,0) rotate(0deg)`, opacity: 0.9 },
+      { transform: `translate(${endX - startX}px, ${endY - startY}px) rotate(${Math.random() * 720 - 360}deg)`, opacity: 0 }
+    ], {
+      duration: 700 + Math.random() * 500,
+      easing: 'cubic-bezier(0.2, 0.6, 0.8, 1)'
+    }).onfinish = () => p.remove();
+  }
+
+  if (attack.name === "EARTHQUAKE" || attack.name === "HYPER BEAM") {
+    arena.style.animation = 'shake 0.7s';
+    setTimeout(() => arena.style.animation = '', 700);
+  }
+
+  const flash = document.createElement('div');
+  flash.style.position = 'absolute';
+  flash.style.inset = '0';
+  flash.style.background = attack.color + '50';
+  flash.style.opacity = '0';
+  arena.appendChild(flash);
+  flash.animate([{ opacity: 0 }, { opacity: 0.7 }, { opacity: 0 }], { duration: 400 });
+  setTimeout(() => { if (flash.parentNode) flash.remove(); effect.remove(); }, 1600);
+
+  return attack.name;
+}
+
+// =============== BATTLE LOGIC ===============
 let turnDecided = false, peer = null, conn = null, roomCode = null, isHost = false;
 let myPokemon = null, opponentPokemon = null, myTurn = false, pendingOpponent = null, bothReady = false;
 
@@ -271,7 +277,7 @@ function createRoom() {
   roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!roomCode) return;
   isHost = true;
-  peer = new Peer(roomCode, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS, iceTransportPolicy: 'all' });
+  peer = new Peer(roomCode, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS });
   peer.on('open', () => {
     document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${roomCode}</b><br>Waiting for challenger...`;
     log(`Room ${roomCode} created! Share the code.`);
@@ -288,7 +294,7 @@ function createRoom() {
 function joinRoom() {
   roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!roomCode) return alert("Enter a room code!");
-  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS, iceTransportPolicy: 'all' });
+  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS });
   peer.on('open', () => {
     conn = peer.connect(roomCode, { reliable: true });
     setupConnectionEvents(conn);
@@ -313,7 +319,7 @@ function setupConnectionEvents(c) {
       log(`Opponent sent out ${opponentPokemon.name.toUpperCase()}!`);
       if (myPokemon && !bothReady) { bothReady = true; startBattle(); }
     }
-    else if (data.type === 'attack') receiveAttack(data.damage);
+    else if (data.type === 'attack') receiveAttack(data);
     else if (data.type === 'turn') {
       turnDecided = true; myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
@@ -375,26 +381,70 @@ function showAttackButton() {
 
 function attack() {
   if (!myTurn || !conn) return;
+
+  // 20% MISS CHANCE
+  if (Math.random() < 0.20) {
+    conn.send({ type: 'attack', damage: 0, missed: true });
+    playAttackAnimation(true);
+    log(`<span style="color:#888">Your attack <b>MISSED!</b></span>`);
+    document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting for opponent...</div>';
+    myTurn = false;
+    return;
+  }
+
   const damage = 25 + Math.floor(Math.random() * 30);
-  conn.send({ type: 'attack', damage });
-  log(`You used Attack! Dealt <b style="color:#ff4444">${damage}</b> damage!`);
+  const moveName = playAttackAnimation(true);
+
+  conn.send({ type: 'attack', damage, moveName });
+  log(`You used <span style="color:#ffcb05"><b>${moveName}</b></span>! Dealt <b style="color:#ff4444">${damage}</b> damage!`);
+
   let hp = parseInt(document.getElementById('oppoHpText').textContent);
   hp = Math.max(0, hp - damage);
   document.getElementById('oppoHpFill').style.width = hp + '%';
   document.getElementById('oppoHpText').textContent = hp + '/100 HP';
+  const fill = document.getElementById('oppoHpFill');
+  fill.classList.toggle('warning', hp <= 50); fill.classList.toggle('danger', hp <= 20);
+
   document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting for opponent...</div>';
-  if (hp <= 0) setTimeout(() => alert('YOU WIN!'), 800);
+
+  if (hp <= 0) {
+    setTimeout(() => {
+      log('<span style="color:#4caf50;font-size:2rem"><b>YOU WIN!</b></span>');
+      alert('YOU WIN! 🎉');
+    }, 1200);
+  }
   myTurn = false;
 }
 
-function receiveAttack(damage) {
-  log(`Opponent used Attack! Took <b style="color:#ff4444">${damage}</b> damage!`);
+function receiveAttack(data) {
+  if (data.missed) {
+    log(`<span style="color:#888">Opponent\'s attack <b>MISSED!</b></span>`);
+    playAttackAnimation(false);
+    myTurn = true;
+    showAttackButton();
+    return;
+  }
+
+  const moveName = data.moveName || "Attack";
+  playAttackAnimation(false);
+  log(`Opponent used <span style="color:#ffcb05"><b>${moveName}</b></span>! Took <b style="color:#ff4444">${data.damage}</b> damage!`);
+
   let hp = parseInt(document.getElementById('playerHpText').textContent);
-  hp = Math.max(0, hp - damage);
+  hp = Math.max(0, hp - data.damage);
   document.getElementById('playerHpFill').style.width = hp + '%';
   document.getElementById('playerHpText').textContent = hp + '/100 HP';
-  if (hp <= 0) setTimeout(() => alert('You lost the battle...'), 800);
-  else { myTurn = true; showAttackButton(); }
+  const fill = document.getElementById('playerHpFill');
+  fill.classList.toggle('warning', hp <= 50); fill.classList.toggle('danger', hp <= 20);
+
+  if (hp <= 0) {
+    setTimeout(() => {
+      log('<span style="color:#f44336;font-size:2rem"><b>You fainted...</b></span>');
+      alert('You lost the battle... 💀');
+    }, 1200);
+  } else {
+    myTurn = true;
+    showAttackButton();
+  }
 }
 </script>
 </body>
