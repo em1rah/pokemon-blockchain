@@ -129,6 +129,7 @@ document.getElementById('coinDisplay').textContent = (localStorage.getItem('coin
 
 function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
 function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
+function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
 
 function log(msg) {
   const logEl = document.getElementById('battleLog');
@@ -138,92 +139,128 @@ function log(msg) {
 
 let peer = null, conn = null, roomCode = null, isHost = false;
 let myPokemon = null, opponentPokemon = null, myTurn = false;
-let pendingOpponent = null; // For host confirmation
+let pendingOpponent = null;
+let bothReady = false;
 
+// =============== ROOM CREATION ===============
 function createRoom() {
   roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!roomCode) return;
   isHost = true;
-  peer = new Peer(roomCode);
-  document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:20px">${roomCode}</b><br>Waiting for challenger...`;
-  log(`Room ${roomCode} is open!`);
 
+  peer = new Peer(roomCode);
   peer.on('open', () => {
-    peer.on('connection', (incoming) => {
-      pendingOpponent = incoming;
-      document.getElementById('opponentId').textContent = incoming.peer.substring(0, 12) + '...';
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('confirmModal').style.display = 'block';
-      log('Someone is trying to join...');
-    });
+    document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${roomCode}</b><br>Waiting for challenger...`;
+    log(`Room ${roomCode} created! Share the code.`);
+  });
+
+  peer.on('connection', (incoming) => {
+    if (conn) { incoming.close(); return; } // Already have opponent
+    pendingOpponent = incoming;
+    document.getElementById('opponentId').textContent = incoming.peer;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('confirmModal').style.display = 'block';
+    log('A challenger approaches...');
   });
 }
 
+// =============== JOIN ROOM ===============
 function joinRoom() {
   roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-  if (!roomCode) return alert("Enter room code!");
+  if (!roomCode) return alert("Please enter a room code!");
 
   peer = new Peer();
   peer.on('open', (myId) => {
-    conn = peer.connect(roomCode);
-    conn.on('open', () => {
-      log('Connected! Waiting for host to accept...');
-      document.getElementById('roomSetup').style.display = 'none';
-      document.getElementById('teamSelect').style.display = 'block';
-      loadTeamSelect();
-    });
+    conn = peer.connect(roomCode, { reliable: true });
+    setupConnectionEvents(conn);
+    log('Trying to join room ' + roomCode + '...');
   });
 }
 
+// =============== ACCEPT / REJECT ===============
 function acceptOpponent() {
   conn = pendingOpponent;
-  setupConnection(conn);
-  document.getElementById('overlay').style.display = 'none';
-  document.getElementById('confirmModal').style.display = 'none';
+  pendingOpponent = null;
+  hideModal();
+  setupConnectionEvents(conn);
+  conn.send({ type: 'accepted' }); // Tell guest they are in
+  startTeamSelection();
   log('Opponent accepted! Choose your Pokémon.');
 }
 
 function rejectOpponent() {
-  pendingOpponent.close();
+  if (pendingOpponent) pendingOpponent.close();
   pendingOpponent = null;
-  document.getElementById('overlay').style.display = 'none';
-  document.getElementById('confirmModal').style.display = 'none';
-  log('Opponent rejected.');
+  hideModal();
+  log('Challenger rejected.');
 }
 
-function setupConnection(c) {
-  conn = c;
+function hideModal() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
+// =============== CONNECTION SETUP ===============
+function setupConnectionEvents(connection) {
+  conn = connection;
+
   conn.on('open', () => {
-    document.getElementById('roomSetup').style.display = 'none';
-    document.getElementById('teamSelect').style.display = 'block';
-    loadTeamSelect();
+    console.log('Data connection open');
   });
 
   conn.on('data', (data) => {
-    if (data.type === 'ready') {
-      opponentPokemon = data.poke;
-      document.getElementById('oppoImg').src = img(opponentPokemon.id);
-      document.getElementById('oppoName').textContent = opponentPokemon.name;
-      log(`Opponent sent out ${opponentPokemon.name}!`);
-      if (myPokemon) startBattle();
+    if (data.type === 'accepted') {
+      // Guest receives acceptance from host
+      log('Host accepted! Choose your Pokémon.');
+      startTeamSelection();
     }
-    if (data.type === 'attack') receiveAttack(data.damage);
+    else if (data.type === 'pokemon') {
+      opponentPokemon = data.poke;
+      document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
+      document.getElementById('oppoName').textContent = opponentPokemon.name.toUpperCase();
+      document.getElementById('oppoHpText').textContent = '100/100 HP';
+      document.getElementById('oppoHpFill').style.width = '100%';
+      log(`Opponent sent out ${opponentPokemon.name.toUpperCase()}!`);
+
+      if (myPokemon && !bothReady) {
+        bothReady = true;
+        startBattle();
+      }
+    }
+    else if (data.type === 'attack') {
+      receiveAttack(data.damage);
+    }
+  });
+
+  conn.on('close', () => {
+    log('<span style="color:#f44336">Opponent disconnected!</span>');
+    alert('Opponent left the battle.');
+    location.reload();
   });
 }
 
+// =============== TEAM SELECTION ===============
+function startTeamSelection() {
+  document.getElementById('roomSetup').style.display = 'none';
+  document.getElementById('teamSelect').style.display = 'block';
+  loadTeamSelect();
+}
+
 function loadTeamSelect() {
+  const grid = document.getElementById('teamGrid');
+  grid.innerHTML = '';
+
   if (ownedLocal.length === 0) {
-    document.getElementById('teamGrid').innerHTML = '<p style="grid-column:1/-1;color:#ffcb05">No Pokémon! Buy some first!</p>';
+    grid.innerHTML = '<p style="grid-column:1/-1;color:#ffcb05;font-size:1.5rem">No Pokémon owned!<br>Visit the shop first!</p>';
     return;
   }
-  const grid = document.getElementById('teamGrid');
+
   ownedLocal.forEach(p => {
     const card = document.createElement('div');
     card.className = 'team-card';
-    card.innerHTML = `<img src="${img(p.id)}"><br><b>${p.name}</b>`;
+    card.innerHTML = `<img src="${img(p.id)}"><br><b>${p.name.toUpperCase()}</b>`;
     card.onclick = () => {
       document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
-      card
       card.classList.add('selected');
       myPokemon = p;
       document.getElementById('readyBtn').disabled = false;
@@ -232,46 +269,85 @@ function loadTeamSelect() {
   });
 
   document.getElementById('readyBtn').onclick = () => {
-    conn.send({type: 'ready', poke: myPokemon});
-    document.getElementById('playerImg').src = backImg(myPokemon.id);
-    document.getElementById('playerName').textContent = myPokemon.name;
+    if (!myPokemon) return;
+
+    // Show own Pokémon (back sprite for player)
+    document.getElementById('playerImg').src = backImg(myPokemon.id) || img(myPokemon.id);
+    document.getElementById('playerName').textContent = myPokemon.name.toUpperCase();
+    document.getElementById('playerHpText').textContent = '100/100 HP';
+    document.getElementById('playerHpFill').style.width = '100%';
+
+    // Hide team select, show battle area
     document.getElementById('teamSelect').style.display = 'none';
     document.getElementById('battleArea').style.display = 'grid';
-    log(`You sent out ${myPokemon.name}!`);
-    if (opponentPokemon) startBattle();
+
+    // Send Pokémon to opponent
+    conn.send({ type: 'pokemon', poke: myPokemon });
+
+    log(`You sent out ${myPokemon.name.toUpperCase()}!`);
+
+    // If opponent already chose, start battle immediately
+    if (opponentPokemon) {
+      bothReady = true;
+      startBattle();
+    }
   };
 }
 
+// =============== BATTLE START ===============
 function startBattle() {
-  log('<b style="color:#ffcb05;font-size:1.5rem">⚔ BATTLE START! ⚔</b>');
+  if (document.getElementById('battleArea').style.display !== 'grid') return;
+
+  log('<b style="color:#ffcb05;font-size:1.8rem">⚔ BATTLE START! ⚔</b>');
+
+  // Random who goes first
   myTurn = Math.random() < 0.5;
-  myTurn ? log('You go first!') : log('Opponent goes first...');
-  if (myTurn) showAttackButton();
+  if (myTurn) {
+    log('<span style="color:#4caf50">You go first!</span>');
+    showAttackButton();
+  } else {
+    log('<span style="color:#f44336">Opponent goes first...</span>');
+  }
 }
 
 function showAttackButton() {
-  document.getElementById('playerActions').innerHTML = '<button onclick="attack()">ATTACK!</button>';
+  if (!myTurn || !conn) return;
+  document.getElementById('playerActions').innerHTML = 
+    '<button onclick="attack()" style="font-size:2.5rem;padding:40px 80px;">ATTACK!</button>';
 }
 
+// =============== ATTACK ===============
 function attack() {
-  if (!myTurn) return;
-  const damage = 30 + Math.floor(Math.random() * 25);
-  conn.send({type: 'attack', damage});
-  log(`You attacked! Dealt <b>${damage}</b> damage!`);
-  const newHp = Math.max(0, parseInt(document.getElementById('oppoHpText').textContent) - damage);
+  if (!myTurn || !conn) return;
+
+  const damage = 25 + Math.floor(Math.random() * 30); // 25–55 damage
+  conn.send({ type: 'attack', damage });
+  log(`You used Attack! Dealt <b style="color:#ff4444">${damage}</b> damage!`);
+
+  // Visual feedback on opponent's HP (optimistic)
+  let current = parseInt(document.getElementById('oppoHpText').textContent);
+  let newHp = Math.max(0, current - damage);
   document.getElementById('oppoHpFill').style.width = newHp + '%';
   document.getElementById('oppoHpText').textContent = newHp + '/100 HP';
+
+  document.getElementById('playerActions').innerHTML = '<p style="font-size:1.5rem;color:#aaa">Waiting for opponent...</p>';
+
+  if (newHp <= 0) {
+    setTimeout(() => alert('🎉 YOU WIN! 🎉'), 800);
+  }
   myTurn = false;
-  if (newHp <= 0) setTimeout(() => alert('🎉 YOU WIN! 🎉'), 1000);
 }
 
 function receiveAttack(damage) {
-  log(`Opponent attacked! Took <b>${damage}</b> damage!`);
-  const newHp = Math.max(0, parseInt(document.getElementById('playerHpText').textContent) - damage);
+  log(`Opponent used Attack! Took <b style="color:#ff4444">${damage}</b> damage!`);
+
+  let current = parseInt(document.getElementById('playerHpText').textContent);
+  let newHp = Math.max(0, current - damage);
   document.getElementById('playerHpFill').style.width = newHp + '%';
   document.getElementById('playerHpText').textContent = newHp + '/100 HP';
+
   if (newHp <= 0) {
-    setTimeout(() => alert('😭 You lost...'), 1000);
+    setTimeout(() => alert('😭 You lost the battle...'), 800);
   } else {
     myTurn = true;
     showAttackButton();
