@@ -124,25 +124,6 @@
   </div>
 
 <script>
- const ICE_SERVERS = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    // Free public TURN (numb.viagenie.ca) - username/password are public (works in 2025)
-    {
-      urls: 'turn:numb.viagenie.ca',
-      username: 'lucasvdz@gmail.com',  // Public test user
-      credential: 'muazwww3'
-    },
-    {
-      urls: 'turn:turn.bistrix.net:3478',  // Alternative free TURN
-      username: 'test',
-      credential: 'test'
-    }
-  ],
-  iceCandidatePoolSize: 10
-};
-
 let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
 document.getElementById('coinDisplay').textContent = (localStorage.getItem('coins') || '500') + ' Coins';
 
@@ -168,68 +149,35 @@ function createRoom() {
   if (!roomCode) return;
   isHost = true;
 
-  peer = new Peer(roomCode, {
-    host: '0.peerjs.com',
-    port: 443,
-    secure: true,
-    config: ICE_SERVERS,
-    iceTransportPolicy: 'all'  // NEW: Allows relay fallback
-  });
-
+  peer = new Peer(roomCode);
   peer.on('open', () => {
-    console.log(`[HOST] Room ${roomCode} opened`);
     document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${roomCode}</b><br>Waiting for challenger...`;
     log(`Room ${roomCode} created! Share the code.`);
   });
 
   peer.on('connection', (incoming) => {
-    console.log('[HOST] Incoming connection from:', incoming.peer);  // NEW
-    if (conn) { incoming.close(); return; }
+    if (conn) { incoming.close(); return; } // Already have opponent
     pendingOpponent = incoming;
     document.getElementById('opponentId').textContent = incoming.peer;
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('confirmModal').style.display = 'block';
     log('A challenger approaches...');
   });
-
-  peer.on('error', (err) => {
-    console.error('Peer error:', err);
-    if (err.type === 'unavailable-id') {
-      alert('This room code is already taken! Choose another.');
-    } else if (err.type === 'network') {  // NEW: Common ICE fail
-      alert('Network error - check console for ICE details. Try refreshing.');
-    }
-  });
 }
 
+// =============== JOIN ROOM ===============
 function joinRoom() {
   roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!roomCode) return alert("Please enter a room code!");
 
-  peer = new Peer(undefined, {
-    host: '0.peerjs.com',
-    port: 443,
-    secure: true,
-    config: ICE_SERVERS,
-    iceTransportPolicy: 'all'  // NEW
-  });
-
+  peer = new Peer();
   peer.on('open', (myId) => {
-    console.log(`[GUEST] My Peer ID: ${myId}`);
     conn = peer.connect(roomCode, { reliable: true });
     setupConnectionEvents(conn);
     log('Trying to join room ' + roomCode + '...');
   });
-
-  peer.on('error', (err) => {
-    console.error('Peer error:', err);
-    if (err.type === 'network') {  // NEW
-      alert('Connection failed - ICE negotiation issue. Check console.');
-    } else {
-      alert('Failed to connect. Room may not exist or connection blocked.');
-    }
-  });
 }
+
 // =============== ACCEPT / REJECT ===============
 function acceptOpponent() {
   conn = pendingOpponent;
@@ -237,7 +185,6 @@ function acceptOpponent() {
   hideModal();
   setupConnectionEvents(conn);
   conn.send({ type: 'accepted' }); // Tell guest they are in
-  console.log('[HOST] Sent "accepted" message');  // NEW
   startTeamSelection();
   log('Opponent accepted! Choose your Pokémon.');
 }
