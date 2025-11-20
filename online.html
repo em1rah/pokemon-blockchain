@@ -137,6 +137,7 @@ function log(msg) {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
+let turnDecided = false; // prevents double-deciding
 let peer = null, conn = null, roomCode = null, isHost = false;
 let myPokemon = null, opponentPokemon = null, myTurn = false;
 let pendingOpponent = null;
@@ -230,9 +231,21 @@ function setupConnectionEvents(connection) {
     else if (data.type === 'attack') {
       receiveAttack(data.damage);
     }
+    else if (data.type === 'turn') {
+      turnDecided = true;
+      myTurn = !data.first;
+      
+      if (myTurn) {
+        log('<span style="color:#4caf50">You go first!</span>');
+        showAttackButton();
+      } else {
+        log('<span style="color:#f44336">Opponent goes first...</span>');
+      }
+    }
   });
 
   conn.on('close', () => {
+    turnDecided = false;
     log('<span style="color:#f44336">Opponent disconnected!</span>');
     alert('Opponent left the battle.');
     location.reload();
@@ -300,13 +313,19 @@ function startBattle() {
 
   log('<b style="color:#ffcb05;font-size:1.8rem">⚔ BATTLE START! ⚔</b>');
 
-  // Random who goes first
-  myTurn = Math.random() < 0.5;
-  if (myTurn) {
-    log('<span style="color:#4caf50">You go first!</span>');
-    showAttackButton();
-  } else {
-    log('<span style="color:#f44336">Opponent goes first...</span>');
+  // Only the host decides who goes first (once)
+  if (isHost && !turnDecided) {
+    turnDecided = true;
+    myTurn = Math.random() < 0.5;
+    // Tell the guest who starts
+    conn.send({ type: 'turn', first: myTurn });
+    
+    if (myTurn) {
+      log('<span style="color:#4caf50">You go first!</span>');
+      showAttackButton();
+    } else {
+      log('<span style="color:#f44336">Opponent goes first...</span>');
+    }
   }
 }
 
