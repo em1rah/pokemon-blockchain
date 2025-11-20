@@ -10,46 +10,156 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;background:radial-gradient(circle at center,#0a1f3d 0%,#000 100%)}
-    /* body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><text x="50%" y="50%" font-family="Arial" font-size="120" fill="rgba(255,203,5,0.08)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45 100 100)">BATTLE</text></svg>') repeat;pointer-events:none} */
+    body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+    
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
     .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
     .sidebar .brand h1{font-family:'Press Start 2P';color:#ffcb05;font-size:1.1rem}
     .menu a{display:block;color:#ffcb05;padding:12px 16px;text-decoration:none;font-weight:700;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin:8px 12px;transition:.2s}
     .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(6px)}
     .menu a.active{background:#f17025;color:#fff}
-   .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
-    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
-    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+
+    .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
+    .coins{background:#efe339;color:#000}
+    .free-balance{background:#9362ed;color:#fff}
+    .coins,.free-balance{padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
     .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
-    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem;}
-    .connect-btn{background:#4caf50;color:#fff;}
-    .connect-btn:hover{background:#45a049;transform:translateY(-1px);}
-    .logout-btn{background:#f44336;color:#fff;display:none;}
-    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px);}
+    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem}
+    .connect-btn{background:#4caf50;color:#fff}
+    .connect-btn:hover{background:#45a049}
+    .logout-btn{background:#f44336;color:#fff;display:none}
+    .logout-btn:hover{background:#d32f2f}
 
     .container{margin-left:240px;padding:2rem;text-align:center}
-    .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.2rem;margin:1rem 0;text-shadow:0 0 20px #ffcb05}
+    .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.5rem;margin:1rem 0;text-shadow:0 0 25px #ffcb05}
+
     .room-setup{max-width:500px;margin:3rem auto;padding:2.5rem;background:rgba(255,203,5,0.1);border:3px solid #ffcb05;border-radius:16px}
     input{padding:14px;font-size:1.2rem;width:100%;margin:15px 0;border:2px solid #ffcb05;background:rgba(0,0,0,0.6);color:#fff;border-radius:12px}
     button{padding:16px 32px;font-size:1.3rem;margin:10px;border:none;border-radius:12px;background:linear-gradient(135deg,#ff9800,#e65100);color:#fff;font-weight:700;cursor:pointer}
+
     .team-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.5rem;max-width:900px;margin:2rem auto}
-    .team-card{border:4px solid rgba(255,203,5,0.4);border-radius:16px;padding:15px;cursor:pointer;background:rgba(0,0,0,0.4)}
+    .team-card{border:4px solid rgba(255,203,5,0.4);border-radius:16px;padding:15px;cursor:pointer;background:rgba(0,0,0,0.4);transition:.2s}
     .team-card:hover{border-color:#ffcb05;transform:scale(1.05)}
     .team-card.selected{border-color:#4caf50;background:rgba(76,175,80,0.4);box-shadow:0 0 30px rgba(76,175,80,0.6)}
     .team-card img{width:100%;height:150px;object-fit:contain}
-    .battle-area{display:none;grid-template-columns:1fr 1fr;gap:4rem;max-width:1200px;margin:2rem auto;align-items:center}
-    .player,.opponent{position:relative}
-    .pokemon-back img,.pokemon-front img{width:350px;height:350px;object-fit:contain}
-    .hp-bar{background:#222;height:44px;border:4px solid #ffcb05;border-radius:22px;overflow:hidden;margin:15px 0;position:relative}
-    .hp-fill{background:#4caf50;height:100%;width:100%;transition:width 0.8s ease}
-    .hp-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:700;font-size:1.5rem;color:#fff;text-shadow:2px 2px 0 #000}
-    .actions{margin-top:2rem}
-    .actions button{font-size:2rem;padding:30px;background:linear-gradient(135deg,#ff5722,#c41e00);width:80%;margin:0 auto;display:block}
-    .log{background:rgba(0,0,0,0.8);border:3px solid #ffcb05;border-radius:16px;padding:1.5rem;height:220px;overflow-y:auto;margin:2rem auto;max-width:1000px;font-size:1.1rem;line-height:1.8}
-    .confirm-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:4px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;z-index:9999;text-align:center}
-    .confirm-modal button{margin:10px;padding:15px 30px;font-size:1.4rem}
-    .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9998}
+
+    /* CLASSIC POKÉMON BATTLE ARENA */
+    .battle-area {
+      display: none;
+      position: relative;
+      width: 1000px;
+      height: 560px;
+      margin: 40px auto;
+      background: url('/images/Screenshot\ 2025-11-20\ 210130.png') center/cover no-repeat;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(255,203,5,0.8);
+    }
+
+    /* Player - Bottom Left Platform */
+    .player-base {
+      position: absolute;
+      bottom: 80px;
+      left: 80px;
+      width: 300px;
+      text-align: center;
+    }
+    .pokemon-back img {
+      width: 280px;
+      height: 280px;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+    }
+
+    /* Opponent - Top Right Platform */
+    .opponent-base {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      width: 300px;
+      text-align: center;
+    }
+    .pokemon-front img {
+      width: 240px;
+      height: 240px;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+    }
+
+    /* Classic HP Box */
+    .hp-box {
+      background: rgba(0,0,0,0.9);
+      border: 5px solid #fff;
+      border-radius: 12px;
+      padding: 10px 16px;
+      width: 300px;
+      margin: 12px auto 0;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.95rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+    }
+    .hp-bar-small {
+      height: 22px;
+      background: #222;
+      border: 3px solid #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .hp-fill-small {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #92d04b, #4caf50);
+      transition: width 0.8s ease;
+    }
+    .hp-fill-small.warning { background: #ff9800; }
+    .hp-fill-small.danger { background: #ff4444; }
+
+    .player h2, .opponent h2 {
+      font-family: 'Press Start 2P';
+      font-size: 1.7rem;
+      margin-bottom: 6px;
+      text-shadow: 3px 3px 0 #000;
+    }
+    .player h2 { color: #4caf50; }
+    .opponent h2 { color: #f44336; }
+
+    /* Attack Button - Perfectly Placed on Right */
+    #playerActions {
+      position: absolute;
+      bottom: 60px;
+      right: 80px;
+      z-index: 10;
+    }
+    .attack-btn {
+      padding: 15px 30px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 20px;
+      background: linear-gradient(135deg, #ff1744, #c62828);
+      color: white;
+      border: 2px solid #ffcb05;
+      border-radius: 24px;
+      cursor: pointer;
+      box-shadow: 0 12px 35px rgba(255,23,68,0.8);
+      transition: all 0.25s;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+    }
+    .attack-btn:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px rgba(255,23,68,1);
+    }
+    .attack-btn:active { transform: translateY(4px); }
+
+    .log{
+      background:rgba(0,0,0,0.9);border:4px solid #ffcb05;border-radius:16px;
+      padding:1.5rem;height:180px;overflow-y:auto;margin:20px auto;max-width:1000px;
+      font-size:1.1rem;line-height:1.9;font-family:'Courier New',monospace;color:#ffcb05
+    }
+
+    .confirm-modal,.overlay{display:none;position:fixed;z-index:9999}
+    .confirm-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
+    .overlay{inset:0;background:rgba(0,0,0,0.8);z-index:9998}
   </style>
 </head>
 <body>
@@ -57,18 +167,15 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Arena</h1></div>
     <div class="menu">
-      <a href="home.html">🏠 Home</a>
-        <a href="shop.html">🛒 Marketplace</a>
-      <a href="arena.html" >⚔ Game Play</a>
-      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">⚔ Online Play</a>
+      <a href="home.html">Home</a>
+      <a href="shop.html">Marketplace</a>
+      <a href="arena.html">Game Play</a>
+      <a href="online.html" style="background:#f17025;color:white">Online Play</a>
     </div>
-
-      <div class="status">
-            <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;align-self: center;border-radius: 50%;">
-
+    <div class="status">
+      <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
       <span class="coins" id="coinDisplay">500 Coins</span>
       <span class="free-balance" id="freeDisplay">0 TOKEN</span>
-      <button class="connect-btn" id="faucetBtn" style="background:#2196f3;display:none;">Claim 1000 TOKEN</button>
       <span class="wallet" id="walletDisplay"></span>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
       <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -78,7 +185,7 @@
   <div class="container">
     <h1 class="title">ONLINE BATTLE ARENA</h1>
 
-    <div id="roomSetup" class="room-setup">
+    <div id="roomSetup" class="room-setup" style="background:#0a0f1d">
       <button onclick="createRoom()">CREATE ROOM</button>
       <p style="margin:20px 0;font-size:1.4rem">OR</p>
       <input type="text" id="roomCodeInput" placeholder="Enter room code">
@@ -92,56 +199,57 @@
       <button id="readyBtn" disabled style="margin-top:2rem;font-size:1.8rem;padding:20px 50px">READY!</button>
     </div>
 
-    <div id="battleArea" class="battle-area" style="display:none">
-      <div class="player">
-        <h3 style="color:#4caf50;font-size:2rem">YOU</h3>
-        <div class="pokemon-back"><img id="playerImg"></div>
-        <div class="hp-bar"><div class="hp-fill" id="playerHpFill"></div><div class="hp-text" id="playerHpText">100/100 HP</div></div>
-        <h3 id="playerName" style="font-size:1.8rem"></h3>
-        <div class="actions" id="playerActions"></div>
+    <!-- PERFECT CLASSIC BATTLE ARENA -->
+    <div id="battleArea" class="battle-area">
+      <!-- Player -->
+      <div style="position:absolute;bottom:70px;left:70px">
+        <h2 class="player">YOU</h2>
+        <div class="player-base">
+          <img id="playerImg" class="pokemon-back" src="" alt="Your Pokémon">
+          <div class="hp-box">
+            <div style="color:#4caf50" id="playerName">???</div>
+            <div class="hp-bar-small"><div class="hp-fill-small" id="playerHpFill"></div></div>
+            <div id="playerHpText">100/100 HP</div>
+          </div>
+        </div>
       </div>
-      <div class="opponent">
-        <h3 style="color:#f44336;font-size:2rem">OPPONENT</h3>
-        <div class="pokemon-front"><img id="oppoImg"></div>
-        <div class="hp-bar"><div class="hp-fill" id="oppoHpFill"></div><div class="hp-text" id="oppoHpText">100/100 HP</div></div>
-        <h3 id="oppoName" style="font-size:1.8rem"></h3>
+
+      <!-- Opponent -->
+      <div style="position:absolute;top:50px;right:70px">
+        <h2 class="opponent">OPPONENT</h2>
+        <div class="opponent-base">
+          <img id="oppoImg" class="pokemon-front" src="" alt="Opponent">
+          <div class="hp-box">
+            <div style="color:#f44336" id="oppoName">???</div>
+            <div class="hp-bar-small"><div class="hp-fill-small" id="oppoHpFill"></div></div>
+            <div id="oppoHpText">100/100 HP</div>
+          </div>
+        </div>
       </div>
+
+      <!-- Attack Button - Right Side, Not Floating -->
+      <div id="playerActions"></div>
     </div>
 
     <div class="log" id="battleLog">Waiting for opponent...</div>
   </div>
 
-  <!-- CONFIRM OPPONENT MODAL (ONLY FOR HOST) -->
   <div class="overlay" id="overlay"></div>
   <div class="confirm-modal" id="confirmModal">
-    <h2 style="color:#ffcb05;font-size:2rem;margin-bottom:1rem">Opponent Wants to Battle!</h2>
-    <p style="font-size:1.3rem;margin:1rem 0">Player with ID:</p>
-    <p id="opponentId" style="font-family:monospace;font-size:1.5rem;color:#4caf50;margin:1rem 0"></p>
-    <div>
-      <button style="background:#4caf50" onclick="acceptOpponent()">Accept</button>
-      <button style="background:#f44336" onclick="rejectOpponent()">Reject</button>
-    </div>
+    <h2 style="color:#ffcb05">Opponent Wants to Battle!</h2>
+    <p>Player ID:</p>
+    <p id="opponentId" style="font-family:monospace;color:#4caf50;font-size:1.4rem"></p>
+    <button style="background:#4caf50;padding:14px 30px;margin:10px;font-size:1.3rem;border-radius:12px" onclick="acceptOpponent()">Accept</button>
+    <button style="background:#f44336;padding:14px 30px;margin:10px;font-size:1.3rem;border-radius:12px" onclick="rejectOpponent()">Reject</button>
   </div>
 
 <script>
- const ICE_SERVERS = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    // Free public TURN (numb.viagenie.ca) - username/password are public (works in 2025)
-    {
-      urls: 'turn:numb.viagenie.ca',
-      username: 'lucasvdz@gmail.com',  // Public test user
-      credential: 'muazwww3'
-    },
-    {
-      urls: 'turn:turn.bistrix.net:3478',  // Alternative free TURN
-      username: 'test',
-      credential: 'test'
-    }
-  ],
-  iceCandidatePoolSize: 10
-};
+const ICE_SERVERS = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'turn:numb.viagenie.ca', username: 'lucasvdz@gmail.com', credential: 'muazwww3' },
+  { urls: 'turn:turn.bistrix.net:3478', username: 'test', credential: 'test' }
+], iceCandidatePoolSize: 10 };
 
 let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
 document.getElementById('coinDisplay').textContent = (localStorage.getItem('coins') || '500') + ' Coins';
@@ -156,118 +264,46 @@ function log(msg) {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-let turnDecided = false; // prevents double-deciding
-let peer = null, conn = null, roomCode = null, isHost = false;
-let myPokemon = null, opponentPokemon = null, myTurn = false;
-let pendingOpponent = null;
-let bothReady = false;
+let turnDecided = false, peer = null, conn = null, roomCode = null, isHost = false;
+let myPokemon = null, opponentPokemon = null, myTurn = false, pendingOpponent = null, bothReady = false;
 
-// =============== ROOM CREATION ===============
 function createRoom() {
   roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!roomCode) return;
   isHost = true;
-
-  peer = new Peer(roomCode, {
-    host: '0.peerjs.com',
-    port: 443,
-    secure: true,
-    config: ICE_SERVERS,
-    iceTransportPolicy: 'all'  // NEW: Allows relay fallback
-  });
-
+  peer = new Peer(roomCode, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS, iceTransportPolicy: 'all' });
   peer.on('open', () => {
-    console.log(`[HOST] Room ${roomCode} opened`);
     document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${roomCode}</b><br>Waiting for challenger...`;
     log(`Room ${roomCode} created! Share the code.`);
   });
-
-  peer.on('connection', (incoming) => {
-    console.log('[HOST] Incoming connection from:', incoming.peer);  // NEW
-    if (conn) { incoming.close(); return; }
-    pendingOpponent = incoming;
-    document.getElementById('opponentId').textContent = incoming.peer;
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('confirmModal').style.display = 'block';
+  peer.on('connection', inc => {
+    if (conn) { inc.close(); return; }
+    pendingOpponent = inc;
+    document.getElementById('opponentId').textContent = inc.peer;
+    document.getElementById('overlay').style.display = document.getElementById('confirmModal').style.display = 'block';
     log('A challenger approaches...');
-  });
-
-  peer.on('error', (err) => {
-    console.error('Peer error:', err);
-    if (err.type === 'unavailable-id') {
-      alert('This room code is already taken! Choose another.');
-    } else if (err.type === 'network') {  // NEW: Common ICE fail
-      alert('Network error - check console for ICE details. Try refreshing.');
-    }
   });
 }
 
 function joinRoom() {
   roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-  if (!roomCode) return alert("Please enter a room code!");
-
-  peer = new Peer(undefined, {
-    host: '0.peerjs.com',
-    port: 443,
-    secure: true,
-    config: ICE_SERVERS,
-    iceTransportPolicy: 'all'  // NEW
-  });
-
-  peer.on('open', (myId) => {
-    console.log(`[GUEST] My Peer ID: ${myId}`);
+  if (!roomCode) return alert("Enter a room code!");
+  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS, iceTransportPolicy: 'all' });
+  peer.on('open', () => {
     conn = peer.connect(roomCode, { reliable: true });
     setupConnectionEvents(conn);
-    log('Trying to join room ' + roomCode + '...');
-  });
-
-  peer.on('error', (err) => {
-    console.error('Peer error:', err);
-    if (err.type === 'network') {  // NEW
-      alert('Connection failed - ICE negotiation issue. Check console.');
-    } else {
-      alert('Failed to connect. Room may not exist or connection blocked.');
-    }
+    log('Joining room ' + roomCode + '...');
   });
 }
-// =============== ACCEPT / REJECT ===============
-function acceptOpponent() {
-  conn = pendingOpponent;
-  pendingOpponent = null;
-  hideModal();
-  setupConnectionEvents(conn);
-  conn.send({ type: 'accepted' }); // Tell guest they are in
-  console.log('[HOST] Sent "accepted" message');  // NEW
-  startTeamSelection();
-  log('Opponent accepted! Choose your Pokémon.');
-}
 
-function rejectOpponent() {
-  if (pendingOpponent) pendingOpponent.close();
-  pendingOpponent = null;
-  hideModal();
-  log('Challenger rejected.');
-}
+function acceptOpponent() { conn = pendingOpponent; pendingOpponent = null; hideModal(); setupConnectionEvents(conn); conn.send({ type: 'accepted' }); startTeamSelection(); log('Opponent accepted! Choose your Pokémon.'); }
+function rejectOpponent() { if (pendingOpponent) pendingOpponent.close(); pendingOpponent = null; hideModal(); log('Challenger rejected.'); }
+function hideModal() { document.getElementById('overlay').style.display = document.getElementById('confirmModal').style.display = 'none'; }
 
-function hideModal() {
-  document.getElementById('overlay').style.display = 'none';
-  document.getElementById('confirmModal').style.display = 'none';
-}
-
-// =============== CONNECTION SETUP ===============
-function setupConnectionEvents(connection) {
-  conn = connection;
-
-  conn.on('open', () => {
-    console.log('Data connection open');
-  });
-
-  conn.on('data', (data) => {
-    if (data.type === 'accepted') {
-      // Guest receives acceptance from host
-      log('Host accepted! Choose your Pokémon.');
-      startTeamSelection();
-    }
+function setupConnectionEvents(c) {
+  conn = c;
+  conn.on('data', data => {
+    if (data.type === 'accepted') { log('Host accepted!'); startTeamSelection(); }
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
       document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
@@ -275,37 +311,17 @@ function setupConnectionEvents(connection) {
       document.getElementById('oppoHpText').textContent = '100/100 HP';
       document.getElementById('oppoHpFill').style.width = '100%';
       log(`Opponent sent out ${opponentPokemon.name.toUpperCase()}!`);
-
-      if (myPokemon && !bothReady) {
-        bothReady = true;
-        startBattle();
-      }
+      if (myPokemon && !bothReady) { bothReady = true; startBattle(); }
     }
-    else if (data.type === 'attack') {
-      receiveAttack(data.damage);
-    }
+    else if (data.type === 'attack') receiveAttack(data.damage);
     else if (data.type === 'turn') {
-      turnDecided = true;
-      myTurn = !data.first;
-      
-      if (myTurn) {
-        log('<span style="color:#4caf50">You go first!</span>');
-        showAttackButton();
-      } else {
-        log('<span style="color:#f44336">Opponent goes first...</span>');
-      }
+      turnDecided = true; myTurn = !data.first;
+      myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
     }
   });
-
-  conn.on('close', () => {
-    turnDecided = false;
-    log('<span style="color:#f44336">Opponent disconnected!</span>');
-    alert('Opponent left the battle.');
-    location.reload();
-  });
+  conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left.'); location.reload(); });
 }
 
-// =============== TEAM SELECTION ===============
 function startTeamSelection() {
   document.getElementById('roomSetup').style.display = 'none';
   document.getElementById('teamSelect').style.display = 'block';
@@ -313,117 +329,72 @@ function startTeamSelection() {
 }
 
 function loadTeamSelect() {
-  const grid = document.getElementById('teamGrid');
-  grid.innerHTML = '';
-
+  const grid = document.getElementById('teamGrid'); grid.innerHTML = '';
   if (ownedLocal.length === 0) {
     grid.innerHTML = '<p style="grid-column:1/-1;color:#ffcb05;font-size:1.5rem">No Pokémon owned!<br>Visit the shop first!</p>';
     return;
   }
-
   ownedLocal.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'team-card';
+    const card = document.createElement('div'); card.className = 'team-card';
     card.innerHTML = `<img src="${img(p.id)}"><br><b>${p.name.toUpperCase()}</b>`;
     card.onclick = () => {
       document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      myPokemon = p;
+      card.classList.add('selected'); myPokemon = p;
       document.getElementById('readyBtn').disabled = false;
     };
     grid.appendChild(card);
   });
-
   document.getElementById('readyBtn').onclick = () => {
     if (!myPokemon) return;
-
-    // Show own Pokémon (back sprite for player)
     document.getElementById('playerImg').src = backImg(myPokemon.id) || img(myPokemon.id);
     document.getElementById('playerName').textContent = myPokemon.name.toUpperCase();
     document.getElementById('playerHpText').textContent = '100/100 HP';
     document.getElementById('playerHpFill').style.width = '100%';
-
-    // Hide team select, show battle area
     document.getElementById('teamSelect').style.display = 'none';
-    document.getElementById('battleArea').style.display = 'grid';
-
-    // Send Pokémon to opponent
+    document.getElementById('battleArea').style.display = 'block';
     conn.send({ type: 'pokemon', poke: myPokemon });
-
     log(`You sent out ${myPokemon.name.toUpperCase()}!`);
-
-    // If opponent already chose, start battle immediately
-    if (opponentPokemon) {
-      bothReady = true;
-      startBattle();
-    }
+    if (opponentPokemon) { bothReady = true; startBattle(); }
   };
 }
 
-// =============== BATTLE START ===============
 function startBattle() {
-  if (document.getElementById('battleArea').style.display !== 'grid') return;
-
-  log('<b style="color:#ffcb05;font-size:1.8rem">⚔ BATTLE START! ⚔</b>');
-
-  // Only the host decides who goes first (once)
+  if (document.getElementById('battleArea').style.display !== 'block') return;
+  log('<b style="color:#ffcb05;font-size:1.8rem">BATTLE START!</b>');
   if (isHost && !turnDecided) {
-    turnDecided = true;
-    myTurn = Math.random() < 0.5;
-    // Tell the guest who starts
+    turnDecided = true; myTurn = Math.random() < 0.5;
     conn.send({ type: 'turn', first: myTurn });
-    
-    if (myTurn) {
-      log('<span style="color:#4caf50">You go first!</span>');
-      showAttackButton();
-    } else {
-      log('<span style="color:#f44336">Opponent goes first...</span>');
-    }
+    myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
   }
 }
 
 function showAttackButton() {
   if (!myTurn || !conn) return;
-  document.getElementById('playerActions').innerHTML = 
-    '<button onclick="attack()" style="font-size:2.5rem;padding:40px 80px;">ATTACK!</button>';
+  document.getElementById('playerActions').innerHTML = `<button class="attack-btn" onclick="attack()">ATTACK!</button>`;
 }
 
-// =============== ATTACK ===============
 function attack() {
   if (!myTurn || !conn) return;
-
-  const damage = 25 + Math.floor(Math.random() * 30); // 25–55 damage
+  const damage = 25 + Math.floor(Math.random() * 30);
   conn.send({ type: 'attack', damage });
   log(`You used Attack! Dealt <b style="color:#ff4444">${damage}</b> damage!`);
-
-  // Visual feedback on opponent's HP (optimistic)
-  let current = parseInt(document.getElementById('oppoHpText').textContent);
-  let newHp = Math.max(0, current - damage);
-  document.getElementById('oppoHpFill').style.width = newHp + '%';
-  document.getElementById('oppoHpText').textContent = newHp + '/100 HP';
-
-  document.getElementById('playerActions').innerHTML = '<p style="font-size:1.5rem;color:#aaa">Waiting for opponent...</p>';
-
-  if (newHp <= 0) {
-    setTimeout(() => alert('🎉 YOU WIN! 🎉'), 800);
-  }
+  let hp = parseInt(document.getElementById('oppoHpText').textContent);
+  hp = Math.max(0, hp - damage);
+  document.getElementById('oppoHpFill').style.width = hp + '%';
+  document.getElementById('oppoHpText').textContent = hp + '/100 HP';
+  document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting for opponent...</div>';
+  if (hp <= 0) setTimeout(() => alert('YOU WIN!'), 800);
   myTurn = false;
 }
 
 function receiveAttack(damage) {
   log(`Opponent used Attack! Took <b style="color:#ff4444">${damage}</b> damage!`);
-
-  let current = parseInt(document.getElementById('playerHpText').textContent);
-  let newHp = Math.max(0, current - damage);
-  document.getElementById('playerHpFill').style.width = newHp + '%';
-  document.getElementById('playerHpText').textContent = newHp + '/100 HP';
-
-  if (newHp <= 0) {
-    setTimeout(() => alert('😭 You lost the battle...'), 800);
-  } else {
-    myTurn = true;
-    showAttackButton();
-  }
+  let hp = parseInt(document.getElementById('playerHpText').textContent);
+  hp = Math.max(0, hp - damage);
+  document.getElementById('playerHpFill').style.width = hp + '%';
+  document.getElementById('playerHpText').textContent = hp + '/100 HP';
+  if (hp <= 0) setTimeout(() => alert('You lost the battle...'), 800);
+  else { myTurn = true; showAttackButton(); }
 }
 </script>
 </body>
