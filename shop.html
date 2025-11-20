@@ -745,7 +745,7 @@ function renderTxHistory() {
               <div class="tx-pokemon-name">${tx.pokeName} #${String(tx.pokeId).padStart(3,'0')}</div>
               <img src="${img}" data-gif="${gif}" class="tx-pokemon-img"
                    onmouseenter="this.src=this.dataset.gif" 
-                   onmouseleave="this.src='${img}'">
+                   >
             ` : ''}
 
             <div class="tx-detail-row">
