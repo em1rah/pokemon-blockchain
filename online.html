@@ -11,20 +11,23 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+   
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
     .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .sidebar .brand h1{font-family:'Press Start 2P';color:#ffcb05;font-size:1.1rem}
-    .menu a{display:block;color:#ffcb05;padding:12px 16px;text-decoration:none;font-weight:700;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin:8px 12px;transition:.2s}
-    .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(6px)}
-    .menu a.active{background:#f17025;color:#fff}
+    .sidebar .brand h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;margin:0}
+    .menu{padding:12px}
+    .menu a{display:block;color:#ffcb05;text-decoration:none;font-weight:700;padding:10px 12px;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin-bottom:10px;transition:.2s}
+    .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(4px)}
     .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
-    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;background:#333;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
     .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
-    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem}
-    .connect-btn{background:#4caf50;color:#fff}
-    .connect-btn:hover{background:#45a049;transform:translateY(-1px)}
-    .logout-btn{background:#f44336;color:#fff;display:none}
-    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px)}
+    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem;}
+    .connect-btn{background:#4caf50;color:#fff;}
+    .connect-btn:hover{background:#45a049;transform:translateY(-1px);}
+    .logout-btn{background:#f44336;color:#fff;display:none;}
+    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px);}
+
     .container{margin-left:240px;padding:2rem;text-align:center}
     .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.5rem;margin:1rem 0;text-shadow:0 0 25px #ffcb05}
     .room-setup{max-width:500px;margin:3rem auto;padding:2.5rem;background:rgba(255,203,5,0.1);border:3px solid #ffcb05;border-radius:16px}
@@ -59,10 +62,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Arena</h1></div>
     <div class="menu">
-       <a href="home.html">Home</a>
-       <a href="shop.html">Marketplace</a>
-       <a href="arena.html">Game Play</a>
-       <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">Online Play</a>
+       <a href="home.html">🏠 Home</a>
+        <a href="shop.html" >🛒 Marketplace</a>
+      <a href="arena.html">⚔ Game Play</a>
+      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">⚔ Online Play</a>
     </div>
     <div class="status">
       <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
@@ -351,7 +354,7 @@ function setupConnEvents(c) {
   conn.on('data', async data => {
     if (data.type === 'wallet') {
       opponentAddress = data.address;
-      log('Opponent wallet received ✓');
+      // log('Opponent wallet received ✓');
     }
     else if (data.type === 'accepted') startTeamSelection();
     else if (data.type === 'pokemon') {
