@@ -45,16 +45,77 @@
     .pokemon-front img{width:240px;height:240px;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.6))}
     .hp-box{font-family:'Press Start 2P';font-size:0.95rem}
     .hp-bar-small{height:22px;background:#222;border:3px solid #fff;border-radius:10px;overflow:hidden;margin:8px 0}
-    .hp-fill-small{height:100%;width:100%;background:linear-gradient(90deg,#92d04b,#4caf50);transition:width 0.8s ease}
+    .hp-fill-small{height:100%;background:linear-gradient(90deg,#92d04b,#4caf50);transition:width 1s ease}
     .hp-fill-small.warning{background:#ff9800}
     .hp-fill-small.danger{background:#ff4444}
     #playerActions{position:absolute;bottom:60px;right:80px;z-index:10}
-    .attack-btn{padding:15px 30px;font-family:'Press Start 2P';font-size:20px;background:linear-gradient(135deg,#ff1744,#c62828);color:white;border:2px solid #ffcb05;border-radius:24px;cursor:pointer;box-shadow:0 12px 35px rgba(255,23,68,0.8);text-transform:uppercase;letter-spacing:4px;transition:all 0.25s}
-    .attack-btn:hover{transform:translateY(-8px);box-shadow:0 25px 50px rgba(255,23,68,1)}
+    .attack-btn{padding:18px 40px;font-family:'Press Start 2P';font-size:22px;background:linear-gradient(135deg,#ff1744,#c62828);color:white;border:3px solid #ffcb05;border-radius:30px;cursor:pointer;box-shadow:0 15px 40px rgba(255,23,68,0.8);text-transform:uppercase;letter-spacing:5px;transition:all 0.3s}
+    .attack-btn:hover{transform:translateY(-10px) scale(1.05);box-shadow:0 30px 60px rgba(255,23,68,1)}
     .log{background:rgba(0,0,0,0.9);border:4px solid #ffcb05;border-radius:16px;padding:1.5rem;height:180px;overflow-y:auto;margin:20px auto;max-width:1000px;font-size:1.1rem;line-height:1.9;font-family:'Courier New',monospace;color:#ffcb05}
     .overlay,.confirm-modal{display:none;position:fixed;z-index:9999}
     .overlay{inset:0;background:rgba(0,0,0,0.8);z-index:9998}
     .confirm-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
+
+    /* ==================== REALISTIC ATTACK ANIMATIONS ==================== */
+    .attack-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 16;
+    }
+    .beam-line {
+      position: absolute;
+      height: 8px;
+      background: linear-gradient(90deg, transparent, #fff, #ffeb3b, transparent);
+      box-shadow: 0 0 30px #ffeb3b, 0 0 60px #fff;
+      opacity: 0;
+    }
+    .fire-explosion {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, #ff4500 10%, #ff8c00 40%, transparent 70%);
+      border-radius: 50%;
+      opacity: 0;
+    }
+    .lightning-bolt {
+      position: absolute;
+      width: 10px;
+      background: #ffeb3b;
+      box-shadow: 0 0 25px #ffeb3b, 0 0 50px #fff;
+      transform-origin: top center;
+      opacity: 0;
+    }
+    .water-wave {
+      position: absolute;
+      height: 24px;
+      background: linear-gradient(90deg, #00b7eb, #1e90ff, #00b7eb);
+      border-radius: 50%;
+      opacity: 0;
+      filter: blur(3px);
+    }
+    .hit-flash {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, white 15%, transparent 60%);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      10%,30%,50%,70%,90% { transform: translateX(-10px); }
+      20%,40%,60%,80% { transform: translateX(10px); }
+    }
+    .shake { animation: shake 0.5s; }
+    @keyframes dodgeJump {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-80px); }
+      100% { transform: translateY(0); }
+    }
+    .dodge-jump { animation: dodgeJump 0.7s ease-in-out; }
   </style>
 </head>
 <body>
@@ -62,10 +123,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Arena</h1></div>
     <div class="menu">
-       <a href="home.html">🏠 Home</a>
-        <a href="shop.html" >🛒 Marketplace</a>
-      <a href="arena.html">⚔ Game Play</a>
-      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">⚔ Online Play</a>
+       <a href="home.html">Home</a>
+       <a href="shop.html" >Marketplace</a>
+      <a href="arena.html">Game Play</a>
+      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">Online Play</a>
     </div>
     <div class="status">
       <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
@@ -95,6 +156,8 @@
     </div>
 
     <div id="battleArea" class="battle-area" style="display:none">
+      <div id="attackContainer" class="attack-container"></div>
+
       <div style="position:absolute;bottom:70px;left:70px">
         <h2 class="player" style="color:orange">YOU</h2>
         <div class="player-base" style="bottom:-40px">
@@ -197,7 +260,6 @@ async function updateTokenBalance() {
   }
 }
 
-// Keep sending our wallet address every 2 seconds
 setInterval(() => {
   if (conn && conn.open && userAddress) {
     conn.send({ type: 'wallet', address: userAddress });
@@ -211,7 +273,7 @@ async function payToWinner(winnerAddress) {
     return;
   }
   if (!winnerAddress || winnerAddress.length !== 42) {
-    log('<span style="color:#ff9800">Waiting for opponent wallet address...</span>');
+    log('<span style="color:#ff9800">Waiting for opponent wallet...</span>');
     return;
   }
 
@@ -221,69 +283,127 @@ async function payToWinner(winnerAddress) {
   try {
     const balance = await tokenContract.balanceOf(userAddress);
     if (balance.lt(amount)) {
-      log('<span style="color:#ff4444">✦ Not enough TOKEN to pay prize!</span>');
+      log('<span style="color:#ff4444">Not enough TOKEN!</span>');
       return;
     }
 
     log('Sending 500 TOKEN to winner...');
     const tx = await tokenContract.transfer(winnerAddress, amount);
-    log('Transaction sent, waiting confirmation...');
+    log('Transaction sent...');
     await tx.wait();
     await updateTokenBalance();
-    log('<span style="color:#ff4444;font-size:1.8rem">✦ -500 TOKEN PAID TO WINNER!</span>');
+    log('<span style="color:#4caf50;font-size:1.8rem">500 TOKEN PAID!</span>');
   } catch (err) {
-    console.error(err);
-    log('<span style="color:#ff4444">Payment failed or rejected</span>');
+    log('<span style="color:#ff4444">Payment failed</span>');
   }
 }
 
-// ==================== BATTLE LOG & ANIMATIONS ====================
+// ==================== LOG ====================
 function log(msg) {
   const el = document.getElementById('battleLog');
   el.innerHTML += `<div>${msg}</div>`;
   el.scrollTop = el.scrollHeight;
 }
 
-const ATTACK_TYPES = [
-  { name: "FIRE BLAST", color: "#ff4400", emoji: "🔥", particles: 28 },
-  { name: "THUNDERBOLT", color: "#ffdd00", emoji: "⚡", particles: 22 },
-  { name: "HYDRO PUMP", color: "#00aaff", emoji: "💧", particles: 32 },
-  { name: "HYPER BEAM", color: "#ff00ff", emoji: "💥", particles: 38 },
+// ==================== REALISTIC ATTACKS ====================
+const ATTACKS = [
+  { name: "FIRE BLAST", type: "fire" },
+  { name: "THUNDERBOLT", type: "lightning" },
+  { name: "HYDRO PUMP", type: "water" }
 ];
 
-function playAttackAnimation(isPlayer) {
-  const arena = document.getElementById('battleArea');
-  const effect = document.createElement('div');
-  effect.style.position = 'absolute'; effect.style.pointerEvents = 'none'; effect.style.inset = '0'; effect.style.zIndex = '15';
-  arena.appendChild(effect);
+function playAttackAnimation(isPlayer, isMiss = false) {
+  const container = document.getElementById('attackContainer');
+  const attacker = isPlayer ? document.getElementById('playerImg') : document.getElementById('oppoImg');
+  const target = isPlayer ? document.getElementById('oppoImg') : document.getElementById('playerImg');
+  const attackerRect = attacker.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
 
-  const attack = ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)];
+  const startX = attackerRect.left + attackerRect.width / 2 - containerRect.left;
+  const startY = attackerRect.top + attackerRect.height / 2 - containerRect.top;
+  let endX = targetRect.left + targetRect.width / 2 - containerRect.left;
+  let endY = targetRect.top + targetRect.height / 2 - containerRect.top;
 
-  for (let i = 0; i < attack.particles; i++) {
-    const p = document.createElement('div');
-    p.textContent = attack.emoji;
-    p.style.position = 'absolute';
-    p.style.fontSize = `${Math.random()*40+30}px`;
-    p.style.opacity = '0.9';
-    p.style.filter = `drop-shadow(0 0 15px ${attack.color})`;
+  const chosen = ATTACKS[Math.floor(Math.random() * ATTACKS.length)];
 
-    const startX = isPlayer ? Math.random()*350+50 : Math.random()*350+550;
-    const startY = isPlayer ? 400 + Math.random()*100 : Math.random()*200+50;
-    const endX = isPlayer ? Math.random()*350+550 : Math.random()*350+50;
-    const endY = isPlayer ? Math.random()*200+100 : 400 + Math.random()*100;
-
-    p.style.left = startX + 'px';
-    p.style.top = startY + 'px';
-    effect.appendChild(p);
-
-    p.animate([
-      { transform: `translate(0,0) rotate(0deg)`, opacity: 0.9 },
-      { transform: `translate(${endX-startX}px, ${endY-startY}px) rotate(${Math.random()*720-360}deg)`, opacity: 0 }
-    ], { duration: 700 + Math.random()*500, easing: 'cubic-bezier(0.2,0.6,0.8,1)' })
-      .onfinish = () => p.remove();
+  if (isMiss) {
+    target.classList.add('dodge-jump');
+    setTimeout(() => target.classList.remove('dodge-jump'), 800);
+    endX += (Math.random() > 0.5 ? 200 : -200);
+    endY -= 120;
   }
-  setTimeout(() => effect.remove(), 1600);
-  return attack.name;
+
+  // Fire Blast
+  if (chosen.type === "fire") {
+    const line = document.createElement('div');
+    line.className = 'beam-line';
+    line.style.left = startX + 'px';
+    line.style.top = startY + 'px';
+    line.style.width = Math.hypot(endX-startX, endY-startY) + 'px';
+    line.style.transform = `rotate(${Math.atan2(endY-startY, endX-startX)}rad)`;
+    container.appendChild(line);
+    line.animate([{ opacity: 0 }, { opacity: 1, offset: 0.2 }, { opacity: 0 }], { duration: 800 }).onfinish = () => line.remove();
+
+    if (!isMiss) {
+      setTimeout(() => {
+        const exp = document.createElement('div');
+        exp.className = 'fire-explosion';
+        exp.style.left = (endX - 70) + 'px';
+        exp.style.top = (endY - 70) + 'px';
+        container.appendChild(exp);
+        exp.animate([{ transform: 'scale(0)', opacity: 0.9 }, { transform: 'scale(2)', opacity: 0 }], { duration: 600 }).onfinish = () => exp.remove();
+      }, 600);
+    }
+  }
+
+  // Thunderbolt
+  if (chosen.type === "lightning") {
+    for (let i = 0; i < 9; i++) {
+      setTimeout(() => {
+        const bolt = document.createElement('div');
+        bolt.className = 'lightning-bolt';
+        bolt.style.left = startX + 'px';
+        bolt.style.top = startY + 'px';
+        bolt.style.height = Math.hypot(endX-startX, endY-startY) + 'px';
+        bolt.style.transform = `rotate(${Math.atan2(endY-startY, endX-startX) + (Math.random()-0.5)*0.4}rad)`;
+        container.appendChild(bolt);
+        bolt.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: i*70 }).onfinish = () => bolt.remove();
+      }, i*90);
+    }
+  }
+
+  // Hydro Pump
+  if (chosen.type === "water") {
+    for (let i = 0; i < 14; i++) {
+      const wave = document.createElement('div');
+      wave.className = 'water-wave';
+      wave.style.left = startX + 'px';
+      wave.style.top = startY + 'px';
+      wave.style.width = (60 + i*25) + 'px';
+      container.appendChild(wave);
+      wave.animate([
+        { transform: 'translate(0,0) scale(0.2)', opacity: 0.9 },
+        { transform: `translate(${endX-startX}px, ${endY-startY}px) scale(1.6)`, opacity: 0 }
+      ], { duration: 900, delay: i*70 }).onfinish = () => wave.remove();
+    }
+  }
+
+  // Hit effect + shake
+  if (!isMiss) {
+    setTimeout(() => {
+      const flash = document.createElement('div');
+      flash.className = 'hit-flash';
+      flash.style.left = (endX - 110) + 'px';
+      flash.style.top = (endY - 110) + 'px';
+      container.appendChild(flash);
+      flash.animate([{ opacity: 0 }, { opacity: 0.8 }, { opacity: 0 }], { duration: 400 }).onfinish = () => flash.remove();
+      document.getElementById('battleArea').classList.add('shake');
+      setTimeout(() => document.getElementById('battleArea').classList.remove('shake'), 600);
+    }, 600);
+  }
+
+  return chosen.name;
 }
 
 // ==================== POKEMON HELPERS ====================
@@ -292,12 +412,9 @@ function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/mas
 function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
 function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
 
-// ==================== PEERJS ROOM SYSTEM ====================
+// ==================== PEERJS ROOM SYSTEM ==================== (unchanged, only minor fixes)
 function createRoom() {
-  if (!userAddress) {
-    alert("⚠️ Please connect your wallet first!");
-    return;
-  }
+  if (!userAddress) return alert("Connect wallet first!");
   const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!code) return;
   isHost = true;
@@ -306,10 +423,7 @@ function createRoom() {
 }
 
 function joinRoom() {
-  if (!userAddress) {
-    alert("⚠️ Please connect your wallet first!");
-    return;
-  }
+  if (!userAddress) return alert("Connect wallet first!");
   const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!code) return alert("Enter a room code!");
   peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true });
@@ -323,7 +437,7 @@ function joinRoom() {
 
 function setupPeerEvents() {
   peer.on('open', id => {
-    document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${id}</b><br>Waiting for opponent...`;
+    document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${id}</b><br>Waiting...`;
     log(`Room ${id} ready`);
   });
 
@@ -360,10 +474,7 @@ function setupConnEvents(c) {
   conn.on('open', () => log('Connected!'));
 
   conn.on('data', async data => {
-    if (data.type === 'wallet') {
-      opponentAddress = data.address;
-      // log('Opponent wallet received ✓');
-    }
+    if (data.type === 'wallet') opponentAddress = data.address;
     else if (data.type === 'accepted') startTeamSelection();
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
@@ -380,26 +491,24 @@ function setupConnEvents(c) {
       myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">Your turn first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
     }
-    // Opponent tells us they won → we pay them
     else if (data.type === 'victory') {
-      log('<span style="color:#f44336;font-size:2.2rem">● YOU LOST!</span>');
+      log('<span style="color:#f44336;font-size:2.4rem">YOU LOST!</span>');
       setTimeout(() => payToWinner(opponentAddress), 1500);
     }
-    // Opponent tells us they lost → we receive prize
     else if (data.type === 'defeat') {
-      log('<span style="color:#4caf50;font-size:2.2rem">★ VICTORY! +500 TOKEN ★</span>');
-      setTimeout(updateTokenBalance, 4000); // wait for tx
+      log('<span style="color:#4caf50;font-size:2.4rem">VICTORY! +500 TOKEN</span>');
+      setTimeout(updateTokenBalance, 4000);
     }
   });
 
   conn.on('close', () => {
     log('<span style="color:#f44336">Opponent disconnected!</span>');
-    alert('Opponent left the battle');
+    alert('Opponent left');
     location.reload();
   });
 }
 
-// ==================== TEAM SELECTION ====================
+// ==================== TEAM SELECTION & BATTLE START ====================
 function startTeamSelection() {
   document.getElementById('roomSetup').style.display = 'none';
   document.getElementById('teamSelect').style.display = 'block';
@@ -440,7 +549,6 @@ function loadTeamSelect() {
   };
 }
 
-// ==================== BATTLE START & TURNS ====================
 function startBattle() {
   log('<b style="color:#ffcb05;font-size:1.8rem">BATTLE START!</b>');
   if (isHost && !turnDecided) {
@@ -456,24 +564,26 @@ function showAttackButton() {
   document.getElementById('playerActions').innerHTML = `<button class="attack-btn" onclick="attack()">ATTACK!</button>`;
 }
 
-// ==================== ATTACK & WIN/LOSE ====================
+// ==================== DAMAGE 15–20 + NEW ANIMATIONS ====================
 function attack() {
   if (!myTurn || !conn) return;
 
-  // 20% miss chance
-  if (Math.random() < 0.2) {
+  const isMiss = Math.random() < 0.2;
+  if (isMiss) {
     conn.send({ type: 'attack', damage: 0, missed: true });
-    playAttackAnimation(true);
-    log(`<span style="color:#888"><b>MISSED!</b></span>`);
-    document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
+    playAttackAnimation(true, true);
+    log(`<span style="color:#aaa"><b>MISS!</b> ${opponentPokemon?.name || 'Opponent'} dodged!</span>`);
+    document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
     myTurn = false;
     return;
   }
 
-  const damage = 25 + Math.floor(Math.random() * 30);
-  const move = playAttackAnimation(true);
-  conn.send({ type: 'attack', damage, moveName: move });
-  log(`You used <b style="color:#ffcb05">${move}</b>! Dealt <b style="color:#ff4444">${damage}</b> dmg!`);
+  const damage = 15 + Math.floor(Math.random() * 6); // 15–20 damage
+  const moveName = playAttackAnimation(true, false);
+
+  conn.send({ type: 'attack', damage, moveName });
+
+  log(`You used <b style="color:#ffeb3b">${moveName}</b>! Dealt <b style="color:#ff4444">${damage} damage</b>!`);
 
   let oppHp = parseInt(document.getElementById('oppoHpText').textContent);
   oppHp = Math.max(0, oppHp - damage);
@@ -482,12 +592,12 @@ function attack() {
   document.getElementById('oppoHpFill').classList.toggle('warning', oppHp <=50);
   document.getElementById('oppoHpFill').classList.toggle('danger', oppHp <=20);
 
-  document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
+  document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
 
   if (oppHp <= 0) {
     setTimeout(() => {
-      log('<span style="color:#4caf50;font-size:2.2rem">★ YOU WIN! ★</span>');
-      conn.send({ type: 'victory' }); // opponent will pay you
+      log('<span style="color:#4caf50;font-size:2.4rem">VICTORY! +500 TOKEN</span>');
+      conn.send({ type: 'victory' });
     }, 1200);
   }
   myTurn = false;
@@ -495,16 +605,16 @@ function attack() {
 
 function receiveAttack(data) {
   if (data.missed) {
-    log(`<span style="color:#888">Opponent attack <b>MISSED!</b></span>`);
-    playAttackAnimation(false);
+    log(`<span style="color:#aaa"><b>MISS!</b> You dodged the attack!</span>`);
+    playAttackAnimation(false, true);
     myTurn = true;
     showAttackButton();
     return;
   }
 
   const moveName = data.moveName || "Attack";
-  playAttackAnimation(false);
-  log(`Opponent used <b style="color:#ffcb05">${moveName}</b>! Took <b style="color:#ff4444">${data.damage}</b> dmg!`);
+  playAttackAnimation(false, false);
+  log(`Opponent used <b style="color:#ffeb3b">${moveName}</b>! Took <b style="color:#ff4444">${data.damage} damage</b>!`);
 
   let myHp = parseInt(document.getElementById('playerHpText').textContent);
   myHp = Math.max(0, myHp - data.damage);
@@ -516,15 +626,14 @@ function receiveAttack(data) {
 
   if (myHp <= 0) {
     setTimeout(() => {
-      log('<span style="color:#f44336;font-size:2.2rem">● YOU FAINTED...</span>');
-      conn.send({ type: 'defeat' }); // you pay opponent
+      log('<span style="color:#f44336;font-size:2.4rem">YOU FAINTED...</span>');
+      conn.send({ type: 'defeat' });
     }, 1200);
   } else {
     myTurn = true;
     showAttackButton();
   }
 }
-
 
 </script>
 </body>
