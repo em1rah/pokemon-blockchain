@@ -104,7 +104,7 @@
     </div>
     <div class="status">
       <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
-      <span class="coins" id="coinDisplay">Loading...</span>
+      <span class="coins" id="coinDisplay">1500 Coins</span>
       <span class="free-balance" id="tokenDisplay">Loading...</span>
       <span class="wallet" id="walletDisplay"></span>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
@@ -161,12 +161,6 @@
   </div>
 
   <div class="overlay" id="overlay"></div>
-  <div class="insufficient-modal" id="insufficientModal">
-    <h2 style="color:#ff4444">Insufficient Balance!</h2>
-    <p>You need at least <b>500 Coins</b> to enter a ranked battle.</p>
-    <button style="background:#ff9800;padding:14px 30px;margin:10px;font-size:1.3rem;border-radius:12px" onclick="document.getElementById('insufficientModal').style.display='none';document.getElementById('overlay').style.display='none';">OK</button>
-  </div>
-
   <div class="confirm-modal" id="confirmModal">
     <h2 style="color:#ffcb05">Opponent Wants to Battle!</h2>
     <p>Player ID:</p>
@@ -186,20 +180,13 @@ const ERC20_ABI = [
 ];
 
 let provider, signer, tokenContract, userAddress = null;
-let coins = parseInt(localStorage.getItem('coins') || '1500');
 let tokens = 0;
+let opponentAddress = null; // Will store opponent's wallet
 
-const coinDisplay = document.getElementById('coinDisplay');
 const tokenDisplay = document.getElementById('tokenDisplay');
 const walletDisplay = document.getElementById('walletDisplay');
 const connectBtn = document.getElementById('connectBtn');
 const logoutBtn = document.getElementById('logoutBtn');
-
-function updateDisplays() {
-  coinDisplay.textContent = `${coins} Coins`;
-  tokenDisplay.textContent = tokens !== null ? `${tokens} TOKEN` : 'Loading...';
-  localStorage.setItem('coins', coins);
-}
 
 async function updateTokenBalance() {
   if (!tokenContract || !userAddress) return;
@@ -242,60 +229,37 @@ connectBtn.onclick = async () => {
 
 logoutBtn.onclick = () => location.reload();
 
-// ==================== TOKEN REWARD / PENALTY SYSTEM ====================
-async function rewardWinner() {
-  log('<span style="color:#ffd700;font-size:1.8rem">✦ VICTORY! +500 TOKEN!</span>');
-  if (!tokenContract) return alert("Wallet not connected – reward later.");
-
-  try {
-    // NOTE: In production, replace this with a call to your reward contract
-    const tx = await tokenContract.transfer(userAddress, ethers.utils.parseUnits("500", await tokenContract.decimals()));
-    log('Claiming 500 TOKEN reward...');
-    await tx.wait();
-    await updateTokenBalance();
-    log('<span style="color:#4caf50">✓ +500 TOKEN received!</span>');
-  } catch (e) {
-    console.error(e);
-    log('<span style="color:#ff9800">Reward failed – claim manually later</span>');
-  }
-}
-
-async function penalizeLoser() {
-  log('<span style="color:#ff4444;font-size:1.8rem">✦ DEFEAT! -300 TOKEN</span>');
-  if (!tokenContract) return;
-
-  const decimals = await tokenContract.decimals();
-  const bal = await tokenContract.balanceOf(userAddress);
-  if (bal.lt(ethers.utils.parseUnits("300", decimals))) {
-    log('<span style="color:#ff9800">Not enough TOKEN for penalty</span>');
-    return;
-  }
-
-  try {
-    const TREASURY_OR_BURN = "0x000000000000000000000000000000000000dEaD"; // Change to your treasury if needed
-    const tx = await tokenContract.transfer(TREASURY_OR_BURN, ethers.utils.parseUnits("300", decimals));
-    log('Paying 300 TOKEN penalty...');
-    await tx.wait();
-    await updateTokenBalance();
-    log('<span style="color:#ff4444">✓ -300 TOKEN deducted</span>');
-  } catch (e) {
-    console.error(e);
-    log('<span style="color:#ff9800">Penalty failed</span>');
-  }
-}
-
-function canEnterBattle() {
-  if (coins < 500) {
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('insufficientModal').style.display = 'block';
+// ==================== LOSER PAYS 500 TOKEN TO WINNER ====================
+async function payToWinner(winnerAddr) {
+  if (!tokenContract || !userAddress) {
+    log('<span style="color:#ff4444">Wallet not connected – cannot send prize</span>');
     return false;
   }
-  return true;
+
+  const decimals = await tokenContract.decimals();
+  const amount = ethers.utils.parseUnits("500", decimals);
+
+  try {
+    const bal = await tokenContract.balanceOf(userAddress);
+    if (bal.lt(amount)) {
+      log('<span style="color:#ff4444">✦ Not enough TOKEN to pay 500 prize!</span>');
+      return false;
+    }
+
+    log('Sending 500 TOKEN to winner...');
+    const tx = await tokenContract.transfer(winnerAddr, amount);
+    await tx.wait();
+    await updateTokenBalance();
+    log('<span style="color:#ff4444;font-size:1.6rem">✦ -500 TOKEN sent to winner!</span>');
+    return true;
+  } catch (err) {
+    console.error(err);
+    log('<span style="color:#ff9800">Transaction failed or rejected</span>');
+    return false;
+  }
 }
 
-updateDisplays();
-
-// ==================== PEERJS & BATTLE LOGIC (unchanged except reward calls) ====================
+// ==================== PEERJS & BATTLE LOGIC ====================
 const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
@@ -352,7 +316,6 @@ let turnDecided = false, peer = null, conn = null, roomCode = null, isHost = fal
 let myPokemon = null, opponentPokemon = null, myTurn = false, pendingOpponent = null, bothReady = false;
 
 function createRoom() {
-  if (!canEnterBattle()) return;
   roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!roomCode) return;
   isHost = true;
@@ -371,7 +334,6 @@ function createRoom() {
 }
 
 function joinRoom() {
-  if (!canEnterBattle()) return;
   roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!roomCode) return alert("Enter a room code!");
   peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS });
@@ -388,8 +350,17 @@ function hideModal() { document.getElementById('overlay').style.display = docume
 
 function setupConnectionEvents(c) {
   conn = c;
-  conn.on('data', data => {
-    if (data.type === 'accepted') { startTeamSelection(); }
+
+  conn.on('open', () => {
+    if (userAddress) conn.send({ type: 'wallet', address: userAddress });
+  });
+
+  conn.on('data', async data => {
+    if (data.type === 'wallet') {
+      opponentAddress = data.address;
+      log('Opponent wallet connected');
+    }
+    else if (data.type === 'accepted') { startTeamSelection(); }
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
       document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
@@ -404,9 +375,18 @@ function setupConnectionEvents(c) {
       turnDecided = true; myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
     }
-    else if (data.type === 'victory') { penalizeLoser(); setTimeout(() => alert('You lost! -300 TOKEN'), 1500); }
-    else if (data.type === 'defeat') { rewardWinner(); setTimeout(() => alert('YOU WIN! +500 TOKEN 🎉'), 1500); }
+    else if (data.type === 'victory') { // Opponent won → you pay
+      log('<span style="color:#f44336;font-size:2rem"><b>YOU LOST!</b></span>');
+      if (opponentAddress) await payToWinner(opponentAddress);
+      setTimeout(() => alert('You lost! 500 TOKEN sent to winner'), 2000);
+    }
+    else if (data.type === 'defeat') { // You won → opponent pays you
+      log('<span style="color:#4caf50;font-size:2rem"><b>YOU WIN! +500 TOKEN!</b></span>');
+      await updateTokenBalance();
+      setTimeout(() => alert('VICTORY! +500 TOKEN received! 🎉'), 2000);
+    }
   });
+
   conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left.'); location.reload(); });
 }
 
@@ -487,8 +467,7 @@ function attack() {
   if (hp <= 0) {
     setTimeout(() => {
       log('<span style="color:#4caf50;font-size:2rem"><b>YOU WIN!</b></span>');
-      conn.send({ type: 'victory' });
-      rewardWinner();
+      conn.send({ type: 'victory' }); // Tell opponent they lost → they will pay you
     }, 1200);
   }
   myTurn = false;
@@ -517,8 +496,7 @@ function receiveAttack(data) {
   if (hp <= 0) {
     setTimeout(() => {
       log('<span style="color:#f44336;font-size:2rem"><b>You fainted...</b></span>');
-      conn.send({ type: 'defeat' });
-      penalizeLoser();
+      conn.send({ type: 'defeat' }); // Tell opponent they won → you pay them
     }, 1200);
   } else {
     myTurn = true;
