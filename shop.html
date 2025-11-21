@@ -933,10 +933,8 @@ function renderTxHistory() {
   ];
 
   const rare = [
-
-  // === 20 NEW EPIC ONES!!! ===
-  {id:492,name:'Shaymin',price:6200,type:'Grass'},      // Sky/Land forme legend
-  {id:493,name:'Arceus',price:12000,type:'Normal'},    // God Pokémon (highest price!)
+  {id:492,name:'Shaymin',price:6200,type:'Grass'},     
+  {id:493,name:'Arceus',price:12000,type:'Normal'},   
   {id:494,name:'Victini',price:6500,type:'Psychic'},
   {id:638,name:'Cobalion',price:5800,type:'Steel'},
   {id:639,name:'Terrakion',price:5800,type:'Rock'},
@@ -944,16 +942,16 @@ function renderTxHistory() {
   {id:641,name:'Tornadus',price:5900,type:'Flying'},
   {id:642,name:'Thundurus',price:5900,type:'Electric'},
   {id:645,name:'Landorus',price:6200,type:'Ground'},
-  {id:646,name:'Kyurem',price:8800,type:'Dragon'},      // Black/White Kyurem
+  {id:646,name:'Kyurem',price:8800,type:'Dragon'},     
   {id:647,name:'Keldeo',price:6100,type:'Water'},
   {id:648,name:'Meloetta',price:6400,type:'Psychic'},
   {id:649,name:'Genesect',price:7200,type:'Bug'},
 
-    {id:643,name:'Reshiram',price:11800,type:'Dragon'},    // Fire mascot – stunning animation!
-  {id:644,name:'Zekrom',price:11800,type:'Dragon'},      // Electric mascot – lightning effects!
-  {id:489,name:'Phione',price:6800,type:'Water'},        // Cute mythical with full animation
-  {id:490,name:'Manaphy',price:8500,type:'Water'},       // Prince of the Sea
-  {id:495,name:'Celebi',price:8800,type:'Psychic'},      // Time travel legendary (Gen 2)
+    {id:643,name:'Reshiram',price:11800,type:'Dragon'},   
+  {id:644,name:'Zekrom',price:11800,type:'Dragon'},     
+  {id:489,name:'Phione',price:6800,type:'Water'},       
+  {id:490,name:'Manaphy',price:8500,type:'Water'},      
+  {id:495,name:'Celebi',price:8800,type:'Psychic'},     
 
   {id:385,name:'Jirachi',price:7800,type:'Steel'},
      {id:380,name:'Latias',price:5200,type:'Dragon'},
@@ -1301,7 +1299,7 @@ async function loadOwned() {
     loadAll();
   };
 
-// FIXED: All actions now pass pokeId + name correctly
+// All actions now pass pokeId + name correctly
   window.buyRare = async (id, name, price) => {
     if (!userAddress) return showError('Connect wallet');
     if (ownedLocal.some(o => o.id === id)) return showError('Already owned');
@@ -1406,7 +1404,7 @@ async function loadOwned() {
     starters: [...starters],
     common:   [...common],
     rare:     [...rare],
-    owned:    []   // will be filled after first load
+    owned:    []   
   };
 
   // Helper – compare function for sorting
