@@ -11,85 +11,47 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
-    
     .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
     .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
     .sidebar .brand h1{font-family:'Press Start 2P';color:#ffcb05;font-size:1.1rem}
     .menu a{display:block;color:#ffcb05;padding:12px 16px;text-decoration:none;font-weight:700;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin:8px 12px;transition:.2s}
     .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(6px)}
     .menu a.active{background:#f17025;color:#fff}
-
     .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
-    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center;background:#333}
-    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center;background:#333}
+    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;background:#333;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
     .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
-    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem;}
-    .connect-btn{background:#4caf50;color:#fff;}
-    .connect-btn:hover{background:#45a049;transform:translateY(-1px);}
-    .logout-btn{background:#f44336;color:#fff;display:none;}
-    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px);}
-
+    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem}
+    .connect-btn{background:#4caf50;color:#fff}
+    .connect-btn:hover{background:#45a049;transform:translateY(-1px)}
+    .logout-btn{background:#f44336;color:#fff;display:none}
+    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px)}
     .container{margin-left:240px;padding:2rem;text-align:center}
     .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.5rem;margin:1rem 0;text-shadow:0 0 25px #ffcb05}
-
     .room-setup{max-width:500px;margin:3rem auto;padding:2.5rem;background:rgba(255,203,5,0.1);border:3px solid #ffcb05;border-radius:16px}
     input{padding:14px;font-size:1.2rem;width:100%;margin:15px 0;border:2px solid #ffcb05;background:rgba(0,0,0,0.6);color:#fff;border-radius:12px}
     button{padding:16px 32px;font-size:1.3rem;margin:10px;border:none;border-radius:12px;background:linear-gradient(135deg,#ff9800,#e65100);color:#fff;font-weight:700;cursor:pointer}
-
     .team-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.5rem;max-width:900px;margin:2rem auto}
     .team-card{border:4px solid rgba(255,203,5,0.4);border-radius:16px;padding:15px;cursor:pointer;background:rgba(0,0,0,0.2);transition:.2s}
     .team-card:hover{border-color:#ffcb05;transform:scale(1.05)}
     .team-card.selected{border-color:#4caf50;background:rgba(76,175,80,0.4);box-shadow:0 0 30px rgba(76,175,80,0.6)}
     .team-card img{width:100%;height:150px;object-fit:contain}
-
-    .battle-area {
-      position: relative;
-      width: 1000px;
-      height: 560px;
-      margin: 40px auto;
-      background: url('/images/Screenshot 2025-11-20 210130.png') center/cover no-repeat;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 0 50px rgba(255,203,5,0.8);
-    }
-
-    .player-base { position: absolute; bottom: 80px; left: 80px; width: 300px; text-align: center; }
-    .pokemon-back img { width: 280px; height: 280px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
-
-    .opponent-base { position: absolute; top: 60px; right: 80px; width: 300px; text-align: center; }
-    .pokemon-front img { width: 240px; height: 240px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
-
-    .hp-box { font-family: 'Press Start 2P'; font-size: 0.95rem; }
-    .hp-bar-small { height: 22px; background: #222; border: 3px solid #fff; border-radius: 10px; overflow: hidden; margin: 8px 0; }
-    .hp-fill-small {
-      height: 100%; width: 100%; background: linear-gradient(90deg, #92d04b, #4caf50); transition: width 0.8s ease;
-    }
-    .hp-fill-small.warning { background: #ff9800; }
-    .hp-fill-small.danger { background: #ff4444; }
-
-    .player h2, .opponent h2 { font-family: 'Press Start 2P'; font-size: 1.7rem; margin-bottom: 6px; text-shadow: 3px 3px 0 #000; }
-    .player h2 { color: #4caf50; }
-    .opponent h2 { color: #f44336; }
-
-    #playerActions { position: absolute; bottom: 60px; right: 80px; z-index: 10; }
-    .attack-btn {
-      padding: 15px 30px; font-family: 'Press Start 2P', cursive; font-size: 20px;
-      background: linear-gradient(135deg, #ff1744, #c62828); color: white; border: 2px solid #ffcb05;
-      border-radius: 24px; cursor: pointer; box-shadow: 0 12px 35px rgba(255,23,68,0.8);
-      transition: all 0.25s; text-transform: uppercase; letter-spacing: 4px;
-    }
-    .attack-btn:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(255,23,68,1); }
-    .attack-btn:active { transform: translateY(4px); }
-
-    .log{
-      background:rgba(0,0,0,0.9);border:4px solid #ffcb05;border-radius:16px;
-      padding:1.5rem;height:180px;overflow-y:auto;margin:20px auto;max-width:1000px;
-      font-size:1.1rem;line-height:1.9;font-family:'Courier New',monospace;color:#ffcb05
-    }
-
-    .confirm-modal,.overlay,.insufficient-modal{display:none;position:fixed;z-index:9999}
-    .confirm-modal,.insufficient-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
+    .battle-area{position:relative;width:1000px;height:560px;margin:40px auto;background:url('/images/Screenshot 2025-11-20 210130.png') center/cover no-repeat;border-radius:20px;overflow:hidden;box-shadow:0 0 50px rgba(255,203,5,0.8)}
+    .player-base{position:absolute;bottom:80px;left:80px;width:300px;text-align:center}
+    .pokemon-back img{width:280px;height:280px;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.6))}
+    .opponent-base{position:absolute;top:60px;right:80px;width:300px;text-align:center}
+    .pokemon-front img{width:240px;height:240px;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.6))}
+    .hp-box{font-family:'Press Start 2P';font-size:0.95rem}
+    .hp-bar-small{height:22px;background:#222;border:3px solid #fff;border-radius:10px;overflow:hidden;margin:8px 0}
+    .hp-fill-small{height:100%;width:100%;background:linear-gradient(90deg,#92d04b,#4caf50);transition:width 0.8s ease}
+    .hp-fill-small.warning{background:#ff9800}
+    .hp-fill-small.danger{background:#ff4444}
+    #playerActions{position:absolute;bottom:60px;right:80px;z-index:10}
+    .attack-btn{padding:15px 30px;font-family:'Press Start 2P';font-size:20px;background:linear-gradient(135deg,#ff1744,#c62828);color:white;border:2px solid #ffcb05;border-radius:24px;cursor:pointer;box-shadow:0 12px 35px rgba(255,23,68,0.8);text-transform:uppercase;letter-spacing:4px;transition:all 0.25s}
+    .attack-btn:hover{transform:translateY(-8px);box-shadow:0 25px 50px rgba(255,23,68,1)}
+    .log{background:rgba(0,0,0,0.9);border:4px solid #ffcb05;border-radius:16px;padding:1.5rem;height:180px;overflow-y:auto;margin:20px auto;max-width:1000px;font-size:1.1rem;line-height:1.9;font-family:'Courier New',monospace;color:#ffcb05}
+    .overlay,.confirm-modal{display:none;position:fixed;z-index:9999}
     .overlay{inset:0;background:rgba(0,0,0,0.8);z-index:9998}
+    .confirm-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
   </style>
 </head>
 <body>
@@ -138,7 +100,7 @@
             <div class="hp-bar-small"><div class="hp-fill-small" id="playerHpFill"></div></div>
             <div id="playerHpText">100/100 HP</div>
           </div>
-           <img id="playerImg" class="pokemon-back" src="" alt="Your Pokémon" style="height:300px;width:300px">
+          <img id="playerImg" class="pokemon-back" src="" alt="Your Pokémon" style="height:300px;width:300px">
         </div>
       </div>
 
@@ -150,7 +112,7 @@
             <div class="hp-bar-small"><div class="hp-fill-small" id="oppoHpFill"></div></div>
             <div id="oppoHpText">100/100 HP</div>
           </div>
-           <img id="oppoImg" class="pokemon-front" src="" alt="Opponent" style="height:150px;width:150px">
+          <img id="oppoImg" class="pokemon-front" src="" alt="Opponent" style="height:150px;width:150px">
         </div>
       </div>
 
@@ -170,44 +132,36 @@
   </div>
 
 <script>
-// ==================== WALLET & TOKEN SYSTEM ====================
+// ==================== GLOBALS & WALLET ====================
 const TOKEN_ADDRESS = '0x614f35C48c780e637496B3F707c9373723689868';
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
-  "function symbol() view returns (string)",
   "function decimals() view returns (uint8)",
   "function transfer(address to, uint256 amount) returns (bool)"
 ];
 
 let provider, signer, tokenContract, userAddress = null;
-let tokens = 0;
-let opponentAddress = null; // Will store opponent's wallet
+let opponentAddress = null;
+let conn = null;
+let peer = null;
+let myPokemon = null, opponentPokemon = null, myTurn = false;
+let isHost = false, bothReady = false, turnDecided = false;
 
 const tokenDisplay = document.getElementById('tokenDisplay');
 const walletDisplay = document.getElementById('walletDisplay');
 const connectBtn = document.getElementById('connectBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 
-async function updateTokenBalance() {
-  if (!tokenContract || !userAddress) return;
-  try {
-    const bal = await tokenContract.balanceOf(userAddress);
-    const decimals = await tokenContract.decimals();
-    tokens = Math.floor(parseInt(bal.toString()) / (10 ** decimals));
-    tokenDisplay.textContent = `${tokens} TOKEN`;
-  } catch (e) {
-    console.error("Token balance error:", e);
-    tokenDisplay.textContent = 'Error';
-  }
-}
-
 // ==================== WALLET CONNECTION ====================
 connectBtn.onclick = async () => {
-  if (!window.ethereum) return alert('Please install MetaMask!');
+  if (!window.ethereum) return alert('Install MetaMask!');
 
   try {
     await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
-  } catch (e) { if (e.code === 4902) alert('Add Sepolia network'); return; }
+  } catch (e) {
+    if (e.code === 4902) alert('Add Sepolia network first');
+    return;
+  }
 
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -219,58 +173,72 @@ connectBtn.onclick = async () => {
     walletDisplay.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
     connectBtn.style.display = 'none';
     logoutBtn.style.display = 'inline-block';
-
     await updateTokenBalance();
     log('Wallet connected on Sepolia!');
   } catch (err) {
-    alert('Connection failed: ' + (err.message || err));
+    alert('Connection failed: ' + err.message);
   }
 };
 
 logoutBtn.onclick = () => location.reload();
 
-// ==================== LOSER PAYS 500 TOKEN TO WINNER ====================
-async function payToWinner(winnerAddr) {
+async function updateTokenBalance() {
+  if (!tokenContract || !userAddress) return;
+  try {
+    const bal = await tokenContract.balanceOf(userAddress);
+    const dec = await tokenContract.decimals();
+    const amount = Math.floor(Number(bal) / 10**dec);
+    tokenDisplay.textContent = `${amount} TOKEN`;
+  } catch (e) {
+    tokenDisplay.textContent = 'Error';
+  }
+}
+
+// Keep sending our wallet address every 2 seconds
+setInterval(() => {
+  if (conn && conn.open && userAddress) {
+    conn.send({ type: 'wallet', address: userAddress });
+  }
+}, 2000);
+
+// ==================== PAY 500 TOKEN TO WINNER ====================
+async function payToWinner(winnerAddress) {
   if (!tokenContract || !userAddress) {
-    log('<span style="color:#ff4444">Wallet not connected – cannot send prize</span>');
-    return false;
+    log('<span style="color:#ff4444">Wallet not connected</span>');
+    return;
+  }
+  if (!winnerAddress || winnerAddress.length !== 42) {
+    log('<span style="color:#ff9800">Waiting for opponent wallet address...</span>');
+    return;
   }
 
   const decimals = await tokenContract.decimals();
   const amount = ethers.utils.parseUnits("500", decimals);
 
   try {
-    const bal = await tokenContract.balanceOf(userAddress);
-    if (bal.lt(amount)) {
-      log('<span style="color:#ff4444">✦ Not enough TOKEN to pay 500 prize!</span>');
-      return false;
+    const balance = await tokenContract.balanceOf(userAddress);
+    if (balance.lt(amount)) {
+      log('<span style="color:#ff4444">✦ Not enough TOKEN to pay prize!</span>');
+      return;
     }
 
     log('Sending 500 TOKEN to winner...');
-    const tx = await tokenContract.transfer(winnerAddr, amount);
+    const tx = await tokenContract.transfer(winnerAddress, amount);
+    log('Transaction sent, waiting confirmation...');
     await tx.wait();
     await updateTokenBalance();
-    log('<span style="color:#ff4444;font-size:1.6rem">✦ -500 TOKEN sent to winner!</span>');
-    return true;
+    log('<span style="color:#ff4444;font-size:1.8rem">✦ -500 TOKEN PAID TO WINNER!</span>');
   } catch (err) {
     console.error(err);
-    log('<span style="color:#ff9800">Transaction failed or rejected</span>');
-    return false;
+    log('<span style="color:#ff4444">Payment failed or rejected</span>');
   }
 }
 
-// ==================== PEERJS & BATTLE LOGIC ====================
-const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
-let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
-function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
-function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
-function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
-
+// ==================== BATTLE LOG & ANIMATIONS ====================
 function log(msg) {
-  const logEl = document.getElementById('battleLog');
-  logEl.innerHTML += '<div>' + msg + '</div>';
-  logEl.scrollTop = logEl.scrollHeight;
+  const el = document.getElementById('battleLog');
+  el.innerHTML += `<div>${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
 }
 
 const ATTACK_TYPES = [
@@ -280,7 +248,7 @@ const ATTACK_TYPES = [
   { name: "HYPER BEAM", color: "#ff00ff", emoji: "💥", particles: 38 },
 ];
 
-function playAttackAnimation(isPlayerAttacking) {
+function playAttackAnimation(isPlayer) {
   const arena = document.getElementById('battleArea');
   const effect = document.createElement('div');
   effect.style.position = 'absolute'; effect.style.pointerEvents = 'none'; effect.style.inset = '0'; effect.style.zIndex = '15';
@@ -291,105 +259,136 @@ function playAttackAnimation(isPlayerAttacking) {
   for (let i = 0; i < attack.particles; i++) {
     const p = document.createElement('div');
     p.textContent = attack.emoji;
-    p.style.position = 'absolute'; p.style.fontSize = `${Math.random() * 40 + 30}px`;
-    p.style.opacity = '0.9'; p.style.filter = `drop-shadow(0 0 15px ${attack.color})`;
+    p.style.position = 'absolute';
+    p.style.fontSize = `${Math.random()*40+30}px`;
+    p.style.opacity = '0.9';
+    p.style.filter = `drop-shadow(0 0 15px ${attack.color})`;
 
-    const startX = isPlayerAttacking ? Math.random() * 350 + 50 : Math.random() * 350 + 550;
-    const startY = isPlayerAttacking ? 400 + Math.random() * 100 : Math.random() * 200 + 50;
-    const endX = isPlayerAttacking ? Math.random() * 350 + 550 : Math.random() * 350 + 50;
-    const endY = isPlayerAttacking ? Math.random() * 200 + 100 : 400 + Math.random() * 100;
+    const startX = isPlayer ? Math.random()*350+50 : Math.random()*350+550;
+    const startY = isPlayer ? 400 + Math.random()*100 : Math.random()*200+50;
+    const endX = isPlayer ? Math.random()*350+550 : Math.random()*350+50;
+    const endY = isPlayer ? Math.random()*200+100 : 400 + Math.random()*100;
 
-    p.style.left = startX + 'px'; p.style.top = startY + 'px';
+    p.style.left = startX + 'px';
+    p.style.top = startY + 'px';
     effect.appendChild(p);
 
     p.animate([
       { transform: `translate(0,0) rotate(0deg)`, opacity: 0.9 },
-      { transform: `translate(${endX - startX}px, ${endY - startY}px) rotate(${Math.random() * 720 - 360}deg)`, opacity: 0 }
-    ], { duration: 700 + Math.random() * 500, easing: 'cubic-bezier(0.2, 0.6, 0.8, 1)' })
+      { transform: `translate(${endX-startX}px, ${endY-startY}px) rotate(${Math.random()*720-360}deg)`, opacity: 0 }
+    ], { duration: 700 + Math.random()*500, easing: 'cubic-bezier(0.2,0.6,0.8,1)' })
       .onfinish = () => p.remove();
   }
   setTimeout(() => effect.remove(), 1600);
   return attack.name;
 }
 
-let turnDecided = false, peer = null, conn = null, roomCode = null, isHost = false;
-let myPokemon = null, opponentPokemon = null, myTurn = false, pendingOpponent = null, bothReady = false;
+// ==================== POKEMON HELPERS ====================
+let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
+function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
+function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
+function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
 
+// ==================== PEERJS ROOM SYSTEM ====================
 function createRoom() {
-  roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
-  if (!roomCode) return;
+  const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
+  if (!code) return;
   isHost = true;
-  peer = new Peer(roomCode, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS });
-  peer.on('open', () => {
-    document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${roomCode}</b><br>Waiting for challenger...`;
-    log(`Room ${roomCode} created!`);
-  });
-  peer.on('connection', inc => {
-    if (conn) { inc.close(); return; }
-    pendingOpponent = inc;
-    document.getElementById('opponentId').textContent = inc.peer;
-    document.getElementById('overlay').style.display = document.getElementById('confirmModal').style.display = 'block';
-    log('A challenger approaches...');
-  });
+  peer = new Peer(code, { host: '0.peerjs.com', port: 443, secure: true });
+  setupPeerEvents();
 }
 
 function joinRoom() {
-  roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-  if (!roomCode) return alert("Enter a room code!");
-  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS });
+  const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  if (!code) return alert("Enter a room code!");
+  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true });
+  setupPeerEvents();
   peer.on('open', () => {
-    conn = peer.connect(roomCode, { reliable: true });
-    setupConnectionEvents(conn);
-    log('Joining room ' + roomCode + '...');
+    conn = peer.connect(code, { reliable: true });
+    setupConnEvents(conn);
+    log('Joining room...');
   });
 }
 
-function acceptOpponent() { conn = pendingOpponent; pendingOpponent = null; hideModal(); setupConnectionEvents(conn); conn.send({ type: 'accepted' }); startTeamSelection(); log('Battle accepted!'); }
-function rejectOpponent() { if (pendingOpponent) pendingOpponent.close(); pendingOpponent = null; hideModal(); }
-function hideModal() { document.getElementById('overlay').style.display = document.getElementById('confirmModal').style.display = 'none'; }
-
-function setupConnectionEvents(c) {
-  conn = c;
-
-  conn.on('open', () => {
-    if (userAddress) conn.send({ type: 'wallet', address: userAddress });
+function setupPeerEvents() {
+  peer.on('open', id => {
+    document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${id}</b><br>Waiting for opponent...`;
+    log(`Room ${id} ready`);
   });
+
+  peer.on('connection', incoming => {
+    if (conn) return incoming.close();
+    document.getElementById('opponentId').textContent = incoming.peer;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('confirmModal').style.display = 'block';
+    pendingOpponent = incoming;
+  });
+}
+
+let pendingOpponent = null;
+function acceptOpponent() {
+  conn = pendingOpponent;
+  pendingOpponent = null;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+  setupConnEvents(conn);
+  conn.send({ type: 'accepted' });
+  startTeamSelection();
+  log('Battle accepted!');
+}
+
+function rejectOpponent() {
+  if (pendingOpponent) pendingOpponent.close();
+  pendingOpponent = null;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
+function setupConnEvents(c) {
+  conn = c;
+  conn.on('open', () => log('Connected!'));
 
   conn.on('data', async data => {
     if (data.type === 'wallet') {
       opponentAddress = data.address;
-      log('Opponent wallet connected');
+      log('Opponent wallet received ✓');
     }
-    else if (data.type === 'accepted') { startTeamSelection(); }
+    else if (data.type === 'accepted') startTeamSelection();
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
       document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
       document.getElementById('oppoName').textContent = opponentPokemon.name.toUpperCase();
       document.getElementById('oppoHpText').textContent = '100/100 HP';
       document.getElementById('oppoHpFill').style.width = '100%';
-      log(`Opponent sent out ${opponentPokemon.name.toUpperCase()}!`);
-      if (myPokemon && !bothReady) { bothReady = true; startBattle(); }
+      log(`Opponent sent ${opponentPokemon.name.toUpperCase()}!`);
+      if (myPokemon) { bothReady = true; startBattle(); }
     }
     else if (data.type === 'attack') receiveAttack(data);
     else if (data.type === 'turn') {
-      turnDecided = true; myTurn = !data.first;
-      myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
+      turnDecided = true;
+      myTurn = !data.first;
+      myTurn ? (log('<span style="color:#4caf50">Your turn first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
     }
-    else if (data.type === 'victory') { // Opponent won → you pay
-      log('<span style="color:#f44336;font-size:2rem"><b>YOU LOST!</b></span>');
-      if (opponentAddress) await payToWinner(opponentAddress);
-      setTimeout(() => alert('You lost! 500 TOKEN sent to winner'), 2000);
+    // Opponent tells us they won → we pay them
+    else if (data.type === 'victory') {
+      log('<span style="color:#f44336;font-size:2.2rem">● YOU LOST!</span>');
+      setTimeout(() => payToWinner(opponentAddress), 1500);
     }
-    else if (data.type === 'defeat') { // You won → opponent pays you
-      log('<span style="color:#4caf50;font-size:2rem"><b>YOU WIN! +500 TOKEN!</b></span>');
-      await updateTokenBalance();
-      setTimeout(() => alert('VICTORY! +500 TOKEN received! 🎉'), 2000);
+    // Opponent tells us they lost → we receive prize
+    else if (data.type === 'defeat') {
+      log('<span style="color:#4caf50;font-size:2.2rem">★ VICTORY! +500 TOKEN ★</span>');
+      setTimeout(updateTokenBalance, 4000); // wait for tx
     }
   });
 
-  conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left.'); location.reload(); });
+  conn.on('close', () => {
+    log('<span style="color:#f44336">Opponent disconnected!</span>');
+    alert('Opponent left the battle');
+    location.reload();
+  });
 }
 
+// ==================== TEAM SELECTION ====================
 function startTeamSelection() {
   document.getElementById('roomSetup').style.display = 'none';
   document.getElementById('teamSelect').style.display = 'block';
@@ -397,18 +396,25 @@ function startTeamSelection() {
 }
 
 function loadTeamSelect() {
-  const grid = document.getElementById('teamGrid'); grid.innerHTML = '';
-  if (ownedLocal.length === 0) { grid.innerHTML = '<p style="grid-column:1/-1;color:#ffcb05;font-size:1.5rem">No Pokémon owned!<br>Visit the shop!</p>'; return; }
+  const grid = document.getElementById('teamGrid');
+  grid.innerHTML = '';
+  if (ownedLocal.length === 0) {
+    grid.innerHTML = '<p style="grid-column:1/-1;color:#ffcb05;font-size:1.5rem">No Pokémon!<br>Visit shop!</p>';
+    return;
+  }
   ownedLocal.forEach(p => {
-    const card = document.createElement('div'); card.className = 'team-card';
+    const card = document.createElement('div');
+    card.className = 'team-card';
     card.innerHTML = `<img src="${img(p.id)}"><br><b>${p.name.toUpperCase()}</b>`;
     card.onclick = () => {
       document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected'); myPokemon = p;
+      card.classList.add('selected');
+      myPokemon = p;
       document.getElementById('readyBtn').disabled = false;
     };
     grid.appendChild(card);
   });
+
   document.getElementById('readyBtn').onclick = () => {
     if (!myPokemon) return;
     document.getElementById('playerImg').src = backImg(myPokemon.id) || img(myPokemon.id);
@@ -423,51 +429,54 @@ function loadTeamSelect() {
   };
 }
 
+// ==================== BATTLE START & TURNS ====================
 function startBattle() {
-  if (document.getElementById('battleArea').style.display !== 'block') return;
   log('<b style="color:#ffcb05;font-size:1.8rem">BATTLE START!</b>');
   if (isHost && !turnDecided) {
-    turnDecided = true; myTurn = Math.random() < 0.5;
+    turnDecided = true;
+    myTurn = Math.random() < 0.5;
     conn.send({ type: 'turn', first: myTurn });
     myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
   }
 }
 
 function showAttackButton() {
-  if (!myTurn || !conn) return;
+  if (!myTurn) return;
   document.getElementById('playerActions').innerHTML = `<button class="attack-btn" onclick="attack()">ATTACK!</button>`;
 }
 
+// ==================== ATTACK & WIN/LOSE ====================
 function attack() {
   if (!myTurn || !conn) return;
 
-  if (Math.random() < 0.20) {
+  // 20% miss chance
+  if (Math.random() < 0.2) {
     conn.send({ type: 'attack', damage: 0, missed: true });
     playAttackAnimation(true);
-    log(`<span style="color:#888">Your attack <b>MISSED!</b></span>`);
+    log(`<span style="color:#888"><b>MISSED!</b></span>`);
     document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
     myTurn = false;
     return;
   }
 
   const damage = 25 + Math.floor(Math.random() * 30);
-  const moveName = playAttackAnimation(true);
-  conn.send({ type: 'attack', damage, moveName });
-  log(`You used <span style="color:#ffcb05"><b>${moveName}</b></span>! Dealt <b style="color:#ff4444">${damage}</b> damage!`);
+  const move = playAttackAnimation(true);
+  conn.send({ type: 'attack', damage, moveName: move });
+  log(`You used <b style="color:#ffcb05">${move}</b>! Dealt <b style="color:#ff4444">${damage}</b> dmg!`);
 
-  let hp = parseInt(document.getElementById('oppoHpText').textContent);
-  hp = Math.max(0, hp - damage);
-  document.getElementById('oppoHpFill').style.width = hp + '%';
-  document.getElementById('oppoHpText').textContent = hp + '/100 HP';
-  const fill = document.getElementById('oppoHpFill');
-  fill.classList.toggle('warning', hp <= 50); fill.classList.toggle('danger', hp <= 20);
+  let oppHp = parseInt(document.getElementById('oppoHpText').textContent);
+  oppHp = Math.max(0, oppHp - damage);
+  document.getElementById('oppoHpFill').style.width = oppHp + '%';
+  document.getElementById('oppoHpText').textContent = oppHp + '/100 HP';
+  document.getElementById('oppoHpFill').classList.toggle('warning', oppHp <=50);
+  document.getElementById('oppoHpFill').classList.toggle('danger', oppHp <=20);
 
   document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.8);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
 
-  if (hp <= 0) {
+  if (oppHp <= 0) {
     setTimeout(() => {
-      log('<span style="color:#4caf50;font-size:2rem"><b>YOU WIN!</b></span>');
-      conn.send({ type: 'victory' }); // Tell opponent they lost → they will pay you
+      log('<span style="color:#4caf50;font-size:2.2rem">★ YOU WIN! ★</span>');
+      conn.send({ type: 'victory' }); // opponent will pay you
     }, 1200);
   }
   myTurn = false;
@@ -475,7 +484,7 @@ function attack() {
 
 function receiveAttack(data) {
   if (data.missed) {
-    log(`<span style="color:#888">Opponent\'s attack <b>MISSED!</b></span>`);
+    log(`<span style="color:#888">Opponent attack <b>MISSED!</b></span>`);
     playAttackAnimation(false);
     myTurn = true;
     showAttackButton();
@@ -484,19 +493,20 @@ function receiveAttack(data) {
 
   const moveName = data.moveName || "Attack";
   playAttackAnimation(false);
-  log(`Opponent used <span style="color:#ffcb05"><b>${moveName}</b></span>! Took <b style="color:#ff4444">${data.damage}</b> damage!`);
+  log(`Opponent used <b style="color:#ffcb05">${moveName}</b>! Took <b style="color:#ff4444">${data.damage}</b> dmg!`);
 
-  let hp = parseInt(document.getElementById('playerHpText').textContent);
-  hp = Math.max(0, hp - data.damage);
-  document.getElementById('playerHpFill').style.width = hp + '%';
-  document.getElementById('playerHpText').textContent = hp + '/100 HP';
+  let myHp = parseInt(document.getElementById('playerHpText').textContent);
+  myHp = Math.max(0, myHp - data.damage);
+  document.getElementById('playerHpFill').style.width = myHp + '%';
+  document.getElementById('playerHpText').textContent = myHp + '/100 HP';
   const fill = document.getElementById('playerHpFill');
-  fill.classList.toggle('warning', hp <= 50); fill.classList.toggle('danger', hp <= 20);
+  fill.classList.toggle('warning', myHp <=50);
+  fill.classList.toggle('danger', myHp <=20);
 
-  if (hp <= 0) {
+  if (myHp <= 0) {
     setTimeout(() => {
-      log('<span style="color:#f44336;font-size:2rem"><b>You fainted...</b></span>');
-      conn.send({ type: 'defeat' }); // Tell opponent they won → you pay them
+      log('<span style="color:#f44336;font-size:2.2rem">● YOU FAINTED...</span>');
+      conn.send({ type: 'defeat' }); // you pay opponent
     }, 1200);
   } else {
     myTurn = true;
