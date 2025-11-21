@@ -20,15 +20,14 @@
     .menu a.active{background:#f17025;color:#fff}
 
     .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
-    .coins{background:#efe339;color:#000}
-    .free-balance{background:#9362ed;color:#fff}
-    .coins,.free-balance{padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
+    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
     .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
-    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem}
-    .connect-btn{background:#4caf50;color:#fff}
-    .connect-btn:hover{background:#45a049}
-    .logout-btn{background:#f44336;color:#fff;display:none}
-    .logout-btn:hover{background:#d32f2f}
+    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem;}
+    .connect-btn{background:#4caf50;color:#fff;}
+    .connect-btn:hover{background:#45a049;transform:translateY(-1px);}
+    .logout-btn{background:#f44336;color:#fff;display:none;}
+    .logout-btn:hover{background:#d32f2f;transform:translateY(-1px);}
 
     .container{margin-left:240px;padding:2rem;text-align:center}
     .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.5rem;margin:1rem 0;text-shadow:0 0 25px #ffcb05}
@@ -62,8 +61,8 @@
     .pokemon-front img { width: 240px; height: 240px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
 
     .hp-box {
-      background: rgba(0,0,0,0.9); border: 5px solid #fff; border-radius: 12px; padding: 10px 16px;
-      width: 300px; margin: 12px auto 0; font-family: 'Press Start 2P'; font-size: 0.95rem; box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+      
+       font-family: 'Press Start 2P'; font-size: 0.95rem;
     }
     .hp-bar-small { height: 22px; background: #222; border: 3px solid #fff; border-radius: 10px; overflow: hidden; margin: 8px 0; }
     .hp-fill-small {
@@ -108,10 +107,10 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Arena</h1></div>
     <div class="menu">
-      <a href="home.html">Home</a>
-      <a href="shop.html">Marketplace</a>
-      <a href="arena.html">Game Play</a>
-      <a href="online.html" style="background:#f17025;color:white">Online Play</a>
+       <a href="home.html">🏠 Home</a>
+        <a href="shop.html">🛒 Marketplace</a>
+      <a href="arena.html">⚔ Game Play</a>
+      <a href="online.html"  style="background-color: rgb(241, 112, 37);color:white">⚔ Online Play</a>
     </div>
     <div class="status">
       <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
@@ -143,25 +142,27 @@
     <div id="battleArea" class="battle-area" style="display:none">
       <div style="position:absolute;bottom:70px;left:70px">
         <h2 class="player">YOU</h2>
-        <div class="player-base">
-          <img id="playerImg" class="pokemon-back" src="" alt="Your Pokémon">
+        <div class="player-base" style="bottom:-40px">
+         
           <div class="hp-box">
-            <div style="color:#4caf50" id="playerName">???</div>
+            <div style="color:#5266e7" id="playerName">???</div>
             <div class="hp-bar-small"><div class="hp-fill-small" id="playerHpFill"></div></div>
             <div id="playerHpText">100/100 HP</div>
           </div>
+           <img id="playerImg" class="pokemon-back" src="" alt="Your Pokémon" style="height:300px;width:300px">
         </div>
       </div>
 
       <div style="position:absolute;top:50px;right:70px">
         <h2 class="opponent">OPPONENT</h2>
-        <div class="opponent-base">
-          <img id="oppoImg" class="pokemon-front" src="" alt="Opponent">
+        <div class="opponent-base" style="margin-top:20px">
+         
           <div class="hp-box">
             <div style="color:#f44336" id="oppoName">???</div>
             <div class="hp-bar-small"><div class="hp-fill-small" id="oppoHpFill"></div></div>
             <div id="oppoHpText">100/100 HP</div>
           </div>
+           <img id="oppoImg" class="pokemon-front" src="" alt="Opponent" style="height:150px;width:150px">
         </div>
       </div>
 
