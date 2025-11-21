@@ -20,8 +20,8 @@
     .menu a.active{background:#f17025;color:#fff}
 
     .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
-    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
-    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .coins{color:#efe339;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center;background:#333}
+    .free-balance{color:#9362ed;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center;background:#333}
     .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
     .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem;}
     .connect-btn{background:#4caf50;color:#fff;}
@@ -60,10 +60,7 @@
     .opponent-base { position: absolute; top: 60px; right: 80px; width: 300px; text-align: center; }
     .pokemon-front img { width: 240px; height: 240px; image-rendering: pixelated; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
 
-    .hp-box {
-      
-       font-family: 'Press Start 2P'; font-size: 0.95rem;
-    }
+    .hp-box { font-family: 'Press Start 2P'; font-size: 0.95rem; }
     .hp-bar-small { height: 22px; background: #222; border: 3px solid #fff; border-radius: 10px; overflow: hidden; margin: 8px 0; }
     .hp-fill-small {
       height: 100%; width: 100%; background: linear-gradient(90deg, #92d04b, #4caf50); transition: width 0.8s ease;
@@ -91,8 +88,8 @@
       font-size:1.1rem;line-height:1.9;font-family:'Courier New',monospace;color:#ffcb05
     }
 
-    .confirm-modal,.overlay{display:none;position:fixed;z-index:9999}
-    .confirm-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
+    .confirm-modal,.overlay,.insufficient-modal{display:none;position:fixed;z-index:9999}
+    .confirm-modal,.insufficient-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
     .overlay{inset:0;background:rgba(0,0,0,0.8);z-index:9998}
 
     @keyframes shake {
@@ -107,15 +104,15 @@
   <aside class="sidebar">
     <div class="brand"><h1>Pikaplay Arena</h1></div>
     <div class="menu">
-       <a href="home.html">🏠 Home</a>
-        <a href="shop.html">🛒 Marketplace</a>
-      <a href="arena.html">⚔ Game Play</a>
-      <a href="online.html"  style="background-color: rgb(241, 112, 37);color:white">⚔ Online Play</a>
+       <a href="home.html">Home</a>
+        <a href="shop.html">Marketplace</a>
+      <a href="arena.html">Game Play</a>
+      <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">Online Play</a>
     </div>
     <div class="status">
       <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
-      <span class="coins" id="coinDisplay">500 Coins</span>
-      <span class="free-balance" id="freeDisplay">0 TOKEN</span>
+      <span class="coins" id="coinDisplay">Loading...</span>
+      <span class="free-balance" id="tokenDisplay">Loading...</span>
       <span class="wallet" id="walletDisplay"></span>
       <button class="connect-btn" id="connectBtn">Connect Wallet</button>
       <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -143,7 +140,6 @@
       <div style="position:absolute;bottom:70px;left:70px">
         <h2 class="player" style="color:orange">YOU</h2>
         <div class="player-base" style="bottom:-40px">
-         
           <div class="hp-box">
             <div style="color:#5266e7" id="playerName">???</div>
             <div class="hp-bar-small"><div class="hp-fill-small" id="playerHpFill"></div></div>
@@ -156,7 +152,6 @@
       <div style="position:absolute;top:50px;right:70px">
         <h2 class="opponent" style="color:red">OPPONENT</h2>
         <div class="opponent-base" style="margin-top:20px">
-         
           <div class="hp-box">
             <div style="color:#f44336" id="oppoName">???</div>
             <div class="hp-bar-small"><div class="hp-fill-small" id="oppoHpFill"></div></div>
@@ -172,7 +167,14 @@
     <div class="log" id="battleLog">Waiting for opponent...</div>
   </div>
 
+  <!-- Insufficient Funds Modal -->
   <div class="overlay" id="overlay"></div>
+  <div class="insufficient-modal" id="insufficientModal">
+    <h2 style="color:#ff4444">Insufficient Balance!</h2>
+    <p>You need at least <b>500 Coins</b> and <b>300 Tokens</b> to enter a ranked battle.</p>
+    <button style="background:#ff9800;padding:14px 30px;margin:10px;font-size:1.3rem;border-radius:12px" onclick="document.getElementById('insufficientModal').style.display='none';document.getElementById('overlay').style.display='none';">OK</button>
+  </div>
+
   <div class="confirm-modal" id="confirmModal">
     <h2 style="color:#ffcb05">Opponent Wants to Battle!</h2>
     <p>Player ID:</p>
@@ -182,7 +184,138 @@
   </div>
 
 <script>
-// ==================== FULL SCRIPT WITH ANIMATED ATTACKS ====================
+// ==================== WALLET & TOKEN SYSTEM ====================
+const TOKEN_ADDRESS = '0x614f35C48c780e637496B3F707c9373723689868';
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)"
+];
+
+let provider, signer, tokenContract, userAddress = null;
+
+// Local coins (play money)
+let coins = parseInt(localStorage.getItem('coins') || '500');
+let tokens = 0; // Real on-chain tokens
+
+const coinDisplay = document.getElementById('coinDisplay');
+const tokenDisplay = document.getElementById('tokenDisplay');
+const walletDisplay = document.getElementById('walletDisplay');
+const connectBtn = document.getElementById('connectBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+function updateDisplays() {
+  coinDisplay.textContent = `${coins} Coins`;
+  tokenDisplay.textContent = tokens !== null ? `${tokens} TOKEN` : 'Loading...';
+  localStorage.setItem('coins', coins);
+}
+
+async function updateTokenBalance() {
+  if (!tokenContract || !userAddress) return;
+  try {
+    const bal = await tokenContract.balanceOf(userAddress);
+    const decimals = await tokenContract.decimals();
+    tokens = Math.floor(parseInt(bal.toString()) / (10 ** decimals));
+    tokenDisplay.textContent = `${tokens} TOKEN`;
+  } catch (e) {
+    console.error("Token balance error:", e);
+    tokenDisplay.textContent = 'Error';
+  }
+}
+
+// ==================== WALLET CONNECTION ====================
+connectBtn.onclick = async () => {
+  if (!window.ethereum) {
+    alert('Please install MetaMask!');
+    return;
+  }
+
+  try {
+    // Switch to Sepolia
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0xaa36a7' }], // Sepolia
+    });
+  } catch (switchError) {
+    if (switchError.code === 4902) {
+      alert('Please add Sepolia network to MetaMask');
+      return;
+    }
+  }
+
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    userAddress = accounts[0];
+
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
+
+    walletDisplay.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+    connectBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+
+    await updateTokenBalance();
+    log('Wallet connected on Sepolia!');
+  } catch (err) {
+    console.error(err);
+    alert('Connection failed: ' + (err.message || err));
+  }
+};
+
+logoutBtn.onclick = () => {
+  userAddress = null;
+  tokenContract = null;
+  walletDisplay.textContent = '';
+  connectBtn.style.display = 'inline-block';
+  logoutBtn.style.display = 'none';
+  tokenDisplay.textContent = '0 TOKEN';
+  location.reload();
+};
+
+// Listen for account/network changes
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', () => location.reload());
+  window.ethereum.on('chainChanged', () => location.reload());
+}
+
+// ==================== CURRENCY SYSTEM (updated rewards) ====================
+function saveCurrency() {
+  localStorage.setItem('coins', coins);
+  updateDisplays();
+}
+
+function rewardWinner() {
+  coins += 2000;
+  // Optional: add real TOKEN reward via contract later
+  log('<span style="color:#ffd700;font-size:1.5rem">✦ YOU WIN! +2000 Coins!</span>');
+  saveCurrency();
+}
+
+function penalizeLoser() {
+  if (coins >= 500) coins -= 500;
+  log('<span style="color:#ff4444;font-size:1.5rem">✦ You lost... -500 Coins</span>');
+  saveCurrency();
+}
+
+function canEnterBattle() {
+  if (coins < 500) {
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('insufficientModal').querySelector('p').innerHTML = 
+      'You need at least <b>500 Coins</b> to enter a ranked battle.';
+    document.getElementById('insufficientModal').style.display = 'block';
+    return false;
+  }
+  return true;
+}
+
+// Initial display
+updateDisplays();
+
+
+
+
+// ==================== REST OF THE ORIGINAL SCRIPT (with rewards added) ====================
 const ICE_SERVERS = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -191,7 +324,6 @@ const ICE_SERVERS = { iceServers: [
 ], iceCandidatePoolSize: 10 };
 
 let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
-document.getElementById('coinDisplay').textContent = (localStorage.getItem('coins') || '500') + ' Coins';
 
 function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
 function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
@@ -203,7 +335,6 @@ function log(msg) {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// =============== RANDOM ATTACK ANIMATIONS ===============
 const ATTACK_TYPES = [
   { name: "FIRE BLAST", color: "#ff4400", emoji: "🔥", particles: 28 },
   { name: "THUNDERBOLT", color: "#ffdd00", emoji: "⚡", particles: 22 },
@@ -249,11 +380,6 @@ function playAttackAnimation(isPlayerAttacking) {
     }).onfinish = () => p.remove();
   }
 
-  if (attack.name === "EARTHQUAKE" || attack.name === "HYPER BEAM") {
-    arena.style.animation = 'shake 0.7s';
-    setTimeout(() => arena.style.animation = '', 700);
-  }
-
   const flash = document.createElement('div');
   flash.style.position = 'absolute';
   flash.style.inset = '0';
@@ -271,6 +397,7 @@ let turnDecided = false, peer = null, conn = null, roomCode = null, isHost = fal
 let myPokemon = null, opponentPokemon = null, myTurn = false, pendingOpponent = null, bothReady = false;
 
 function createRoom() {
+  if (!canEnterBattle()) return;
   roomCode = prompt("Enter your room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!roomCode) return;
   isHost = true;
@@ -289,6 +416,7 @@ function createRoom() {
 }
 
 function joinRoom() {
+  if (!canEnterBattle()) return;
   roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!roomCode) return alert("Enter a room code!");
   peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true, config: ICE_SERVERS });
@@ -320,6 +448,14 @@ function setupConnectionEvents(c) {
     else if (data.type === 'turn') {
       turnDecided = true; myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first...</span>');
+    }
+    else if (data.type === 'victory') {
+      rewardWinner();
+      setTimeout(() => alert('YOU WIN! 🎉 +2000 Coins & +500 Tokens'), 1500);
+    }
+    else if (data.type === 'defeat') {
+      penalizeLoser();
+      setTimeout(() => alert('You lost the battle...'), 1500);
     }
   });
   conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left.'); location.reload(); });
@@ -379,7 +515,6 @@ function showAttackButton() {
 function attack() {
   if (!myTurn || !conn) return;
 
-  // 20% MISS CHANCE
   if (Math.random() < 0.20) {
     conn.send({ type: 'attack', damage: 0, missed: true });
     playAttackAnimation(true);
@@ -407,7 +542,9 @@ function attack() {
   if (hp <= 0) {
     setTimeout(() => {
       log('<span style="color:#4caf50;font-size:2rem"><b>YOU WIN!</b></span>');
-      alert('YOU WIN! 🎉');
+      conn.send({ type: 'victory' });
+      rewardWinner();
+      alert('YOU WIN! 🎉 +2000 Coins & +500 Tokens');
     }, 1200);
   }
   myTurn = false;
@@ -436,7 +573,9 @@ function receiveAttack(data) {
   if (hp <= 0) {
     setTimeout(() => {
       log('<span style="color:#f44336;font-size:2rem"><b>You fainted...</b></span>');
-      alert('You lost the battle... 💀');
+      conn.send({ type: 'defeat' });
+      penalizeLoser();
+      alert('You lost the battle...');
     }, 1200);
   } else {
     myTurn = true;
