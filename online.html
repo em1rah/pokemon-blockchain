@@ -294,6 +294,10 @@ function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprite
 
 // ==================== PEERJS ROOM SYSTEM ====================
 function createRoom() {
+  if (!userAddress) {
+    alert("⚠️ Please connect your wallet first!");
+    return;
+  }
   const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!code) return;
   isHost = true;
@@ -302,6 +306,10 @@ function createRoom() {
 }
 
 function joinRoom() {
+  if (!userAddress) {
+    alert("⚠️ Please connect your wallet first!");
+    return;
+  }
   const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!code) return alert("Enter a room code!");
   peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true });
@@ -516,6 +524,8 @@ function receiveAttack(data) {
     showAttackButton();
   }
 }
+
+
 </script>
 </body>
 </html>
