@@ -116,6 +116,61 @@
       100% { transform: translateY(0); }
     }
     .dodge-jump { animation: dodgeJump 0.7s ease-in-out; }
+
+
+    /* FAINT / DEATH ANIMATION */
+.fainted {
+  animation: faintFall 2.5s forwards !important;
+  filter: grayscale(100%) brightness(0.6) !important;
+}
+
+.faint-eyes {
+  position: absolute;
+  width: 60px;
+  height: 30px;
+  background: white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -80%);
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  opacity: 0;
+  animation: faintEyes 2.5s forwards;
+  pointer-events: none;
+  z-index: 17;
+}
+
+.faint-swirl {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: url('https://i.imgur.com/2fW15jT.png') center/contain no-repeat; /* Classic faint swirl */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  animation: swirlFade 2.2s ease-out forwards;
+  z-index: 18;
+}
+
+@keyframes faintFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  70% { transform: translateY(120px) rotate(15deg); opacity: 0.7; }
+  100% { transform: translateY(280px) rotate(30deg); opacity: 0; }
+}
+
+@keyframes faintEyes {
+  0%, 50% { opacity: 0; }
+  55%, 90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes swirlFade {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(360deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6) rotate(720deg); }
+}
   </style>
 </head>
 <body>
@@ -594,12 +649,28 @@ function attack() {
 
   document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
 
-  if (oppHp <= 0) {
-    setTimeout(() => {
-      log('<span style="color:#4caf50;font-size:2.4rem">VICTORY! +500 TOKEN</span>');
-      conn.send({ type: 'victory' });
-    }, 1200);
-  }
+ if (oppHp <= 0) {
+  setTimeout(() => {
+    // Add faint effects to opponent
+    const oppoImg = document.getElementById('oppoImg');
+    oppoImg.classList.add('fainted');
+    
+    // Add white eyes
+    const eyes = document.createElement('div');
+    eyes.className = 'faint-eyes';
+    oppoImg.parentNode.appendChild(eyes);
+    
+    // Add swirl
+    const swirl = document.createElement('div');
+    swirl.className = 'faint-swirl';
+    document.getElementById('battleArea').appendChild(swirl);
+
+    log('<span style="color:#4caf50;font-size:2.8rem">OPPONENT FAINTED!</span>');
+    log('<span style="color:#4caf50;font-size:2.4rem">★ VICTORY! +500 TOKEN ★</span>');
+    
+    conn.send({ type: 'victory' });
+  }, 1200);
+}
   myTurn = false;
 }
 
@@ -624,11 +695,22 @@ function receiveAttack(data) {
   fill.classList.toggle('warning', myHp <=50);
   fill.classList.toggle('danger', myHp <=20);
 
-  if (myHp <= 0) {
-    setTimeout(() => {
-      log('<span style="color:#f44336;font-size:2.4rem">YOU FAINTED...</span>');
-      conn.send({ type: 'defeat' });
-    }, 1200);
+ if (myHp <= 0) {
+  setTimeout(() => {
+    const playerImg = document.getElementById('playerImg');
+    playerImg.classList.add('fainted');
+    
+    const eyes = document.createElement('div');
+    eyes.className = 'faint-eyes';
+    playerImg.parentNode.appendChild(eyes);
+    
+    const swirl = document.createElement('div');
+    swirl.className = 'faint-swirl';
+    document.getElementById('battleArea').appendChild(swirl);
+
+    log('<span style="color:#ff4444;font-size:2.8rem">YOUR POKÉMON FAINTED!</span>');
+    conn.send({ type: 'defeat' });
+  }, 1200);
   } else {
     myTurn = true;
     showAttackButton();
