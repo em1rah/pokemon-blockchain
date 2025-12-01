@@ -551,7 +551,7 @@ function setupConnEvents(c) {
       setTimeout(() => payToWinner(opponentAddress), 1500);
     }
     else if (data.type === 'defeat') {
-      log('<span style="color:#4caf50;font-size:2.4rem">VICTORY! +500 TOKEN</span>');
+      log('<span style="color:#4caf50;font-size:2rem">VICTORY! +500 TOKEN</span>');
       setTimeout(updateTokenBalance, 4000);
     }
   });
@@ -666,7 +666,7 @@ function attack() {
     document.getElementById('battleArea').appendChild(swirl);
 
     log('<span style="color:#4caf50;font-size:2.8rem">OPPONENT FAINTED!</span>');
-    log('<span style="color:#4caf50;font-size:2.4rem">★ VICTORY! +500 TOKEN ★</span>');
+    // log('<span style="color:#4caf50;font-size:2.4rem">★ VICTORY! +500 TOKEN ★</span>');
     
     conn.send({ type: 'victory' });
   }, 1200);
