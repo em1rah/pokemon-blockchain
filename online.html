@@ -467,13 +467,19 @@ function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/mas
 function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
 function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
 
+const PEER_CONFIG = {
+  host: 'inspiring-delight.up.railway.app',
+  port: 443,
+  path: '/peerjs',
+  secure: true
+};
 // ==================== PEERJS ROOM SYSTEM ==================== (unchanged, only minor fixes)
 function createRoom() {
   if (!userAddress) return alert("Connect wallet first!");
   const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!code) return;
   isHost = true;
-  peer = new Peer(code, { host: '0.peerjs.com', port: 443, secure: true });
+  peer = new Peer(code, PEER_CONFIG);
   setupPeerEvents();
 }
 
@@ -481,7 +487,7 @@ function joinRoom() {
   if (!userAddress) return alert("Connect wallet first!");
   const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!code) return alert("Enter a room code!");
-  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true });
+ peer = new Peer(undefined, PEER_CONFIG);
   setupPeerEvents();
   peer.on('open', () => {
     conn = peer.connect(code, { reliable: true });
