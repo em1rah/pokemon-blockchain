@@ -474,7 +474,19 @@ function createRoom() {
   const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
   if (!code) return;
   isHost = true;
-  peer = new Peer(code, { host: '0.peerjs.com', port: 443, secure: true });
+
+  peer = new Peer(code, {
+    host: 'peerjs-server.herokuapp.com',
+    port: 443,
+    path: '/peerjs',
+    secure: true,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+      ]
+    }
+  });
   setupPeerEvents();
 }
 
@@ -482,7 +494,20 @@ function joinRoom() {
   if (!userAddress) return alert("Connect wallet first!");
   const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
   if (!code) return alert("Enter a room code!");
-  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true });
+
+  peer = new Peer(undefined, {
+    host: 'peerjs-server.herokuapp.com',
+    port: 443,
+    path: '/peerjs',
+    secure: true,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+      ]
+    }
+  });
+
   setupPeerEvents();
   peer.on('open', () => {
     conn = peer.connect(code, { reliable: true });
