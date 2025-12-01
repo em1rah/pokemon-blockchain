@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pokémon Arena - 1v1 Battle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* === ALL PREVIOUS CSS + NEW MOVE BUTTONS === */
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#0b1021,#0a0f1d);border-right:1px solid rgba(255,255,255,.08);z-index:20}
+    .sidebar .brand{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .sidebar .brand h1{font-family:'Press Start 2P',cursive;color:#ffcb05;font-size:1.1rem;margin:0}
+    .menu a{display:block;color:#ffcb05;text-decoration:none;font-weight:700;padding:10px 12px;border:2px solid rgba(255,203,5,.25);border-radius:10px;margin-bottom:10px;transition:.2s}
+    .menu a:hover{background:rgba(255,203,5,.15);border-color:#fff;transform:translateX(4px)}
+    .status{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px}
+    .coins,.free-balance{color:#fff;padding:8px 14px;border-radius:12px;font-weight:700;font-size:0.9rem;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.3);text-align:center}
+    .coins{background:#efe339;color:#000}
+    .free-balance{background:#9362ed}
+    .wallet{font-size:.9rem;color:#ddd;font-family:monospace;text-align:center}
+    .connect-btn,.logout-btn{border:none;border-radius:10px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;font-size:0.9rem}
+    .connect-btn{background:#4caf50;color:#fff}
+    .logout-btn{background:#f44336;color:#fff;display:none}
+
+    .container{margin-left:240px;padding:2rem;text-align:center}
+    .title{font-family:'Press Start 2P';color:#ffcb05;font-size:2.5rem;margin:1rem 0;text-shadow:0 0 25px #ffcb05}
+    .room-setup{max-width:500px;margin:3rem auto;padding:2.5rem;background:rgba(255,203,5,0.1);border:3px solid #ffcb05;border-radius:16px}
+    input{padding:14px;font-size:1.2rem;width:100%;margin:15px 0;border:2px solid #ffcb05;background:rgba(0,0,0,0.6);color:#fff;border-radius:12px}
+    button{padding:16px 32px;font-size:1.3rem;margin:10px;border:none;border-radius:12px;background:linear-gradient(135deg,#ff9800,#e65100);color:#fff;font-weight:700;cursor:pointer}
+    .team-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.5rem;max-width:900px;margin:2rem auto}
+    .team-card{border:4px solid rgba(255,203,5,0.4);border-radius:16px;padding:15px;cursor:pointer;background:rgba(0,0,0,0.2);transition:.2s}
+    .team-card:hover{border-color:#ffcb05;transform:scale(1.05)}
+    .team-card.selected{border-color:#4caf50;background:rgba(76,175,80,0.4);box-shadow:0 0 30px rgba(76,175,80,0.6)}
+    .team-card img{width:100%;height:150px;object-fit:contain}
+    .battle-area{position:relative;width:1000px;height:560px;margin:40px auto;background:url('/images/Screenshot 2025-11-20 210130.png') center/cover no-repeat;border-radius:20px;overflow:hidden;box-shadow:0 0 30px rgba(255,203,5,0.8)}
+    .player-base{position:absolute;bottom:80px;left:80px;width:300px;text-align:center}
+    .pokemon-back img{width:280px;height:280px;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.6))}
+    .opponent-base{position:absolute;top:60px;right:80px;width:300px;text-align:center}
+    .pokemon-front img{width:240px;height:240px;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.6))}
+    .hp-box{font-family:'Press Start 2P';font-size:0.95rem}
+    .hp-bar-small{height:22px;background:#222;border:3px solid #fff;border-radius:10px;overflow:hidden;margin:8px 0}
+    .hp-fill-small{height:100%;background:linear-gradient(90deg,#92d04b,#4caf50);transition:width 1s ease}
+    .hp-fill-small.warning{background:#ff9800}
+    .hp-fill-small.danger{background:#ff4444}
+
+    /* MOVE BUTTONS */
+    #playerActions{position:absolute;bottom:60px;right:80px;z-index:10;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:380px}
+    .move-btn{padding:14px 20px;font-family:'Press Start 2P';font-size:14px;background:#c62828;color:white;border:3px solid #ffcb05;border-radius:20px;cursor:pointer;box-shadow:0 8px 20px rgba(255,23,68,0.6);text-transform:uppercase;letter-spacing:2px;transition:all 0.3s;flex:1 1 45%;min-width:140px}
+    .move-btn:hover{transform:translateY(-6px) scale(1.05);box-shadow:0 16px 40px rgba(255,23,68,0.9)}
+    .move-btn:disabled{background:#555;cursor:not-allowed;opacity:0.6;transform:none}
+
+    .log{background:rgba(0,0,0,0.9);border:4px solid #ffcb05;border-radius:16px;padding:1.5rem;height:180px;overflow-y:auto;margin:20px auto;max-width:1000px;font-size:1.1rem;line-height:1.9;font-family:'Courier New',monospace;color:#ffcb05}
+    .overlay,.confirm-modal{display:none;position:fixed;z-index:9999}
+    .overlay{inset:0;background:rgba(0,0,0,0.8);z-index:9998}
+    .confirm-modal{top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:6px solid #ffcb05;border-radius:20px;padding:2rem;max-width:500px;width:90%;text-align:center}
+
+    /* ANIMATIONS */
+    .attack-container{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:16}
+    .beam-line{height:8px;background:linear-gradient(90deg,transparent,#fff,#ffeb3b,transparent);box-shadow:0 0 30px #ffeb3b,0 0 60px #fff}
+    .fire-explosion{width:140px;height:140px;background:radial-gradient(circle,#ff4500 10%,#ff8c00 40%,transparent 70%);border-radius:50%}
+    .lightning-bolt{width:10px;background:#ffeb3b;box-shadow:0 0 25px #ffeb3b,0 0 50px #fff}
+    .water-wave{height:24px;background:linear-gradient(90deg,#00b7eb,#1e90ff,#00b7eb);border-radius:50%;filter:blur(3px)}
+    .leaf-blade{width:80px;height:80px;background:radial-gradient(circle,#78c850 20%,#4e8234 60%,transparent 80%);clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+    .psychic-wave{width:120px;height:120px;background:radial-gradient(circle,#f85888 15%,#f8a5c2 50%,transparent 70%);border-radius:50%;filter:blur(8px)}
+    .hit-flash{width:220px;height:220px;background:radial-gradient(circle,white 15%,transparent 60%);border-radius:50%}
+    @keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-10px)}20%,40%,60%,80%{transform:translateX(10px)}}
+    .shake{animation:shake .5s}
+    @keyframes dodgeJump{0%,100%{transform:translateY(0)}50%{transform:translateY(-80px)}}
+    .dodge-jump{animation:dodgeJump .7s ease-in-out}
+    .fainted{animation:faintFall 2.5s forwards!important;filter:grayscale(100%) brightness(0.6)!important}
+    @keyframes faintFall{0%{transform:translateY(0) rotate(0deg);opacity:1}70%{transform:translateY(120px) rotate(15deg);opacity:.7}100%{transform:translateY(280px) rotate(30deg);opacity:0}}
+    .faint-eyes{width:60px;height:30px;background:white;border-radius:50%;clip-path:polygon(0 0,100% 0,100% 50%,0 50%);opacity:0;animation:faintEyes 2.5s forwards}
+    @keyframes faintEyes{0%,50%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
+    .faint-swirl{width:300px;height:300px;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,10 Q70,30 70,50 Q70,70 50,90 Q30,70 30,50 Q30,30 50,10" fill="none" stroke="%23ffffff" stroke-width="8"/><path d="M50,20 Q65,35 65,50 Q65,65 50,80 Q35,65 35,50 Q35,35 50,20" fill="none" stroke="%23ffcb05" stroke-width="6"/></svg>') center/contain no-repeat;opacity:0;animation:swirlFade 2.2s ease-out forwards}
+    @keyframes swirlFade{0%{opacity:0;transform:scale(0.3) rotate(0)}30%{opacity:1;transform:scale(1) rotate(360deg)}100%{opacity:0;transform:scale(1.6) rotate(720deg)}}
+  </style>
+</head>
+<body>
+  <!-- SAME SIDEBAR / HTML STRUCTURE AS BEFORE -->
+  <aside class="sidebar">
+    <div class="brand"><h1>Pikaplay Arena</h1></div>
+    <div class="menu">
+        <a href="home.html">Home</a>
+        <a href="shop.html">Marketplace</a>
+        <a href="arena.html">Game Play</a>
+        <a href="online.html" style="background-color: rgb(241, 112, 37);color:white">Online Play</a>
+    </div>
+    <div class="status">
+      <img src="images/Ash_ketchum_render_by_tzblacktd-da9k0wb.webp" alt="" style="height:50px;width:50px;border-radius:50%;align-self:center">
+      <span class="coins" id="coinDisplay">1500 Coins</span>
+      <span class="free-balance" id="tokenDisplay">Loading...</span>
+      <span class="wallet" id="walletDisplay"></span>
+      <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </aside>
+
+  <div class="container">
+    <h1 class="title">ONLINE BATTLE ARENA</h1>
+
+    <div id="roomSetup" class="room-setup" style="background:#0a0f1d">
+      <button onclick="createRoom()">CREATE ROOM</button>
+      <p style="margin:20px 0;font-size:1.4rem">OR</p>
+      <input type="text" id="roomCodeInput" placeholder="Enter room code">
+      <button onclick="joinRoom()">JOIN ROOM</button>
+      <div id="roomStatus" style="margin-top:20px;font-size:1.2rem;color:#ffcb05"></div>
+    </div>
+
+    <div id="teamSelect" style="display:none">
+      <h2 style="color:#ffcb05;font-size:2rem;margin-bottom:2rem">Choose Your Pokémon</h2>
+      <div class="team-select" id="teamGrid"></div>
+      <button id="readyBtn" disabled style="margin-top:2rem;font-size:1.8rem;padding:20px 50px">READY!</button>
+    </div>
+
+    <div id="battleArea" class="battle-area" style="display:none">
+      <div id="attackContainer" class="attack-container"></div>
+
+      <div style="position:absolute;bottom:70px;left:70px">
+        <h2 style="color:orange">YOU</h2>
+        <div class="player-base" style="bottom:-40px">
+          <div class="hp-box">
+            <div style="color:#5266e7" id="playerName">???</div>
+            <div class="hp-bar-small"><div class="hp-fill-small" id="playerHpFill"></div></div>
+            <div id="playerHpText">100/100 HP</div>
+          </div>
+          <img id="playerImg" class="pokemon-back" src="" alt="Your Pokémon" style="height:300px;width:300px">
+        </div>
+      </div>
+
+      <div style="position:absolute;top:50px;right:70px">
+        <h2 style="color:red">OPPONENT</h2>
+        <div class="opponent-base" style="margin-top:20px">
+          <div class="hp-box">
+            <div style="color:#f44336" id="oppoName">???</div>
+            <div class="hp-bar-small"><div class="hp-fill-small" id="oppoHpFill"></div></div>
+            <div id="oppoHpText">100/100 HP</div>
+          </div>
+          <img id="oppoImg" class="pokemon-front" src="" alt="Opponent" style="height:150px;width:150px">
+        </div>
+      </div>
+
+      <div id="playerActions"></div>
+    </div>
+
+    <div class="log" id="battleLog">Waiting for opponent...</div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="confirm-modal" id="confirmModal">
+    <h2 style="color:#ffcb05">Opponent Wants to Battle!</h2>
+    <p>Player ID:</p>
+    <p id="opponentId" style="font-family:monospace;color:#4caf50;font-size:1.4rem"></p>
+    <button style="background:#4caf50;padding:14px 30px;margin:10px;font-size:1.3rem;border-radius:12px" onclick="acceptOpponent()">Accept</button>
+    <button style="background:#f44336;padding:14px 30px;margin:10px;font-size:1.3rem;border-radius:12px" onclick="rejectOpponent()">Reject</button>
+  </div>
+
+<script>
+// ==================== GLOBALS ====================
+let provider, signer, tokenContract, userAddress = null;
+let opponentAddress = null;
+let conn = null, peer = null;
+let myPokemon = null, opponentPokemon = null, myTurn = false;
+let isHost = false, bothReady = false, turnDecided = false;
+let myMoves = [];
+
+// ==================== WALLET & TOKEN (unchanged) ====================
+// ... (same code as your original for wallet, payToWinner, log, etc.) ...
+
+const TOKEN_ADDRESS = '0x614f35C48c780e637496B3F707c9373723689868';
+const ERC20_ABI = ["function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)","function transfer(address to, uint256 amount) returns (bool)"];
+const tokenDisplay = document.getElementById('tokenDisplay');
+const walletDisplay = document.getElementById('walletDisplay');
+const connectBtn = document.getElementById('connectBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+connectBtn.onclick = async () => {
+  if (!window.ethereum) return alert('Install MetaMask!');
+  try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] }); } catch(e) { return; }
+  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+  userAddress = accounts[0];
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+  signer = provider.getSigner();
+  tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, signer);
+  walletDisplay.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+  connectBtn.style.display = 'none'; logoutBtn.style.display = 'inline-block';
+  await updateTokenBalance();
+  log('Wallet connected!');
+};
+logoutBtn.onclick = () => location.reload();
+
+async function updateTokenBalance() {
+  if (!tokenContract || !userAddress) return;
+  const bal = await tokenContract.balanceOf(userAddress);
+  const dec = await tokenContract.decimals();
+  tokenDisplay.textContent = `${Math.floor(Number(bal)/10**dec)} TOKEN`;
+}
+
+async function payToWinner(winner) {
+  if (!winner || !tokenContract) return log('<span style="color:#ff4444">No wallet/winner</span>');
+  const dec = await tokenContract.decimals();
+  const amt = ethers.utils.parseUnits("500", dec);
+  try {
+    const tx = await tokenContract.transfer(winner, amt);
+    await tx.wait();
+    await updateTokenBalance();
+    log('<span style="color:#4caf50;font-size:1.8rem">500 TOKEN PAID!</span>');
+  } catch(e) { log('<span style="color:#ff4444">Payment failed</span>'); }
+}
+
+function log(msg) {
+  const el = document.getElementById('battleLog');
+  el.innerHTML += `<div>${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ==================== MOVE FETCHING ====================
+async function fetchMoves(pokemonId) {
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+    const data = await res.json();
+    const moves = data.moves
+      .map(m => ({ name: m.move.name.replace(/-/g,' ').toUpperCase(), url: m.move.url }))
+      .filter(m => m.name.length <= 14) // short names for UI
+      .slice(0, 12);
+    const detailed = await Promise.all(moves.map(async m => {
+      const r = await fetch(m.url);
+      const d = await r.json();
+      const power = d.power || 40;
+      const type = d.type.name;
+      return { name: m.name, power, type };
+    }));
+    return detailed.slice(0,4);
+  } catch(e) {
+    return [
+      {name:"TACKLE",power:40,type:"normal"},
+      {name:"GROWL",power:0,type:"normal"},
+      {name:"QUICK ATTACK",power:40,type:"normal"},
+      {name:"SCRATCH",power:40,type:"normal"}
+    ];
+  }
+}
+
+// ==================== ATTACK ANIMATION ENGINE ====================
+const TYPE_ANIMS = {
+  fire: "fire-explosion",
+  water: "water-wave",
+  grass: "leaf-blade",
+  electric: "lightning-bolt",
+  psychic: "psychic-wave",
+  normal: "beam-line",
+  fighting: "beam-line",
+  flying: "beam-line",
+  poison: "psychic-wave",
+  ground: "beam-line",
+  rock: "beam-line",
+  bug: "leaf-blade",
+  ghost: "psychic-wave",
+  ice: "water-wave",
+  dragon: "fire-explosion",
+  dark: "beam-line",
+  steel: "beam-line",
+  fairy: "psychic-wave"
+};
+
+function playAttackAnimation(isPlayer, moveType, isMiss = false) {
+  const container = document.getElementById('attackContainer');
+  const attacker = isPlayer ? document.getElementById('playerImg') : document.getElementById('oppoImg');
+  const target = isPlayer ? document.getElementById('oppoImg') : document.getElementById('playerImg');
+  const aRect = attacker.getBoundingClientRect();
+  const tRect = target.getBoundingClientRect();
+  const cRect = container.getBoundingClientRect();
+
+  const startX = aRect.left + aRect.width/2 - cRect.left;
+  const startY = aRect.top + aRect.height/2 - cRect.top;
+  let endX = tRect.left + tRect.width/2 - cRect.left;
+  let endY = tRect.top + tRect.height/2 - cRect.top;
+
+  if (isMiss) {
+    target.classList.add('dodge-jump');
+    setTimeout(() => target.classList.remove('dodge-jump'), 800);
+    endX += (Math.random()>0.5?200:-200);
+    endY -= 120;
+  }
+
+  const animClass = TYPE_ANIMS[moveType] || "beam-line";
+
+  if (animClass.includes('explosion') || animClass.includes('wave') || animClass.includes('blade') || animClass.includes('psychic')) {
+    for (let i = 0; i < (animClass === "lightning-bolt" ? 9 : 12); i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = animClass;
+        el.style.left = startX + 'px';
+        el.style.top = startY + 'px';
+        container.appendChild(el);
+        const dx = endX - startX + (Math.random()-0.5)*80;
+        const dy = endY - startY + (Math.random()-0.5)*80;
+        el.animate([
+          { transform: 'translate(0,0) scale(0.3)', opacity: 0.9 },
+          { transform: `translate(${dx}px,${dy}px) scale(1.5)`, opacity: 0 }
+        ], { duration: 800, easing: 'cubic-bezier(0.2,0.8,0.4,1)' })
+          .onfinish = () => el.remove();
+      }, i*70);
+    }
+  } else {
+    const line = document.createElement('div');
+    line.className = 'beam-line';
+    line.style.left = startX + 'px';
+    line.style.top = startY + 'px';
+    line.style.width = Math.hypot(endX-startX, endY-startY) + 'px';
+    line.style.transform = `rotate(${Math.atan2(endY-startY, endX-startX)}rad)`;
+    container.appendChild(line);
+    line.animate([{opacity:0},{opacity:1,offset:0.2},{opacity:0}], {duration:900}).onfinish = () => line.remove();
+  }
+
+  if (!isMiss) {
+    setTimeout(() => {
+      const flash = document.createElement('div');
+      flash.className = 'hit-flash';
+      flash.style.left = (endX-110)+'px';
+      flash.style.top = (endY-110)+'px';
+      container.appendChild(flash);
+      flash.animate([{opacity:0},{opacity:0.9},{opacity:0}],{duration:400}).onfinish(()=>flash.remove());
+      document.getElementById('battleArea').classList.add('shake');
+      setTimeout(()=>document.getElementById('battleArea').classList.remove('shake'),600);
+    }, 600);
+  }
+}
+
+// ==================== POKEMON HELPERS ====================
+let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
+function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`; }
+function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
+function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
+
+// ==================== PEERJS ROOM SYSTEM ==================== (unchanged, only minor fixes)
+function createRoom() {
+  if (!userAddress) return alert("Connect wallet first!");
+  const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
+  if (!code) return;
+  isHost = true;
+  peer = new Peer(code, { host: '0.peerjs.com', port: 443, secure: true });
+  setupPeerEvents();
+}
+
+function joinRoom() {
+  if (!userAddress) return alert("Connect wallet first!");
+  const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  if (!code) return alert("Enter a room code!");
+  peer = new Peer(undefined, { host: '0.peerjs.com', port: 443, secure: true });
+  setupPeerEvents();
+  peer.on('open', () => {
+    conn = peer.connect(code, { reliable: true });
+    setupConnEvents(conn);
+    log('Joining room...');
+  });
+}
+
+function setupPeerEvents() {
+  peer.on('open', id => {
+    document.getElementById('roomStatus').innerHTML = `Room Created!<br><b style="font-size:1.8rem;color:#ffcb05">${id}</b><br>Waiting...`;
+    log(`Room ${id} ready`);
+  });
+
+  peer.on('connection', incoming => {
+    if (conn) return incoming.close();
+    document.getElementById('opponentId').textContent = incoming.peer;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('confirmModal').style.display = 'block';
+    pendingOpponent = incoming;
+  });
+}
+
+let pendingOpponent = null;
+function acceptOpponent() {
+  conn = pendingOpponent;
+  pendingOpponent = null;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+  setupConnEvents(conn);
+  conn.send({ type: 'accepted' });
+  startTeamSelection();
+  log('Battle accepted!');
+}
+
+function rejectOpponent() {
+  if (pendingOpponent) pendingOpponent.close();
+  pendingOpponent = null;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
+function setupConnEvents(c) {
+  conn=c;
+  conn.on('open',()=>log('Connected!'));
+  conn.on('data', async data => {
+    if (data.type==='wallet') opponentAddress = data.address;
+    else if (data.type==='accepted') startTeamSelection();
+    else if (data.type==='pokemon') {
+      opponentPokemon = data.poke;
+      document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
+      document.getElementById('oppoName').textContent = opponentPokemon.name.toUpperCase();
+      document.getElementById('oppoHpText').textContent = '100/100 HP';
+      document.getElementById('oppoHpFill').style.width = '100%';
+      log(`Opponent chose ${opponentPokemon.name.toUpperCase()}!`);
+      if (myPokemon) { bothReady=true; startBattle(); }
+    }
+    else if (data.type==='attack') receiveAttack(data);
+    else if (data.type==='turn') { turnDecided=true; myTurn=!data.first; myTurn?(log('<span style="color:#4caf50">Your turn!</span>'),showMoves()):log('<span style="color:#f44336">Opponent first</span>'); }
+    else if (data.type==='victory') { log('<span style="color:#f44336;font-size:2.4rem">YOU LOST!</span>'); setTimeout(()=>payToWinner(opponentAddress),1500); }
+    else if (data.type==='defeat') { log('<span style="color:#4caf50;font-size:2.4rem">VICTORY! +500 TOKEN</span>'); setTimeout(updateTokenBalance,4000); }
+  });
+}
+
+// ==================== TEAM & MOVES ====================
+async function startTeamSelection() {
+  document.getElementById('roomSetup').style.display='none';
+  document.getElementById('teamSelect').style.display='block';
+  const grid = document.getElementById('teamGrid'); grid.innerHTML='';
+  if (ownedLocal.length===0) { grid.innerHTML='<p style="grid-column:1/-1;color:#ffcb05;font-size:1.5rem">No Pokémon!</p>'; return; }
+  ownedLocal.forEach(p => {
+    const card = document.createElement('div');
+    card.className='team-card';
+    card.innerHTML=`<img src="${img(p.id)}"><br><b>${p.name.toUpperCase()}</b>`;
+    card.onclick = async () => {
+      document.querySelectorAll('.team-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      myPokemon = p;
+      myMoves = await fetchMoves(p.id);
+      document.getElementById('readyBtn').disabled=false;
+    };
+    grid.appendChild(card);
+  });
+
+  document.getElementById('readyBtn').onclick = () => {
+    document.getElementById('playerImg').src = backImg(myPokemon.id) || img(myPokemon.id);
+    document.getElementById('playerName').textContent = myPokemon.name.toUpperCase();
+    document.getElementById('teamSelect').style.display='none';
+    document.getElementById('battleArea').style.display='block';
+    conn.send({type:'pokemon', poke:myPokemon});
+    log(`You sent out ${myPokemon.name.toUpperCase()}!`);
+    if (opponentPokemon) { bothReady=true; startBattle(); }
+  };
+}
+
+function startBattle() {
+  log('<b style="color:#ffcb05;font-size:1.8rem">BATTLE START!</b>');
+  if (isHost && !turnDecided) {
+    turnDecided=true;
+    myTurn = Math.random()<0.5;
+    conn.send({type:'turn', first:myTurn});
+    myTurn?(log('<span style="color:#4caf50">You go first!</span>'),showMoves()):log('<span style="color:#f44336">Opponent goes first</span>');
+  }
+}
+
+function showMoves() {
+  if (!myTurn) return;
+  const actions = document.getElementById('playerActions');
+  actions.innerHTML = '';
+  myMoves.forEach((move, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'move-btn';
+    btn.textContent = move.name;
+    btn.onclick = () => useMove(move);
+    actions.appendChild(btn);
+  });
+}
+
+function useMove(move) {
+  if (!myTurn || !conn) return;
+  document.querySelectorAll('.move-btn').forEach(b=>b.disabled=true);
+  const isMiss = Math.random() < 0.2;
+  const damage = isMiss ? 0 : 10 + Math.floor(Math.random()*6); // 10–15
+
+  playAttackAnimation(true, move.type, isMiss);
+  conn.send({type:'attack', moveName:move.name, damage, type:move.type, missed:isMiss});
+
+  if (isMiss) {
+    log(`<span style="color:#aaa"><b>MISS!</b> ${opponentPokemon?.name} dodged!</span>`);
+  } else {
+    log(`You used <b style="color:#ffeb3b">${move.name}</b>! Dealt <b style="color:#ff4444">${damage}</b> damage!`);
+    let hp = parseInt(document.getElementById('oppoHpText').textContent);
+    hp = Math.max(0, hp - damage);
+    document.getElementById('oppoHpFill').style.width = hp + '%';
+    document.getElementById('oppoHpText').textContent = hp + '/100 HP';
+    document.getElementById('oppoHpFill').classList.toggle('warning', hp<=50);
+    document.getElementById('oppoHpFill').classList.toggle('danger', hp<=20);
+
+    if (hp<=0) {
+      setTimeout(faintOpponent, 1200);
+      conn.send({type:'victory'});
+    }
+  }
+  myTurn = false;
+  document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
+}
+
+function receiveAttack(data) {
+  playAttackAnimation(false, data.type, data.missed);
+  if (data.missed) {
+    log(`<span style="color:#aaa"><b>MISS!</b> You dodged!</span>`);
+    myTurn = true; showMoves(); return;
+  }
+  log(`Opponent used <b style="color:#ffeb3b">${data.moveName}</b>! Took <b style="color:#ff4444">${data.damage}</b> damage!`);
+  let hp = parseInt(document.getElementById('playerHpText').textContent);
+  hp = Math.max(0, hp - data.damage);
+  document.getElementById('playerHpFill').style.width = hp + '%';
+  document.getElementById('playerHpText').textContent = hp + '/100 HP';
+  const fill = document.getElementById('playerHpFill');
+  fill.classList.toggle('warning', hp<=50);
+  fill.classList.toggle('danger', hp<=20);
+  if (hp<=0) { setTimeout(faintPlayer, 1200); conn.send({type:'defeat'}); }
+  else { myTurn=true; showMoves(); }
+}
+
+function faintOpponent() {
+  const img = document.getElementById('oppoImg');
+  img.classList.add('fainted');
+  const eyes = document.createElement('div'); eyes.className='faint-eyes'; img.parentNode.appendChild(eyes);
+  const swirl = document.createElement('div'); swirl.className='faint-swirl'; document.getElementById('battleArea').appendChild(swirl);
+  log('<span style="color:#4caf50;font-size:2.8rem">OPPONENT FAINTED!</span>');
+}
+function faintPlayer() {
+  const img = document.getElementById('playerImg');
+  img.classList.add('fainted');
+  const eyes = document.createElement('div'); eyes.className='faint-eyes'; img.parentNode.appendChild(eyes);
+  const swirl = document.createElement('div'); swirl.className='faint-swirl'; document.getElementById('battleArea').appendChild(swirl);
+  log('<span style="color:#ff4444;font-size:2.8rem">YOUR POKÉMON FAINTED!</span>');
+}
+</script>
+</body>
+</html>
