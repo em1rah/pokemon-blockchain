@@ -105,8 +105,7 @@
     <div id="roomSetup" class="room-setup" style="background:#0a0f1d">
       <button onclick="createRoom()">CREATE ROOM</button>
       <p style="margin:20px 0;font-size:1.4rem">OR</p>
-      <input type="text" id="roomCodeInput" placeholder="Enter room code">
-      <button onclick="joinRoom()">JOIN ROOM</button>
+<input type="text" id="roomCodeInput" placeholder="Enter 6-digit room code" maxlength="6" style="text-transform:uppercase">      <button onclick="joinRoom()">JOIN ROOM</button>
       <div id="roomStatus" style="margin-top:20px;font-size:1.2rem;color:#ffcb05"></div>
     </div>
 
@@ -656,11 +655,43 @@ let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
 
 function createRoom() {
   if (!userAddress) return alert("Connect wallet first!");
-  const code = prompt("Enter room code (e.g. MEWTWO)").trim().toUpperCase().substring(0,15);
-  if (!code) return;
+
+  // Generate random 6-character room code (A-Z, 0-9)
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
   isHost = true;
-  peer = new Peer(code, { host: '0.peerjs.com', port: 443, secure: true });
+  peer = new Peer(code, { 
+    host: '0.peerjs.com', 
+    port: 443, 
+    secure: true 
+  });
+
   setupPeerEvents();
+
+  // Optional: Copy to clipboard automatically
+  navigator.clipboard.writeText(code).catch(() => {});
+  
+  // Show the generated code nicely
+  document.getElementById('roomStatus').innerHTML = `
+    <div style="font-size:1.6rem;color:#ffcb05">
+      Room Created!<br><br>
+      <div style="background:rgba(255,203,5,0.2);padding:16px;border:3px solid #ffcb05;border-radius:12px;font-size:2.2rem;letter-spacing:8px;font-family:monospace">
+        ${code}
+      </div>
+      <br>
+      <button onclick="navigator.clipboard.writeText('${code}'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy Code',2000)" 
+              style="padding:10px 20px;font-size:1rem;background:#ff9800;border:none;border-radius:8px;color:white;cursor:pointer">
+        Copy Code
+      </button>
+      <br><br>Waiting for opponent to join...
+    </div>
+  `;
+
+  log(`Room created: <b style="color:#ffcb05">${code}</b>`);
 }
 
 function joinRoom() {
