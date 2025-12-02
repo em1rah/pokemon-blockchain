@@ -230,7 +230,7 @@ const POKEMON_MOVES = {
   646: { name: "Kyurem", moves: ["Glaciate", "Dragon Pulse", "Ice Beam", "Draco Meteor"] }
 };
 
-// ==================== EXPANDED MOVE TYPE MAPPING (Supports all above moves) ====================
+// ==================== EXPANDED MOVE TYPE MAPPING ====================
 const MOVE_TYPES = {
   // Normal
   "Tackle":"normal","Quick Attack":"normal","Scratch":"normal","Pound":"normal",
@@ -295,12 +295,12 @@ const MOVE_TYPES = {
   "default": "normal"
 };
 
-// Fallback: if Pokémon not in database, give 4 random cool moves
+// Fallback: if Pokémon not in database, give 4 random moves
 const FALLBACK_MOVES = ["Tackle", "Quick Attack", "Thunderbolt", "Flamethrower", "Hydro Pump", "Solar Beam", "Psychic", "Shadow Ball", "Hyper Beam", "Giga Impact"];
 
 function getMovesForPokemon(id) {
   if (POKEMON_MOVES[id]) return POKEMON_MOVES[id].moves;
-  // Random 4 moves from cool pool
+  // Random 4 moves 
   const shuffled = FALLBACK_MOVES.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 4);
 }
@@ -310,7 +310,7 @@ function img(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/mas
 function backImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${id}.gif`; }
 function frontImg(id) { return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`; }
 
-// ==================== LOG & WALLET (unchanged) ====================
+// ==================== LOG & WALLET  ====================
 function log(msg) {
   const el = document.getElementById('battleLog');
   el.innerHTML += `<div>${msg}</div>`;
@@ -564,8 +564,6 @@ function createNormalTackle(x1, y1, x2, y2) {
   ], {duration:800}).onfinish = () => tackle.remove();
 }
 
-// Add more if you want: poison gas clouds, rock slides, wind gusts, etc.
-
 // ==================== ATTACK LOGIC ====================
 function attack() {
   if (!myTurn || !conn || !myPokemon) return;
@@ -650,7 +648,7 @@ function showAttackButton() {
   document.getElementById('playerActions').innerHTML = `<button class="attack-btn" onclick="attack()">ATTACK!</button>`;
 }
 
-// ==================== PEERJS & TEAM SELECTION (unchanged) ====================
+// ==================== PEERJS & TEAM SELECTION ====================
 let ownedLocal = JSON.parse(localStorage.getItem('owned') || '[]');
 
 function createRoom() {
