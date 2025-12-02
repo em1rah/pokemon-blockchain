@@ -77,6 +77,96 @@
     @keyframes faintFall{0%{transform:translateY(0) rotate(0deg);opacity:1}70%{transform:translateY(120px) rotate(15deg);opacity:0.7}100%{transform:translateY(280px) rotate(30deg);opacity:0}}
     @keyframes faintEyes{0%,50%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
     @keyframes swirlFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(0deg)}30%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(360deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(720deg)}}
+  
+  /* === EPIC WILD SHIELD (Replace the old one) === */
+.shield-dome {
+  position: absolute;
+  width: 420px;
+  height: 520px;
+  background: radial-gradient(circle at center, rgba(255, 235, 59, 0.4) 0%, transparent 65%);
+  border: 16px solid transparent;
+  border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,5 90,30 90,70 50,95 10,70 10,30" fill="none" stroke="%23ffeb3b" stroke-width="8"/></svg>') 16;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 100px #ffeb3b,
+    0 0 200px #ffd700,
+    inset 0 0 120px rgba(255, 220, 5, 0.6);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 15;
+  animation: shieldAppear 0.6s ease-out forwards, shieldPulse 2s infinite alternate 0.6s;
+}
+
+.shield-impact {
+  position: absolute;
+  width: 500px;
+  height:   600px;
+  background: radial-gradient(circle, #ffffff 5%, #ffeb3b 20%, transparent 50%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: shieldHitFlash 0.8s ease-out forwards;
+  z-index: 16;
+}
+
+.shield-hexagon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,8 88,35 88,65 50,92 12,65 12,35" fill="none" stroke="%23ffeb3b" stroke-width="6" opacity="0.8"/></svg>') center/contain no-repeat;
+  animation: hexRotate 8s linear infinite;
+  pointer-events: none;
+}
+
+.protect-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Press Start 2P', cursive;
+  font-size: 4rem;
+  color: #ffeb3b;
+  text-shadow: 
+    0 0 20px #fff,
+    0 0 40px #ffeb3b,
+    0 0 80px gold;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 17;
+  animation: protectFlash 2s ease-out forwards;
+}
+
+@keyframes shieldAppear {
+  0%   { transform: scale(0.2); opacity: 0; }
+  50%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+@keyframes shieldPulse {
+  0% { box-shadow: 0 0 100px #ffeb3b, 0 0 200px #ffd700, inset 0 0 120px rgba(255,220,5,0.6); }
+  100% { box-shadow: 0 0 140px #ffeb3b, 0 0 280px #ffd700, inset 0 0 160px rgba(255,220,5,0.8); }
+}
+
+@keyframes shieldHitFlash {
+  0%   { opacity: 0; transform: scale(0.8); }
+  30%  { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+@keyframes hexRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes protectFlash {
+  0%, 80% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  20%, 60% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+  @keyframes sparkleFly {
+    0% { transform: translate(0,0) scale(0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
+  }
   </style>
 </head>
 <body>
@@ -335,6 +425,142 @@ document.getElementById('connectBtn').onclick = async () => {
 
 document.getElementById('logoutBtn').onclick = () => location.reload();
 
+// ==================== ALL MISSING ANIMATION FUNCTIONS ====================
+
+function createEarthquakeCrack(x1, y1, x2, y2) {
+  for (let i = 0; i < 12; i++) {
+    const crack = document.createElement('div');
+    crack.style.position = 'absolute';
+    crack.style.width = '6px';
+    crack.style.height = (80 + Math.random() * 120) + 'px';
+    crack.style.background = '#8B4513';
+    crack.style.boxShadow = '0 0 20px #654321';
+    crack.style.left = (x2 + (Math.random() - 0.5) * 300) + 'px';
+    crack.style.top = y2 + 'px';
+    crack.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.getElementById('attackContainer').appendChild(crack);
+    crack.animate([
+      { transform: 'translateY(0) scale(0)', opacity: 1 },
+      { transform: 'translateY(-200px) scale(1.5)', opacity: 0 }
+    ], { duration: 1200, delay: i * 80 }).onfinish = () => crack.remove();
+  }
+  // Ground shake
+  document.getElementById('battleArea').classList.add('shake');
+  setTimeout(() => document.getElementById('battleArea').classList.remove('shake'), 800);
+}
+
+function createIceExplosion(x, y) {
+  const exp = document.createElement('div');
+  exp.className = 'fire-explosion';
+  exp.style.left = (x-120)+'px'; exp.style.top = (y-120)+'px';
+  exp.style.background = 'radial-gradient(circle, #00ffff 10%, #88eeee 50%, transparent 80%)';
+  exp.style.boxShadow = '0 0 80px #00ffff';
+  document.getElementById('attackContainer').appendChild(exp);
+  exp.animate([{transform:'scale(0)',opacity:1},{transform:'scale(4)',opacity:0}], {duration:900}).onfinish = () => exp.remove();
+}
+
+function createConfusionSwirl(x, y) {
+  const swirl = document.createElement('div');
+  swirl.style.position = 'absolute';
+  swirl.style.width = '300px'; swirl.style.height = '300px';
+  swirl.style.background = 'conic-gradient(from 0deg, #ff00ff, #00ffff, #ff00ff)';
+  swirl.style.borderRadius = '50%';
+  swirl.style.left = (x-150)+'px'; swirl.style.top = (y-150)+'px';
+  swirl.style.opacity = '0.7';
+  document.getElementById('attackContainer').appendChild(swirl);
+  swirl.animate([
+    { transform: 'rotate(0deg) scale(0.3)', opacity: 0 },
+    { transform: 'rotate(720deg) scale(2)', opacity: 0.9 },
+    { opacity: 0 }
+  ], { duration: 1400 }).onfinish = () => swirl.remove();
+}
+
+function createFightingPunch(x1, y1, x2, y2) {
+  const fist = document.createElement('div');
+  fist.style.position = 'absolute';
+  fist.style.width = '100px'; fist.style.height = '100px';
+  fist.style.background = 'radial-gradient(circle, #ff4500, #ff8c00)';
+  fist.style.borderRadius = '50%';
+  fist.style.left = x1 + 'px'; fist.style.top = y1 + 'px';
+  fist.style.boxShadow = '0 0 40px orange';
+  document.getElementById('attackContainer').appendChild(fist);
+  fist.animate([
+    { transform: 'scale(0.6)', opacity: 1 },
+    { transform: `translate(${x2-x1}px,${y2-y1}px) scale(2.5)`, opacity: 0 }
+  ], { duration: 600 }).onfinish = () => fist.remove();
+}
+
+function createRockThrow(x1, y1, x2, y2) {
+  for (let i = 0; i < 8; i++) {
+    const rock = document.createElement('div');
+    rock.style.position = 'absolute';
+    rock.style.width = (30 + Math.random()*40)+'px';
+    rock.style.height = rock.style.width;
+    rock.style.background = '#8B7355';
+    rock.style.borderRadius = '30%';
+    rock.style.left = x1 + 'px'; rock.style.top = y1 + 'px';
+    document.getElementById('attackContainer').appendChild(rock);
+    const angle = Math.atan2(y2-y1, x2-x1) + (Math.random()-0.5)*0.8;
+    const dist = Math.hypot(x2-x1, y2-y1) + Math.random()*100;
+    rock.animate([
+      { transform: 'translate(0,0) rotate(0deg)' },
+      { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) rotate(1080deg)` }
+    ], { duration: 1000 }).onfinish = () => rock.remove();
+  }
+}
+
+function createGustWind(x1, y1, x2, y2) {
+  for (let i = 0; i < 20; i++) {
+    const gust = document.createElement('div');
+    gust.style.position = 'absolute';
+    gust.style.width = '80px';
+    gust.style.height = '20px';
+    gust.style.background = 'rgba(255,255,255,0.6)';
+    gust.style.borderRadius = '50%';
+    gust.style.left = x1 + 'px'; gust.style.top = (y1 + (i-10)*20) + 'px';
+    gust.style.filter = 'blur(4px)';
+    document.getElementById('attackContainer').appendChild(gust);
+    gust.animate([
+      { transform: 'translateX(0)', opacity: 0.8 },
+      { transform: `translateX(${x2-x1 + 400}px)`, opacity: 0 }
+    ], { duration: 800, delay: i*40 }).onfinish = () => gust.remove();
+  }
+}
+
+function createPoisonGas(x1, y1, x2, y2) {
+  for (let i = 0; i < 15; i++) {
+    const cloud = document.createElement('div');
+    cloud.style.position = 'absolute';
+    cloud.style.width = (60 + Math.random()*80)+'px';
+    cloud.style.height = cloud.style.width;
+    cloud.style.background = 'radial-gradient(circle, #9932cc, #800080)';
+    cloud.style.borderRadius = '50%';
+    cloud.style.left = (x2 + (Math.random()-0.5)*300) + 'px';
+    cloud.style.top = (y2 + (Math.random()-0.5)*300) + 'px';
+    cloud.style.opacity = '0.7';
+    document.getElementById('attackContainer').appendChild(cloud);
+    cloud.animate([
+      { transform: 'scale(0)', opacity: 0 },
+      { transform: 'scale(2)', opacity: 0.7 },
+      { opacity: 0 }
+    ], { duration: 1600, delay: i*100 }).onfinish = () => cloud.remove();
+  }
+}
+
+function createMetalClaw(x1, y1, x2, y2) {
+  const claw = document.createElement('div');
+  claw.style.position = 'absolute';
+  claw.style.width = '120px'; claw.style.height = '40px';
+  claw.style.background = 'linear-gradient(45deg, #ccc, #fff, #aaa)';
+  claw.style.clipPath = 'polygon(0% 0%, 100% 50%, 0% 100%)';
+  claw.style.left = x1 + 'px'; claw.style.top = y1 + 'px';
+  claw.style.boxShadow = '0 0 30px silver';
+  document.getElementById('attackContainer').appendChild(claw);
+  claw.animate([
+    { transform: 'rotate(0) scale(0.6)' },
+    { transform: `translate(${x2-x1}px,${y2-y1}px) rotate(360deg) scale(2)` }
+  ], { duration: 700 }).onfinish = () => claw.remove();
+}
 // ==================== ATTACK ANIMATION ENGINE ====================
 function playAttackAnimation(isPlayerAttacker, moveName, isMiss = false) {
   const container = document.getElementById('attackContainer');
@@ -602,6 +828,74 @@ function attack() {
 }
 
 function receiveAttack(data) {
+  const shieldActivated = Math.random() < 0.15; // 15% Wild Shield
+
+  if (shieldActivated) {
+    log(`<span style="color:#ffeb3b;font-size:2.6rem;text-shadow:0 0 30px gold">
+           <b>✦ WILD SHIELD ACTIVATED! ✦</b><br><i>Attack blocked completely!</i></span>`);
+
+    const playerImg = document.getElementById('playerImg');
+    const rect = playerImg.getBoundingClientRect();
+    const containerRect = document.getElementById('attackContainer').getBoundingClientRect();
+
+    const centerX = rect.left + rect.width / 2 - containerRect.left;
+    const centerY = rect.top + rect.height / 2 - containerRect.top;
+
+    // Main shield dome
+    const shield = document.createElement('div');
+    shield.className = 'shield-dome';
+    shield.style.left = (centerX - 210) + 'px';
+    shield.style.top = (centerY - 260) + 'px';
+    document.getElementById('attackContainer').appendChild(shield);
+
+    // Hexagon overlay
+    const hex = document.createElement('div');
+    hex.className = 'shield-hexagon';
+    hex.style.left = (centerX - 210) + 'px';
+    hex.style.top = (centerY -  - 260) + 'px';
+    document.getElementById('attackContainer').appendChild(hex);
+
+    // "PROTECT!" text
+    const protectText = document.createElement('div');
+    protectText.className = 'protect-text';
+    protectText.textContent = 'PROTECT!';
+    protectText.style.left = centerX + 'px';
+    protectText.style.top = (centerY - 100) + 'px';
+    document.getElementById('attackContainer').appendChild(protectText);
+
+    // Impact flash when attack hits shield
+    setTimeout(() => {
+      const impact = document.createElement('div');
+      impact.className = 'shield-impact';
+      impact.style.left = (centerX - 250) + 'px';
+      impact.style.top = (centerY - 300) + 'px';
+      document.getElementById('attackContainer').appendChild(impact);
+
+      // Screen shake + Pokémon flash
+      document.body.style.background = '#fff';
+      playerImg.style.filter = 'brightness(3)';
+      setTimeout(() => {
+        document.body.style.background = '#000';
+        playerImg.style.filter = '';
+      }, 100);
+    }, 600);
+
+    // Play attack animation (but it hits the shield!)
+    playAttackAnimation(false, data.moveName, false);
+
+    // Clean up
+    setTimeout(() => {
+      shield.remove();
+      hex.remove();
+      protectText.remove();
+    }, 3000);
+
+    myTurn = true;
+    showAttackButton();
+    return;
+  }
+
+  // === Normal attack flow if no shield ===
   playAttackAnimation(false, data.moveName, data.missed);
 
   if (data.missed) {
