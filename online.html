@@ -791,71 +791,92 @@ function createNormalTackle(x1, y1, x2, y2) {
 }
 
 // ==================== ATTACK LOGIC ====================
+// ==================== FIXED & SYNCED ATTACK LOGIC ====================
 function attack() {
   if (!myTurn || !conn || !myPokemon) return;
 
- const moves = getMovesForPokemon(myPokemon.id);
+  const moves = getMovesForPokemon(myPokemon.id);
   const chosenMove = moves[Math.floor(Math.random() * moves.length)];
   const isMiss = Math.random() < 0.2;
-  const damage = isMiss ? 0 : 15 + Math.floor(Math.random() * 6);
+  const baseDamage = 15 + Math.floor(Math.random() * 6);
+  const damage = isMiss ? 0 : baseDamage;
 
+  // Play animation immediately
   playAttackAnimation(true, chosenMove, isMiss);
 
+  // Update LOCAL opponent HP (optimistic UI)
+  let oppHp = parseInt(document.getElementById('oppoHpText').textContent.split('/')[0]);
+  const newOppHp = Math.max(0, oppHp - damage);
+
+  // Update UI immediately for smoothness
+  document.getElementById('oppoHpFill').style.width = newOppHp + '%';
+  document.getElementById('oppoHpText').textContent = newOppHp + '/100 HP';
+  document.getElementById('oppoHpFill').classList.toggle('warning', newOppHp <= 50 && newOppHp > 20);
+  document.getElementById('oppoHpFill').classList.toggle('danger', newOppHp <= 20);
+
+  // Log
   if (isMiss) {
-    log(`<span style="color:#ccc"><b>${myPokemon.name.toUpperCase()}</b> used <b>${chosenMove}</b>...<br>but it <b style="color:#ff9800">MISSED!</b></span>`);
+    log(`<span style="color:#ccc"><b>${myPokemon.name.toUpperCase()}</b> used <b> ${chosenMove}</b>...</span><br><b style="color:#ff9800">MISSED!</b>`);
   } else {
     log(`<b>${myPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${chosenMove}</b>!<br>Dealt <b style="color:#ff4444">${damage}</b> damage!`);
   }
 
-  conn.send({ type: 'attack', moveName: chosenMove, damage, missed: isMiss });
+  // Send real damage + new HP to opponent
+  conn.send({
+    type: 'attack',
+    moveName: chosenMove,
+    damage: damage,
+    missed: isMiss,
+    opponentNewHp: newOppHp  // This is the key fix!
+  });
 
-  if (!isMiss) {
-    let oppHp = parseInt(document.getElementById('oppoHpText').textContent);
-    oppHp = Math.max(0, oppHp - damage);
-    document.getElementById('oppoHpFill').style.width = oppHp + '%';
-    document.getElementById('oppoHpText').textContent = oppHp + '/100 HP';
-    document.getElementById('oppoHpFill').classList.toggle('warning', oppHp <= 50);
-    document.getElementById('oppoHpFill').classList.toggle('danger', oppHp <= 20);
-
-    if (oppHp <= 0) {
-      setTimeout(() => triggerFaint(false), 1200);
-      conn.send({ type: 'victory' });
-    }
+  // Check for KO locally
+  if (newOppHp <= 0) {
+    setTimeout(() => triggerFaint(false), 1200);
+    conn.send({ type: 'victory' }); // Tell opponent they lost
+ 
   }
 
+  // Disable button until opponent responds
   document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting for opponent...</div>';
   myTurn = false;
 }
 
+// ==================== FIXED RECEIVE ATTACK (NOW FULLY SYNCED) ====================
 function receiveAttack(data) {
-  const shieldActivated = Math.random() < 0.15; // 15% Wild Shield
+  // Always trust the attacker's damage calculation
+  const damage = data.damage || 0;
+  const missed = data.missed || false;
+  const opponentNewHp = data.opponentNewHp ?? 100;
+
+  // Play animation
+  playAttackAnimation(false, data.moveName, missed);
+
+  // === WILD SHIELD (15% chance) ===
+  const shieldActivated = Math.random() < 0.15;
 
   if (shieldActivated) {
     log(`<span style="color:#ffeb3b;font-size:2.6rem;text-shadow:0 0 30px gold">
-           <b>✦ WILD SHIELD ACTIVATED! ✦</b><br><i>Attack blocked completely!</i></span>`);
+           WILD SHIELD ACTIVATED!<br><i>Attack blocked completely!</i></span>`);
 
     const playerImg = document.getElementById('playerImg');
     const rect = playerImg.getBoundingClientRect();
     const containerRect = document.getElementById('attackContainer').getBoundingClientRect();
-
     const centerX = rect.left + rect.width / 2 - containerRect.left;
     const centerY = rect.top + rect.height / 2 - containerRect.top;
 
-    // Main shield dome
     const shield = document.createElement('div');
     shield.className = 'shield-dome';
     shield.style.left = (centerX - 210) + 'px';
     shield.style.top = (centerY - 260) + 'px';
     document.getElementById('attackContainer').appendChild(shield);
 
-    // Hexagon overlay
     const hex = document.createElement('div');
     hex.className = 'shield-hexagon';
     hex.style.left = (centerX - 210) + 'px';
-    hex.style.top = (centerY -  - 260) + 'px';
+    hex.style.top = (centerY - 260) + 'px';
     document.getElementById('attackContainer').appendChild(hex);
 
-    // "PROTECT!" text
     const protectText = document.createElement('div');
     protectText.className = 'protect-text';
     protectText.textContent = 'PROTECT!';
@@ -863,7 +884,6 @@ function receiveAttack(data) {
     protectText.style.top = (centerY - 100) + 'px';
     document.getElementById('attackContainer').appendChild(protectText);
 
-    // Impact flash when attack hits shield
     setTimeout(() => {
       const impact = document.createElement('div');
       impact.className = 'shield-impact';
@@ -871,7 +891,6 @@ function receiveAttack(data) {
       impact.style.top = (centerY - 300) + 'px';
       document.getElementById('attackContainer').appendChild(impact);
 
-      // Screen shake + Pokémon flash
       document.body.style.background = '#fff';
       playerImg.style.filter = 'brightness(3)';
       setTimeout(() => {
@@ -880,49 +899,38 @@ function receiveAttack(data) {
       }, 100);
     }, 600);
 
-    // Play attack animation (but it hits the shield!)
-    playAttackAnimation(false, data.moveName, false);
-
-    // Clean up
-    setTimeout(() => {
-      shield.remove();
-      hex.remove();
-      protectText.remove();
-    }, 3000);
+    setTimeout(() => { shield.remove(); hex.remove(); protectText.remove(); }, 3000);
 
     myTurn = true;
     showAttackButton();
     return;
   }
 
-  // === Normal attack flow if no shield ===
-  playAttackAnimation(false, data.moveName, data.missed);
-
-  if (data.missed) {
+  // === MISS ===
+  if (missed) {
     log(`<span style="color:#ccc">Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b>${data.moveName}</b>...<br>but you <b style="color:#4caf50">DODGED!</b></span>`);
     myTurn = true;
     showAttackButton();
     return;
   }
 
-  log(`Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${data.moveName}</b>!<br>Took <b style="color:#ff4444">${data.damage}</b> damage!`);
+  // === HIT: Use the attacker's calculated HP (truth source) ===
+  log(`Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${data.moveName}</b>!<br>You took <b style="color:#ff4444">${damage}</b> damage!`);
 
-  let myHp = parseInt(document.getElementById('playerHpText').textContent);
-  myHp = Math.max(0, myHp - data.damage);
-  document.getElementById('playerHpFill').style.width = myHp + '%';
-  document.getElementById('playerHpText').textContent = myHp + '/100 HP';
-  document.getElementById('playerHpFill').classList.toggle('warning', myHp <= 50);
-  document.getElementById('playerHpFill').classList.toggle('danger', myHp <= 20);
+  // Sync your own HP from attacker's data
+  document.getElementById('playerHpFill').style.width = opponentNewHp + '%';
+  document.getElementById('playerHpText').textContent = opponentNewHp + '/100 HP';
+  document.getElementById('playerHpFill').classList.toggle('warning', opponentNewHp <= 50 && opponentNewHp > 20);
+  document.getElementById('playerHpFill').classList.toggle('danger', opponentNewHp <= 20);
 
-  if (myHp <= 0) {
+  if (opponentNewHp <= 0) {
     setTimeout(() => triggerFaint(true), 1200);
-    conn.send({ type: 'defeat' });
+    conn.send({ type: 'defeat' }); // Tell opponent: "You won 500 tokens"
   } else {
     myTurn = true;
     showAttackButton();
   }
 }
-
 function triggerFaint(isPlayer) {
   const img = isPlayer ? document.getElementById('playerImg') : document.getElementById('oppoImg');
   img.classList.add('fainted');
@@ -1052,13 +1060,15 @@ function setupConnEvents(c) {
       myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">Your turn first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
     }
-    else if (data.type === 'victory') {
-      log('<span style="color:#f44336;font-size:2.4rem">YOU LOST!</span>');
-      setTimeout(() => payToWinner(opponentAddress), 1500);
-    }
-    else if (data.type === 'defeat') {
-      log('<span style="color:#4caf50;font-size:2rem">VICTORY! +500 TOKEN</span>');
-    }
+   if (data.type === 'victory') {
+    log('<span style="color:#f44336;font-size:3rem">YOU LOST THE BATTLE!</span><br><span style="color:#ff9800">-500 TOKEN</span>');
+    setTimeout(() => payToWinner(opponentAddress), 1500);
+    document.getElementById('playerActions').innerHTML = '<div style="color:#ff4444;font-size:2rem;padding:30px">DEFEAT</div>';
+  }
+   else if (data.type === 'defeat') {
+    log('<span style="color:#4caf50;font-size:3.5rem;text-shadow:0 0 30px lime">VICTORY!</span><br><span style="color:#ffeb3b">+500 TOKEN REWARD!</span>');
+    document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:2.5rem;padding:30px">YOU WIN!</div>';
+  }
   });
   conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left'); location.reload(); });
 }
