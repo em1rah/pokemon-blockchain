@@ -791,7 +791,7 @@ function createNormalTackle(x1, y1, x2, y2) {
 }
 
 // ==================== ATTACK LOGIC ====================
-// ==================== FIXED & SYNCED ATTACK LOGIC ====================
+// ==================== FIXED ATTACK (SENDS SHIELD INFO) ====================
 function attack() {
   if (!myTurn || !conn || !myPokemon) return;
 
@@ -801,14 +801,13 @@ function attack() {
   const baseDamage = 15 + Math.floor(Math.random() * 6);
   const damage = isMiss ? 0 : baseDamage;
 
-  // Play animation immediately
+  // Play animation
   playAttackAnimation(true, chosenMove, isMiss);
 
-  // Update LOCAL opponent HP (optimistic UI)
+  // Update opponent HP locally
   let oppHp = parseInt(document.getElementById('oppoHpText').textContent.split('/')[0]);
   const newOppHp = Math.max(0, oppHp - damage);
 
-  // Update UI immediately for smoothness
   document.getElementById('oppoHpFill').style.width = newOppHp + '%';
   document.getElementById('oppoHpText').textContent = newOppHp + '/100 HP';
   document.getElementById('oppoHpFill').classList.toggle('warning', newOppHp <= 50 && newOppHp > 20);
@@ -816,97 +815,39 @@ function attack() {
 
   // Log
   if (isMiss) {
-    log(`<span style="color:#ccc"><b>${myPokemon.name.toUpperCase()}</b> used <b> ${chosenMove}</b>...</span><br><b style="color:#ff9800">MISSED!</b>`);
+    log(`<b>${myPokemon.name.toUpperCase()}</b> used <b>${chosenMove}</b>...<br><b style="color:#ff9800">MISSED!</b>`);
   } else {
     log(`<b>${myPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${chosenMove}</b>!<br>Dealt <b style="color:#ff4444">${damage}</b> damage!`);
   }
 
-  // Send real damage + new HP to opponent
+  // SEND TO OPPONENT
   conn.send({
     type: 'attack',
     moveName: chosenMove,
     damage: damage,
     missed: isMiss,
-    opponentNewHp: newOppHp  // This is the key fix!
+    opponentNewHp: newOppHp
   });
 
-  // Check for KO locally
   if (newOppHp <= 0) {
     setTimeout(() => triggerFaint(false), 1200);
-    conn.send({ type: 'victory' }); // Tell opponent they lost
- 
+    conn.send({ type: 'victory' });
   }
 
-  // Disable button until opponent responds
-  document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting for opponent...</div>';
+  document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
   myTurn = false;
 }
 
 // ==================== FIXED RECEIVE ATTACK (NOW FULLY SYNCED) ====================
+// ==================== FIXED RECEIVE ATTACK (SHIELD LOGIC + SYNCED SHIELD) ====================
 function receiveAttack(data) {
-  // Always trust the attacker's damage calculation
   const damage = data.damage || 0;
   const missed = data.missed || false;
   const opponentNewHp = data.opponentNewHp ?? 100;
 
-  // Play animation
   playAttackAnimation(false, data.moveName, missed);
 
-  // === WILD SHIELD (15% chance) ===
-  const shieldActivated = Math.random() < 0.15;
-
-  if (shieldActivated) {
-    log(`<span style="color:#ffeb3b;font-size:2.6rem;text-shadow:0 0 30px gold">
-           WILD SHIELD ACTIVATED!<br><i>Attack blocked completely!</i></span>`);
-
-    const playerImg = document.getElementById('playerImg');
-    const rect = playerImg.getBoundingClientRect();
-    const containerRect = document.getElementById('attackContainer').getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2 - containerRect.left;
-    const centerY = rect.top + rect.height / 2 - containerRect.top;
-
-    const shield = document.createElement('div');
-    shield.className = 'shield-dome';
-    shield.style.left = (centerX - 210) + 'px';
-    shield.style.top = (centerY - 260) + 'px';
-    document.getElementById('attackContainer').appendChild(shield);
-
-    const hex = document.createElement('div');
-    hex.className = 'shield-hexagon';
-    hex.style.left = (centerX - 210) + 'px';
-    hex.style.top = (centerY - 260) + 'px';
-    document.getElementById('attackContainer').appendChild(hex);
-
-    const protectText = document.createElement('div');
-    protectText.className = 'protect-text';
-    protectText.textContent = 'PROTECT!';
-    protectText.style.left = centerX + 'px';
-    protectText.style.top = (centerY - 100) + 'px';
-    document.getElementById('attackContainer').appendChild(protectText);
-
-    setTimeout(() => {
-      const impact = document.createElement('div');
-      impact.className = 'shield-impact';
-      impact.style.left = (centerX - 250) + 'px';
-      impact.style.top = (centerY - 300) + 'px';
-      document.getElementById('attackContainer').appendChild(impact);
-
-      document.body.style.background = '#fff';
-      playerImg.style.filter = 'brightness(3)';
-      setTimeout(() => {
-        document.body.style.background = '#000';
-        playerImg.style.filter = '';
-      }, 100);
-    }, 600);
-
-    setTimeout(() => { shield.remove(); hex.remove(); protectText.remove(); }, 3000);
-
-    myTurn = true;
-    showAttackButton();
-    return;
-  }
-
-  // === MISS ===
+  // === DODGE: NO SHIELD ALLOWED ===
   if (missed) {
     log(`<span style="color:#ccc">Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b>${data.moveName}</b>...<br>but you <b style="color:#4caf50">DODGED!</b></span>`);
     myTurn = true;
@@ -914,10 +855,27 @@ function receiveAttack(data) {
     return;
   }
 
-  // === HIT: Use the attacker's calculated HP (truth source) ===
+  // === WILD SHIELD: Only on actual hits! ===
+  const shieldActivated = Math.random() < 0.15;
+
+  if (shieldActivated) {
+    log(`<span style="color:#ffeb3b;font-size:2.8rem;text-shadow:0 0 40px gold">
+           WILD SHIELD ACTIVATED!<br><i>Attack blocked!</i></span>`);
+
+    // Show shield on YOUR side
+    showWildShieldEffect(true);  // true = defending player
+
+    // Tell opponent: "I blocked your attack!"
+    conn.send({ type: 'shield' });
+
+    myTurn = true;
+    showAttackButton();
+    return;
+  }
+
+  // === NORMAL HIT ===
   log(`Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${data.moveName}</b>!<br>You took <b style="color:#ff4444">${damage}</b> damage!`);
 
-  // Sync your own HP from attacker's data
   document.getElementById('playerHpFill').style.width = opponentNewHp + '%';
   document.getElementById('playerHpText').textContent = opponentNewHp + '/100 HP';
   document.getElementById('playerHpFill').classList.toggle('warning', opponentNewHp <= 50 && opponentNewHp > 20);
@@ -925,11 +883,66 @@ function receiveAttack(data) {
 
   if (opponentNewHp <= 0) {
     setTimeout(() => triggerFaint(true), 1200);
-    conn.send({ type: 'defeat' }); // Tell opponent: "You won 500 tokens"
+    conn.send({ type: 'defeat' });
   } else {
     myTurn = true;
     showAttackButton();
   }
+}
+
+// === SHOW WILD SHIELD ON ANY PLAYER ===
+function showWildShieldEffect(isPlayerDefending) {
+  const targetImg = isPlayerDefending ? document.getElementById('playerImg') : document.getElementById('oppoImg');
+  const rect = targetImg.getBoundingClientRect();
+  const containerRect = document.getElementById('attackContainer').getBoundingClientRect();
+
+  const centerX = rect.left + rect.width / 2 - containerRect.left;
+  const centerY = rect.top + rect.height / 2 - containerRect.top;
+
+  // Shield dome
+  const shield = document.createElement('div');
+  shield.className = 'shield-dome';
+  shield.style.left = (centerX - 210) + 'px';
+  shield.style.top = (centerY - 260) + 'px';
+  document.getElementById('attackContainer').appendChild(shield);
+
+  // Hexagon
+  const hex = document.createElement('div');
+  hex.className = 'shield-hexagon';
+  hex.style.left = (centerX - 210) + 'px';
+  hex.style.top = (centerY - 260) + 'px';
+  document.getElementById('attackContainer').appendChild(hex);
+
+  // PROTECT! text
+  const text = document.createElement('div');
+  text.className = 'protect-text';
+  text.textContent = 'PROTECT!';
+  text.style.left = centerX + 'px';
+  text.style.top = (centerY - 100) + 'px';
+  document.getElementById('attackContainer').appendChild(text);
+
+  // Impact flash
+  setTimeout(() => {
+    const impact = document.createElement('div');
+    impact.className = 'shield-impact';
+    impact.style.left = (centerX - 250) + 'px';
+    impact.style.top = (centerY - 300) + 'px';
+    document.getElementById('attackContainer').appendChild(impact);
+
+    document.body.style.background = '#fff';
+    targetImg.style.filter = 'brightness(4)';
+    setTimeout(() => {
+      document.body.style.background = '#000';
+      targetImg.style.filter = '';
+    }, 120);
+  }, 600);
+
+  // Cleanup
+  setTimeout(() => {
+    shield.remove();
+    hex.remove();
+    text.remove();
+  }, 3000);
 }
 function triggerFaint(isPlayer) {
   const img = isPlayer ? document.getElementById('playerImg') : document.getElementById('oppoImg');
@@ -1060,6 +1073,11 @@ function setupConnEvents(c) {
       myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">Your turn first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
     }
+    else if (data.type === 'shield') {
+    log(`<span style="color:#ffeb3b;font-size:2.0rem;text-shadow:0 0 30px gold">
+           OPPONENT USED WILD SHIELD!<br><i>Your attack was blocked!</i></span>`);
+    showWildShieldEffect(false); // false = opponent is defending
+  }
    if (data.type === 'victory') {
     log('<span style="color:#f44336;font-size:3rem">YOU LOST THE BATTLE!</span><br><span style="color:#ff9800">-500 TOKEN</span>');
     setTimeout(() => payToWinner(opponentAddress), 1500);
