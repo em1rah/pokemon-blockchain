@@ -350,91 +350,222 @@ function playAttackAnimation(isPlayerAttacker, moveName, isMiss = false) {
   let endX = targetRect.left + targetRect.width / 2 - containerRect.left;
   let endY = targetRect.top + targetRect.height / 2 - containerRect.top;
 
-  const type = MOVE_TYPES[moveName] || "normal";
+  const type = (MOVE_TYPES[moveName] || "normal").toLowerCase();
 
+  // Dodge animation
   if (isMiss) {
     target.classList.add('dodge-jump');
     setTimeout(() => target.classList.remove('dodge-jump'), 900);
-    endX += (Math.random() > 0.5 ? 200 : -200);
-    endY -= 120;
+    endX += (Math.random() > 0.5 ? 280 : -280);
+    endY -= 140;
   }
 
+  // === TYPE-SPECIFIC ANIMATIONS ===
   if (type === "fire") {
-    const line = document.createElement('div'); line.className = 'beam-line';
-    line.style.left = startX + 'px'; line.style.top = startY + 'px';
-    line.style.width = Math.hypot(endX-startX, endY-startY) + 'px';
-    line.style.transform = `rotate(${Math.atan2(endY-startY, endX-startX)}rad)`;
-    line.style.background = "linear-gradient(90deg,transparent,#fff,#ff4500,transparent)";
-    line.style.boxShadow = "0 0 40px #ff4500";
-    container.appendChild(line);
-    line.animate([{opacity:0},{opacity:1,offset:0.2},{opacity:0}],{duration:800}).onfinish = () => line.remove();
-
-    if (!isMiss) {
-      setTimeout(() => {
-        const exp = document.createElement('div'); exp.className = 'fire-explosion';
-        exp.style.left = (endX-80)+'px'; exp.style.top = (endY-80)+'px';
-        container.appendChild(exp);
-        exp.animate([{transform:'scale(0)',opacity:1},{transform:'scale(2.5)',opacity:0}],{duration:700}).onfinish = () => exp.remove();
-      }, 600);
-    }
+    createBeam(startX, startY, endX, endY, "linear-gradient(90deg,transparent,#fff,#ff1744,#ff9800,transparent)", "0 0 50px #ff4500");
+    setTimeout(() => createExplosion(endX, endY, "#ff4500", "#ff9800"), 600);
   }
   else if (type === "electric") {
-    for (let i = 0; i < 10; i++) {
-      setTimeout(() => {
-        const bolt = document.createElement('div'); bolt.className = 'lightning-bolt';
-        bolt.style.left = startX + 'px'; bolt.style.top = startY + 'px';
-        bolt.style.height = Math.hypot(endX-startX, endY-startY) + 'px';
-        bolt.style.transform = `rotate(${Math.atan2(endY-startY, endX-startX) + (Math.random()-0.5)*0.5}rad)`;
-        container.appendChild(bolt);
-        bolt.animate([{opacity:1},{opacity:0}],{duration:600}).onfinish = () => bolt.remove();
-      }, i*80);
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => createLightning(startX, startY, endX, endY), i * 70);
     }
   }
   else if (type === "water") {
-    for (let i = 0; i < 12; i++) {
-      const wave = document.createElement('div'); wave.className = 'water-wave';
-      wave.style.left = startX + 'px'; wave.style.top = startY + 'px';
-      wave.style.width = (50 + i*30) + 'px';
-      container.appendChild(wave);
-      wave.animate([
-        {transform:'translate(0,0) scale(0.3)',opacity:0.9},
-        {transform:`translate(${endX-startX}px,${endY-startY}px) scale(1.8)`,opacity:0}
-      ],{duration:900,delay:i*60}).onfinish = () => wave.remove();
+    for (let i = 0; i < 15; i++) {
+      setTimeout(() => createWaterWave(startX, startY, endX, endY, i), i * 50);
     }
   }
   else if (type === "grass") {
-    for (let i = 0; i < 8; i++) {
-      const leaf = document.createElement('div'); leaf.className = 'leaf-blade';
-      leaf.style.left = startX + 'px'; leaf.style.top = startY + 'px';
-      container.appendChild(leaf);
-      leaf.animate([
-        {transform:'translate(0,0) rotate(0deg)',opacity:1},
-        {transform:`translate(${endX-startX}px,${endY-startY}px) rotate(720deg)`,opacity:0}
-      ],{duration:1000,delay:i*100}).onfinish = () => leaf.remove();
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => createLeafBlade(startX, startY, endX, endY), i * 90);
     }
   }
-  else {
-    const tackle = document.createElement('div'); tackle.className = 'normal-tackle';
-    tackle.style.left = startX + 'px'; tackle.style.top = startY + 'px';
-    container.appendChild(tackle);
-    tackle.animate([
-      {transform:'translate(0,0) scale(0.5)',opacity:0},
-      {transform:`translate(${endX-startX}px,${endY-startY}px) scale(2)`,opacity:0.8},
-      {opacity:0}
-    ],{duration:700}).onfinish = () => tackle.remove();
+  else if (type === "ice") {
+    createIceShards(startX, startY, endX, endY);
+    setTimeout(() => createIceExplosion(endX, endY), 800);
+  }
+  else if (type === "psychic") {
+    createPsychicWave(startX, startY, endX, endY);
+    setTimeout(() => createConfusionSwirl(endX, endY), 700);
+  }
+  else if (type === "ghost" || type === "dark") {
+    createShadowBall(startX, startY, endX, endY);
+  }
+  else if (type === "dragon") {
+    createDragonPulse(startX, startY, endX, endY);
+  }
+  else if (type === "fighting") {
+    createFightingPunch(startX, startY, endX, endY);
+  }
+  else if (type === "rock") {
+    createRockThrow(startX, startY, endX, endY);
+  }
+  else if (type === "flying") {
+    createGustWind(startX, startY, endX, endY);
+  }
+  else if (type === "poison") {
+    createPoisonGas(startX, startY, endX, endY);
+  }
+  else if (type === "ground") {
+    createEarthquakeCrack(startX, startY, endX, endY);
+  }
+  else if (type === "steel") {
+    createMetalClaw(startX, startY, endX, endY);
+  }
+  else { // normal & fallback
+    createNormalTackle(startX, startY, endX, endY);
   }
 
+  // Hit flash + screen shake
   if (!isMiss) {
     setTimeout(() => {
-      const flash = document.createElement('div'); flash.className = 'hit-flash';
-      flash.style.left = (endX-110)+'px'; flash.style.top = (endY-110)+'px';
-      container.appendChild(flash);
-      flash.animate([{opacity:0},{opacity:0.9},{opacity:0}],{duration:400}).onfinish = () => flash.remove();
+      createHitFlash(endX, endY);
       document.getElementById('battleArea').classList.add('shake');
       setTimeout(() => document.getElementById('battleArea').classList.remove('shake'), 600);
-    }, 600);
+    }, 700);
   }
 }
+
+// === REUSABLE ANIMATION HELPERS ===
+function createBeam(x1, y1, x2, y2, gradient, shadow) {
+  const el = document.createElement('div');
+  el.className = 'beam-line';
+  el.style.left = x1 + 'px';
+  el.style.top = y1 + 'px';
+  el.style.width = Math.hypot(x2-x1, y2-y1) + 'px';
+  el.style.transform = `rotate(${Math.atan2(y2-y1, x2-x1)}rad)`;
+  el.style.background = gradient;
+  el.style.boxShadow = shadow;
+  document.getElementById('attackContainer').appendChild(el);
+  el.animate([{opacity:0},{opacity:1,offset:0.3},{opacity:0}], {duration:900}).onfinish = () => el.remove();
+}
+
+function createExplosion(x, y, color1, color2) {
+  const exp = document.createElement('div');
+  exp.className = 'fire-explosion';
+  exp.style.left = (x-100)+'px'; exp.style.top = (y-100)+'px';
+  exp.style.background = `radial-gradient(circle, ${color1} 15%, ${color2} 50%, transparent 80%)`;
+  document.getElementById('attackContainer').appendChild(exp);
+  exp.animate([{transform:'scale(0)',opacity:1},{transform:'scale(3)',opacity:0}], {duration:800}).onfinish = () => exp.remove();
+}
+
+function createLightning(x1, y1, x2, y2) {
+  const bolt = document.createElement('div');
+  bolt.className = 'lightning-bolt';
+  bolt.style.left = x1 + 'px';
+  bolt.style.top = y1 + 'px';
+  bolt.style.height = Math.hypot(x2-x1, y2-y1) + 'px';
+  bolt.style.transform = `rotate(${Math.atan2(y2-y1, x2-x1) + (Math.random()-0.5)*0.6}rad)`;
+  document.getElementById('attackContainer').appendChild(bolt);
+  bolt.animate([{opacity:1, transform: bolt.style.transform},{opacity:0}], {duration:700}).onfinish = () => bolt.remove();
+}
+
+function createWaterWave(x1, y1, x2, y2, i) {
+  const wave = document.createElement('div');
+  wave.className = 'water-wave';
+  wave.style.left = x1 + 'px';
+  wave.style.top = y1 + 'px';
+  wave.style.width = (60 + i*25) + 'px';
+  document.getElementById('attackContainer').appendChild(wave);
+  wave.animate([
+    {transform:'scale(0.2)', opacity:0.9},
+    {transform:`translate(${x2-x1}px,${y2-y1}px) scale(2)`, opacity:0}
+  ], {duration:1000}).onfinish = () => wave.remove();
+}
+
+function createLeafBlade(x1, y1, x2, y2) {
+  const leaf = document.createElement('div');
+  leaf.className = 'leaf-blade';
+  leaf.style.left = x1 + 'px'; leaf.style.top = y1 + 'px';
+  document.getElementById('attackContainer').appendChild(leaf);
+  leaf.animate([
+    {transform:'rotate(0deg) scale(0.5)', opacity:1},
+    {transform:`translate(${x2-x1}px,${y2-y1}px) rotate(1080deg) scale(1.5)`, opacity:0}
+  ], {duration:1100}).onfinish = () => leaf.remove();
+}
+
+function createIceShards(x1, y1, x2, y2) {
+  for (let i = 0; i < 8; i++) {
+    const shard = document.createElement('div');
+    shard.style.position = 'absolute';
+    shard.style.width = '16px'; shard.style.height = '60px';
+    shard.style.background = 'linear-gradient(45deg, #88eeee, #00ffff)';
+    shard.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+    shard.style.left = x1 + 'px'; shard.style.top = y1 + 'px';
+    shard.style.boxShadow = '0 0 20px #00ffff';
+    document.getElementById('attackContainer').appendChild(shard);
+    const angle = Math.atan2(y2-y1, x2-x1) + (Math.random()-0.5)*1;
+    const dist = Math.hypot(x2-x1, y2-y1);
+    shard.animate([
+      {transform:'translate(0,0) rotate(0deg)'},
+      {transform:`translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) rotate(720deg)`}
+    ], {duration:1000, easing:'cubic-bezier(0.2,0.8,0.2,1)'}).onfinish = () => shard.remove();
+  }
+}
+
+function createPsychicWave(x1, y1, x2, y2) {
+  const wave = document.createElement('div');
+  wave.style.position = 'absolute';
+  wave.style.width = '200px'; wave.style.height = '200px';
+  wave.style.border = '8px solid transparent';
+  wave.style.borderRadius = '50%';
+  wave.style.borderColor = '#ff00ff transparent #00ffff transparent';
+  wave.style.left = (x1-100)+'px'; wave.style.top = (y1-100)+'px';
+  wave.style.boxShadow = '0 0 60px #ff00ff';
+  document.getElementById('attackContainer').appendChild(wave);
+  wave.animate([
+    {transform:'scale(0.3) rotate(0deg)', opacity:0},
+    {transform:'scale(2.5) rotate(360deg)', opacity:1, offset:0.6},
+    {opacity:0}
+  ], {duration:1200}).onfinish = () => wave.remove();
+}
+
+function createShadowBall(x1, y1, x2, y2) {
+  const ball = document.createElement('div');
+  ball.style.position = 'absolute';
+  ball.style.width = '80px'; ball.style.height = '80px';
+  ball.style.background = 'radial-gradient(circle at 30% 30%, #222, #000)';
+  ball.style.border = '4px solid #9900ff';
+  ball.style.borderRadius = '50%';
+  ball.style.left = (x1-40)+'px'; ball.style.top = (y1-40)+'px';
+  ball.style.boxShadow = '0 0 60px #9900ff, inset 0 0 40px #000';
+  document.getElementById('attackContainer').appendChild(ball);
+  ball.animate([
+    {transform:'translate(0,0) scale(0.5)'},
+    {transform:`translate(${x2-x1}px,${y2-y1}px) scale(2.5)`}
+  ], {duration:900}).onfinish = () => {
+    ball.remove();
+    createHitFlash(x2, y2, '#9900ff');
+  };
+}
+
+function createDragonPulse(x1, y1, x2, y2) {
+  createBeam(x1, y1, x2, y2, "linear-gradient(90deg,transparent,#00ffff,#0066ff,#00ffff,transparent)", "0 0 60px #00ffff");
+  setTimeout(() => createExplosion(x2, y2, "#0066ff", "#00ffff"), 700);
+}
+
+function createHitFlash(x, y, color = "#ffffff") {
+  const flash = document.createElement('div');
+  flash.className = 'hit-flash';
+  flash.style.left = (x-120)+'px'; flash.style.top = (y-120)+'px';
+  flash.style.background = `radial-gradient(circle, ${color} 10%, transparent 70%)`;
+  document.getElementById('attackContainer').appendChild(flash);
+  flash.animate([{opacity:0},{opacity:1},{opacity:0}], {duration:500}).onfinish = () => flash.remove();
+}
+
+function createNormalTackle(x1, y1, x2, y2) {
+  const tackle = document.createElement('div');
+  tackle.className = 'normal-tackle';
+  tackle.style.left = x1 + 'px'; tackle.style.top = y1 + 'px';
+  document.getElementById('attackContainer').appendChild(tackle);
+  tackle.animate([
+    {transform:'scale(0.4)', opacity:0},
+    {transform:`translate(${x2-x1}px,${y2-y1}px) scale(2.2)`, opacity:0.9},
+    {opacity:0}
+  ], {duration:800}).onfinish = () => tackle.remove();
+}
+
+// Add more if you want: poison gas clouds, rock slides, wind gusts, etc.
 
 // ==================== ATTACK LOGIC ====================
 function attack() {
