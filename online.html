@@ -232,6 +232,7 @@ let peer = null;
 let myPokemon = null, opponentPokemon = null, myTurn = false;
 let isHost = false, bothReady = false, turnDecided = false;
 let pendingOpponent = null;
+let opponentHpBeforeAttack = 100;
 
 // ==================== COMPLETE POKÉMON MOVES DATABASE (Gen 1–5) ====================
 const POKEMON_MOVES = {
@@ -771,15 +772,18 @@ function attack() {
   const baseDamage = 15 + Math.floor(Math.random() * 6);
   const damage = isMiss ? 0 : baseDamage;
 
+  // Store opponent's HP BEFORE this attack (for potential shield revert)
+  let oppHp = parseInt(document.getElementById('oppoHpText').textContent.split('/')[0]);
+  opponentHpBeforeAttack = oppHp;
+  const newOppHp = Math.max(0, oppHp - damage);
+
   // Play animation
   playAttackAnimation(true, chosenMove, isMiss);
 
-  // Update opponent HP locally
-  let oppHp = parseInt(document.getElementById('oppoHpText').textContent.split('/')[0]);
-  const newOppHp = Math.max(0, oppHp - damage);
-
+  // Update opponent HP locally (optimistic)
   document.getElementById('oppoHpFill').style.width = newOppHp + '%';
   document.getElementById('oppoHpText').textContent = newOppHp + '/100 HP';
+  document.getElementById('oppoHpFill').classList.remove('warning', 'danger');
   document.getElementById('oppoHpFill').classList.toggle('warning', newOppHp <= 50 && newOppHp > 20);
   document.getElementById('oppoHpFill').classList.toggle('danger', newOppHp <= 20);
 
@@ -799,10 +803,7 @@ function attack() {
     opponentNewHp: newOppHp
   });
 
-  if (newOppHp <= 0) {
-    setTimeout(() => triggerFaint(false), 1200);
-    conn.send({ type: 'victory' });
-  }
+  // NO EARLY VICTORY CHECK HERE! Let defender decide (handles shield + disconnects)
 
   document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
   myTurn = false;
@@ -812,45 +813,46 @@ function attack() {
 function receiveAttack(data) {
   const damage = data.damage || 0;
   const missed = data.missed || false;
-  const opponentNewHp = data.opponentNewHp ?? 100;
+  const moveName = data.moveName;
 
-  playAttackAnimation(false, data.moveName, missed);
+  // Always play the animation first
+  playAttackAnimation(false, moveName, missed);
 
-  // === DODGE: NO SHIELD ALLOWED ===
+  // 1. MISS → no damage, no shield possible
   if (missed) {
-    log(`<span style="color:#ccc">Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b>${data.moveName}</b>...<br>but you <b style="color:#4caf50">DODGED!</b></span>`);
+    log(`<span style="color:#ccc">Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b>${moveName}</b>...<br>but you <b style="color:#4caf50">DODGED!</b></span>`);
     myTurn = true;
     showAttackButton();
     return;
   }
 
-  // === WILD SHIELD: Only on actual hits! ===
-  const shieldActivated = Math.random() < 0.15;
+  // 2. WILD SHIELD → block damage completely
+  const shieldActivated = Math.random() < 0.15;  // 15% chance
 
   if (shieldActivated) {
     log(`<span style="color:#ffeb3b;font-size:2.8rem;text-shadow:0 0 40px gold">
            WILD SHIELD ACTIVATED!<br><i>Attack blocked!</i></span>`);
 
-    // Show shield on YOUR side
-    showWildShieldEffect(true);  // true = defending player
-
-    // Tell opponent: "I blocked your attack!"
-    conn.send({ type: 'shield' });
+    showWildShieldEffect(true);  // true = player defending
+    conn.send({ type: 'shield' });  // tell opponent
 
     myTurn = true;
     showAttackButton();
-    return;
+    return;  // ← CRITICAL: exit early, NO HP change!
   }
 
-  // === NORMAL HIT ===
-  log(`Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${data.moveName}</b>!<br>You took <b style="color:#ff4444">${damage}</b> damage!`);
+  // 3. NORMAL HIT → only now apply damage
+  log(`Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${moveName}</b>!<br>You took <b style="color:#ff4444">${damage}</b> damage!`);
 
-  document.getElementById('playerHpFill').style.width = opponentNewHp + '%';
-  document.getElementById('playerHpText').textContent = opponentNewHp + '/100 HP';
-  document.getElementById('playerHpFill').classList.toggle('warning', opponentNewHp <= 50 && opponentNewHp > 20);
-  document.getElementById('playerHpFill').classList.toggle('danger', opponentNewHp <= 20);
+  // Now it's safe to use the pre-calculated HP from opponent
+  const newHp = data.opponentNewHp;
 
-  if (opponentNewHp <= 0) {
+  document.getElementById('playerHpFill').style.width = newHp + '%';
+  document.getElementById('playerHpText').textContent = newHp + '/100 HP';
+  document.getElementById('playerHpFill').classList.toggle('warning', newHp <= 50 && newHp > 20);
+  document.getElementById('playerHpFill').classList.toggle('danger', newHp <= 20);
+
+  if (newHp <= 0) {
     setTimeout(() => triggerFaint(true), 1200);
     conn.send({ type: 'defeat' });
   } else {
@@ -1023,7 +1025,9 @@ function setupConnEvents(c) {
       document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
       document.getElementById('oppoName').textContent = opponentPokemon.name.toUpperCase();
       document.getElementById('oppoHpText').textContent = '100/100 HP';
+      
       document.getElementById('oppoHpFill').style.width = '100%';
+      opponentHpBeforeAttack = 100;
       log(`Opponent sent ${opponentPokemon.name.toUpperCase()}!`);
       if (myPokemon) { bothReady = true; startBattle(); }
     }
@@ -1033,20 +1037,33 @@ function setupConnEvents(c) {
       myTurn = !data.first;
       myTurn ? (log('<span style="color:#4caf50">Your turn first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
     }
-    else if (data.type === 'shield') {
-    log(`<span style="color:#ffeb3b;font-size:2.0rem;text-shadow:0 0 30px gold">
-           OPPONENT USED WILD SHIELD!<br><i>Your attack was blocked!</i></span>`);
-    showWildShieldEffect(false); // false = opponent is defending
+   else if (data.type === 'shield') {
+  log(`<span style="color:#ffeb3b;font-size:2.0rem;text-shadow:0 0 30px gold">
+         OPPONENT USED WILD SHIELD!<br><i>Your attack was blocked!</i></span>`);
+  
+  // Revert opponent HP (undo optimistic damage)
+  document.getElementById('oppoHpFill').style.width = opponentHpBeforeAttack + '%';
+  document.getElementById('oppoHpText').textContent = opponentHpBeforeAttack + '/100 HP';
+  document.getElementById('oppoHpFill').classList.remove('warning', 'danger');
+  if (opponentHpBeforeAttack <= 50 && opponentHpBeforeAttack > 20) {
+    document.getElementById('oppoHpFill').classList.add('warning');
+  } else if (opponentHpBeforeAttack <= 20) {
+    document.getElementById('oppoHpFill').classList.add('danger');
   }
-   if (data.type === 'victory') {
-    log('<span style="color:#f44336;font-size:3rem">YOU LOST THE BATTLE!</span><br><span style="color:#ff9800">-500 TOKEN</span>');
-    setTimeout(() => payToWinner(opponentAddress), 1500);
-    document.getElementById('playerActions').innerHTML = '<div style="color:#ff4444;font-size:2rem;padding:30px">DEFEAT</div>';
-  }
-   else if (data.type === 'defeat') {
-    log('<span style="color:#4caf50;font-size:3.5rem;text-shadow:0 0 30px lime">VICTORY!</span><br><span style="color:#ffeb3b">+500 TOKEN REWARD!</span>');
-    document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:2.5rem;padding:30px">YOU WIN!</div>';
-  }
+  
+  showWildShieldEffect(false); // opponent defending
+}
+else if (data.type === 'victory') {
+  log('<span style="color:#f44336;font-size:3rem">YOU LOST THE BATTLE!</span><br><span style="color:#ff9800">-500 TOKEN</span>');
+  triggerFaint(true);  // ← ADD: My Pokémon fainted
+  setTimeout(() => payToWinner(opponentAddress), 1500);
+  document.getElementById('playerActions').innerHTML = '<div style="color:#ff4444;font-size:2rem;padding:30px">DEFEAT</div>';
+}
+else if (data.type === 'defeat') {
+  log('<span style="color:#4caf50;font-size:3.5rem;text-shadow:0 0 30px lime">VICTORY!</span><br><span style="color:#ffeb3b">+500 TOKEN REWARD!</span>');
+  triggerFaint(false);  // ← ADD: Opponent fainted
+  document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:2.5rem;padding:30px">YOU WIN!</div>';
+}
   });
   conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left'); location.reload(); });
 }
