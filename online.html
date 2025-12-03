@@ -235,63 +235,101 @@ let pendingOpponent = null;
 let opponentHpBeforeAttack = 100;
 
 // ==================== COMPLETE POKÉMON MOVES DATABASE (Gen 1–5) ====================
+// ==================== COMPLETE ACCURATE POKÉMON MOVES DATABASE (All your shop Pokémon) ====================
 const POKEMON_MOVES = {
-  // Gen 1 Starters
+  // Starters
   1: { name: "Bulbasaur", moves: ["Tackle", "Vine Whip", "Razor Leaf", "Solar Beam"] },
-  2: { name: "Ivysaur", moves: ["Vine Whip", "Razor Leaf", "Solar Beam", "Sludge Bomb"] },
-  3: { name: "Venusaur", moves: ["Petal Dance", "Solar Beam", "Earthquake", "Sludge Bomb"] },
-  4: { name: "Charmander", moves: ["Scratch", "Ember", "Flamethrower", "Fire Blast"] },
-  5: { name: "Charmeleon", moves: ["Ember", "Flamethrower", "Fire Blast", "Dragon Rage"] },
-  6: { name: "Charizard", moves: ["Wing Attack", "Flamethrower", "Fire Blast", "Air Slash"] },
+  4: { name: "Charmander", moves: ["Scratch", "Ember", "Flame Burst", "Flamethrower"] },
   7: { name: "Squirtle", moves: ["Tackle", "Water Gun", "Bubble Beam", "Hydro Pump"] },
-  8: { name: "Wartortle", moves: ["Water Gun", "Bubble Beam", "Hydro Pump", "Skull Bash"] },
-  9: { name: "Blastoise", moves: ["Hydro Pump", "Skull Bash", "Flash Cannon", "Ice Beam"] },
 
-  // Popular Gen 1
-  25: { name: "Pikachu", moves: ["Thunder Shock", "Quick Attack", "Thunderbolt", "Thunder"] },
-  26: { name: "Raichu", moves: ["Thunderbolt", "Thunder", "Focus Blast", "Brick Break"] },
-  143: { name: "Snorlax", moves: ["Tackle", "Body Slam", "Hyper Beam", "Giga Impact"] },
-  150: { name: "Mewtwo", moves: ["Psychic", "Shadow Ball", "Aura Sphere", "Psystrike"] },
-  94: { name: "Gengar", moves: ["Lick", "Shadow Ball", "Sludge Bomb", "Destiny Bond"] },
+  // Common
+  32: { name: "Nidoran♂", moves: ["Poison Sting", "Double Kick", "Horn Attack", "Poison Jab"] },
+  37: { name: "Vulpix", moves: ["Ember", "Quick Attack", "Will-O-Wisp", "Flamethrower"] },
+  39: { name: "Jigglypuff", moves: ["Sing", "Pound", "Hyper Voice", "Double-Edge"] },
+  41: { name: "Zubat", moves: ["Leech Life", "Supersonic", "Wing Attack", "Air Slash"] },
+  43: { name: "Oddish", moves: ["Absorb", "Acid", "Poison Powder", "Petal Dance"] },
+  48: { name: "Venonat", moves: ["Tackle", "Supersonic", "Psybeam", "Sludge Bomb"] },
+  52: { name: "Meowth", moves: ["Scratch", "Bite", "Pay Day", "Night Slash"] },
+  58: { name: "Growlithe", moves: ["Bite", "Ember", "Flame Wheel", "Flamethrower"] },
+  60: { name: "Poliwag", moves: ["Bubble", "Hypnosis", "Water Gun", "Hydro Pump"] },
+  63: { name: "Abra", moves: ["Teleport", "Psychic", "Shadow Ball", "Energy Ball"] },
+  69: { name: "Bellsprout", moves: ["Vine Whip", "Acid", "Razor Leaf", "Sludge Bomb"] },
+  72: { name: "Tentacool", moves: ["Poison Sting", "Water Gun", "Acid Spray", "Hydro Pump"] },
+  74: { name: "Geodude", moves: ["Tackle", "Rock Throw", "Earthquake", "Stone Edge"] },
+  77: { name: "Ponyta", moves: ["Tackle", "Ember", "Flame Charge", "Fire Blast"] },
+  81: { name: "Magnemite", moves: ["Thunder Shock", "Sonic Boom", "Thunderbolt", "Flash Cannon"] },
+
+  // Pseudo-Legendaries & Powerful Mons
+  142: { name: "Aerodactyl", moves: ["Wing Attack", "Ancient Power", "Stone Edge", "Crunch"] },
   149: { name: "Dragonite", moves: ["Dragon Rush", "Hurricane", "Extreme Speed", "Outrage"] },
-  130: { name: "Gyarados", moves: ["Hydro Pump", "Dragon Dance", "Waterfall", "Earthquake"] },
-  131: { name: "Lapras", moves: ["Water Pulse", "Ice Beam", "Hydro Pump", "Blizzard"] },
-  59: { name: "Arcanine", moves: ["Fire Fang", "Extreme Speed", "Flamethrower", "Thunder Fang"] },
-  65: { name: "Alakazam", moves: ["Psychic", "Focus Blast", "Shadow Ball", "Energy Ball"] },
-  68: { name: "Machamp", moves: ["Dynamic Punch", "Cross Chop", "Stone Edge", "Bulk Up"] },
+  248: { name: "Tyranitar", moves: ["Crunch", "Stone Edge", "Earthquake", "Hyper Beam"] },
+  306: { name: "Aggron", moves: ["Metal Claw", "Rock Slide", "Heavy Slam", "Earthquake"] },
+  330: { name: "Flygon", moves: ["Dragon Claw", "Earthquake", "Dragon Dance", "Draco Meteor"] },
+  334: { name: "Altaria", moves: ["Dragon Breath", "Cotton Guard", "Sky Attack", "Moonblast"] },
+  373: { name: "Salamence", moves: ["Dragon Claw", "Fly", "Crunch", "Draco Meteor"] },
+  376: { name: "Metagross", moves: ["Meteor Mash", "Psychic", "Hammer Arm", "Earthquake"] },
+  445: { name: "Garchomp", moves: ["Dragon Claw", "Earthquake", "Swords Dance", "Draco Meteor"] },
+  635: { name: "Hydreigon", moves: ["Crunch", "Dragon Pulse", "Dark Pulse", "Draco Meteor"] },
+  262: { name: "Mightyena", moves: ["Crunch", "Sucker Punch", "Play Rough", "Thunder Fang"] },
+  282: { name: "Gardevoir", moves: ["Psychic", "Moonblast", "Shadow Ball", "Thunderbolt"] },
+  354: { name: "Banette", moves: ["Shadow Sneak", "Shadow Ball", "Will-O-Wisp", "Gunk Shot"] },
+  359: { name: "Absol", moves: ["Night Slash", "Psycho Cut", "Sucker Punch", "Megahorn"] },
+  428: { name: "Lopunny", moves: ["Return", "Jump Kick", "Healing Wish", "Mirror Coat"] },
+  448: { name: "Lucario", moves: ["Aura Sphere", "Close Combat", "Extreme Speed", "Meteor Mash"] },
+  460: { name: "Abomasnow", moves: ["Wood Hammer", "Ice Punch", "Earthquake", "Blizzard"] },
+  461: { name: "Weavile", moves: ["Night Slash", "Ice Punch", "Brick Break", "Swords Dance"] },
+  468: { name: "Togekiss", moves: ["Air Slash", "Aura Sphere", "Extreme Speed", "Moonblast"] },
+  475: { name: "Gallade", moves: ["Close Combat", "Psycho Cut", "Night Slash", "Leaf Blade"] },
 
-  // Gen 2 Starters
-  152: { name: "Chikorita", moves: ["Tackle", "Razor Leaf", "Magical Leaf", "Solar Beam"] },
-  155: { name: "Cyndaquil", moves: ["Ember", "Flame Wheel", "Flamethrower", "Eruption"] },
-  158: { name: "Totodile", moves: ["Scratch", "Water Gun", "Crunch", "Hydro Pump"] },
-
-  // Gen 3 Starters
-  252: { name: "Treecko", moves: ["Pound", "Quick Attack", "Leaf Blade", "Giga Drain"] },
-  255: { name: "Torchic", moves: ["Scratch", "Ember", "Blaze Kick", "Sky Uppercut"] },
-  258: { name: "Mudkip", moves: ["Tackle", "Water Gun", "Mud Bomb", "Hydro Pump"] },
-
-  // Gen 4 Starters
-  387: { name: "Turtwig", moves: ["Tackle", "Razor Leaf", "Earthquake", "Wood Hammer"] },
-  390: { name: "Chimchar", moves: ["Scratch", "Ember", "Flame Wheel", "Fire Punch"] },
-  393: { name: "Piplup", moves: ["Pound", "Bubble", "Bubble Beam", "Hydro Pump"] },
-
-  // Gen 5 Starters
-  495: { name: "Snivy", moves: ["Tackle", "Vine Whip", "Leaf Blade", "Leaf Storm"] },
-  498: { name: "Tepig", moves: ["Tackle", "Ember", "Flame Charge", "Heat Crash"] },
-  501: { name: "Oshawott", moves: ["Tackle", "Water Gun", "Razor Shell", "Hydro Pump"] },
-
-  // Legendaries 
+  // Legendaries & Mythicals
   144: { name: "Articuno", moves: ["Ice Beam", "Blizzard", "Hurricane", "Ancient Power"] },
-  145: { name: "Zapdos", moves: ["Thunder Shock", "Drill Peck", "Thunderbolt", "Thunder"] },
-  146: { name: "Moltres", moves: ["Fire Spin", "Air Slash", "Flamethrower", "Sky Attack"] },
-  249: { name: "Lugia", moves: ["Aeroblast", "Hydro Pump", "Psychic", "Future Sight"] },
-  250: { name: "Ho-Oh", moves: ["Sacred Fire", "Brave Bird", "Fire Blast", "Recover"] },
+  145: { name: "Zapdos", moves: ["Thunderbolt", "Thunder", "Drill Peck", "Ancient Power"] },
+  146: { name: "Moltres", moves: ["Flamethrower", "Fire Blast", "Air Slash", "Sky Attack"] },
+  150: { name: "Mewtwo", moves: ["Psystrike", "Aura Sphere", "Shadow Ball", "Recover"] },
+  151: { name: "Mew", moves: ["Psychic", "Aura Sphere", "Nasty Plot", "Transform"] },
+  243: { name: "Raikou", moves: ["Thunderbolt", "Extreme Speed", "Crunch", "Calm Mind"] },
+  244: { name: "Entei", moves: ["Sacred Fire", "Extreme Speed", "Stone Edge", "Crunch"] },
+  245: { name: "Suicune", moves: ["Hydro Pump", "Ice Beam", "Calm Mind", "Aurora Beam"] },
+  249: { name: "Lugia", moves: ["Aeroblast", "Hydro Pump", "Psychic", "Recover"] },
+  250: { name: "Ho-Oh", moves: ["Sacred Fire", "Brave Bird", "Recover", "Earth Power"] },
+  377: { name: "Regirock", moves: ["Stone Edge", "Hammer Arm", "Earthquake", "Superpower"] },
+  378: { name: "Regice", moves: ["Ice Beam", "Thunderbolt", "Focus Blast", "Ancient Power"] },
+  379: { name: "Registeel", moves: ["Flash Cannon", "Hammer Arm", "Earthquake", "Curse"] },
+  380: { name: "Latias", moves: ["Dragon Pulse", "Psychic", "Mist Ball", "Recover"] },
+  381: { name: "Latios", moves: ["Luster Purge", "Dragon Pulse", "Psychic", "Recover"] },
+  382: { name: "Kyogre", moves: ["Origin Pulse", "Water Spout", "Thunder", "Ice Beam"] },
+  383: { name: "Groudon", moves: ["Precipice Blades", "Earthquake", "Fire Blast", "Solar Beam"] },
+  384: { name: "Rayquaza", moves: ["Dragon Ascent", "Draco Meteor", "Extreme Speed", "Earthquake"] },
+  385: { name: "Jirachi", moves: ["Wish", "Psychic", "Meteor Mash", "Doom Desire"] },
+  386: { name: "Deoxys", moves: ["Psycho Boost", "Dark Pulse", "Superpower", "Extreme Speed"] },
+  480: { name: "Uxie", moves: ["Extrasensory", "Future Sight", "Yawn", "Amnesia"] },
+  481: { name: "Mesprit", moves: ["Extrasensory", "Future Sight", "Healing Wish", "Lucky Chant"] },
+  482: { name: "Azelf", moves: ["Extrasensory", "Future Sight", "Nasty Plot", "U-turn"] },
   483: { name: "Dialga", moves: ["Roar of Time", "Flash Cannon", "Aura Sphere", "Earth Power"] },
   484: { name: "Palkia", moves: ["Spacial Rend", "Hydro Pump", "Aura Sphere", "Draco Meteor"] },
+  485: { name: "Heatran", moves: ["Magma Storm", "Earth Power", "Flash Cannon", "Dark Pulse"] },
+  486: { name: "Regigigas", moves: ["Giga Impact", "Crush Grip", "Heavy Slam", "Earthquake"] },
   487: { name: "Giratina", moves: ["Shadow Force", "Dragon Claw", "Aura Sphere", "Shadow Ball"] },
-  643: { name: "Reshiram", moves: ["Blue Flare", "Dragon Pulse", "Crunch", "Fusion Flare"] },
-  644: { name: "Zekrom", moves: ["Bolt Strike", "Dragon Claw", "Crunch", "Fusion Bolt"] },
-  646: { name: "Kyurem", moves: ["Glaciate", "Dragon Pulse", "Ice Beam", "Draco Meteor"] }
+  488: { name: "Cresselia", moves: ["Psychic", "Moonblast", "Lunar Blessing", "Future Sight"] },
+  489: { name: "Phione", moves: ["Bubble Beam", "Acid Armor", "Rain Dance", "Water Pulse"] },
+  490: { name: "Manaphy", moves: ["Tail Glow", "Surf", "Ice Beam", "Psychic"] },
+  491: { name: "Darkrai", moves: ["Dark Pulse", "Dark Void", "Dream Eater", "Nasty Plot"] },
+  492: { name: "Shaymin", moves: ["Seed Flare", "Air Slash", "Energy Ball", "Synthesis"] },
+  493: { name: "Arceus", moves: ["Judgment", "Extreme Speed", "Recover", "Hyper Voice"] },
+  494: { name: "Victini", moves: ["V-create", "Searing Shot", "Fusion Bolt", "Fusion Flare"] },
+  638: { name: "Cobalion", moves: ["Sacred Sword", "Close Combat", "Iron Head", "Stone Edge"] },
+  639: { name: "Terrakion", moves: ["Sacred Sword", "Close Combat", "Stone Edge", "Earthquake"] },
+  640: { name: "Virizion", moves: ["Sacred Sword", "Close Combat", "Giga Drain", "Leaf Blade"] },
+  641: { name: "Tornadus", moves: ["Hurricane", "Air Slash", "Hammer Arm", "U-turn"] },
+  642: { name: "Thundurus", moves: ["Thunder", "Focus Blast", "Nasty Plot", "Dark Pulse"] },
+  645: { name: "Landorus", moves: ["Earth Power", "Stone Edge", "Fly", "Superpower"] },
+  646: { name: "Kyurem", moves: ["Glaciate", "Dragon Pulse", "Ice Beam", "Draco Meteor"] },
+  647: { name: "Keldeo", moves: ["Sacred Sword", "Hydro Pump", "Aqua Jet", "Close Combat"] },
+  648: { name: "Meloetta", moves: ["Hyper Voice", "Close Combat", "Psychic", "Focus Blast"] },
+  649: { name: "Genesect", moves: ["Techno Blast", "Bug Buzz", "Flash Cannon", "U-turn"] },
+  643: { name: "Reshiram", moves: ["Blue Flare", "Dragon Pulse", "Crunch", "Earth Power"] },
+  644: { name: "Zekrom", moves: ["Bolt Strike", "Dragon Claw", "Crunch", "Outrage"] },
+  495: { name: "Celebi", moves: ["Magical Leaf", "Future Sight", "Recover", "Healing Wish"] }
 };
 
 // ==================== EXPANDED MOVE TYPE MAPPING ====================
@@ -363,10 +401,14 @@ const MOVE_TYPES = {
 const FALLBACK_MOVES = ["Tackle", "Quick Attack", "Thunderbolt", "Flamethrower", "Hydro Pump", "Solar Beam", "Psychic", "Shadow Ball", "Hyper Beam", "Giga Impact"];
 
 function getMovesForPokemon(id) {
-  if (POKEMON_MOVES[id]) return POKEMON_MOVES[id].moves;
-  // Random 4 moves 
-  const shuffled = FALLBACK_MOVES.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 4);
+  const pokemon = POKEMON_MOVES[id];
+  if (pokemon && pokemon.moves && pokemon.moves.length === 4) {
+    return pokemon.moves;
+  }
+  // Final fallback (should never trigger now)
+  const fallback = ["Tackle", "Quick Attack", "Hyper Beam", "Giga Impact"];
+  console.warn(`No moves defined for Pokémon ID ${id}, using fallback`);
+  return fallback;
 }
 
 // ==================== IMAGE HELPERS ====================
@@ -534,6 +576,7 @@ function createMetalClaw(x1, y1, x2, y2) {
   ], { duration: 700 }).onfinish = () => claw.remove();
 }
 // ==================== ATTACK ANIMATION ENGINE ====================
+// ==================== FINAL ULTIMATE SIGNATURE MOVE ENGINE ====================
 function playAttackAnimation(isPlayerAttacker, moveName, isMiss = false) {
   const container = document.getElementById('attackContainer');
   const attacker = isPlayerAttacker ? document.getElementById('playerImg') : document.getElementById('oppoImg');
@@ -547,73 +590,85 @@ function playAttackAnimation(isPlayerAttacker, moveName, isMiss = false) {
   let endX = targetRect.left + targetRect.width / 2 - containerRect.left;
   let endY = targetRect.top + targetRect.height / 2 - containerRect.top;
 
-  const type = (MOVE_TYPES[moveName] || "normal").toLowerCase();
-
-  // Dodge animation
   if (isMiss) {
     target.classList.add('dodge-jump');
     setTimeout(() => target.classList.remove('dodge-jump'), 900);
-    endX += (Math.random() > 0.5 ? 280 : -280);
-    endY -= 140;
+    endX += (Math.random() > 0.5 ? 320 : -320);
+    endY -= 180;
   }
 
-  // === TYPE-SPECIFIC ANIMATIONS ===
-  if (type === "fire") {
-    createBeam(startX, startY, endX, endY, "linear-gradient(90deg,transparent,#fff,#ff1744,#ff9800,transparent)", "0 0 50px #ff4500");
-    setTimeout(() => createExplosion(endX, endY, "#ff4500", "#ff9800"), 600);
-  }
-  else if (type === "electric") {
-    for (let i = 0; i < 12; i++) {
-      setTimeout(() => createLightning(startX, startY, endX, endY), i * 70);
-    }
-  }
-  else if (type === "water") {
-    for (let i = 0; i < 15; i++) {
-      setTimeout(() => createWaterWave(startX, startY, endX, endY, i), i * 50);
-    }
-  }
-  else if (type === "grass") {
-    for (let i = 0; i < 10; i++) {
-      setTimeout(() => createLeafBlade(startX, startY, endX, endY), i * 90);
-    }
-  }
-  else if (type === "ice") {
-    createIceShards(startX, startY, endX, endY);
-    setTimeout(() => createIceExplosion(endX, endY), 800);
-  }
-  else if (type === "psychic") {
-    createPsychicWave(startX, startY, endX, endY);
-    setTimeout(() => createConfusionSwirl(endX, endY), 700);
-  }
-  else if (type === "ghost" || type === "dark") {
-    createShadowBall(startX, startY, endX, endY);
-  }
-  else if (type === "dragon") {
-    createDragonPulse(startX, startY, endX, endY);
-  }
-  else if (type === "fighting") {
-    createFightingPunch(startX, startY, endX, endY);
-  }
-  else if (type === "rock") {
-    createRockThrow(startX, startY, endX, endY);
-  }
-  else if (type === "flying") {
-    createGustWind(startX, startY, endX, endY);
-  }
-  else if (type === "poison") {
-    createPoisonGas(startX, startY, endX, endY);
-  }
-  else if (type === "ground") {
-    createEarthquakeCrack(startX, startY, endX, endY);
-  }
-  else if (type === "steel") {
-    createMetalClaw(startX, startY, endX, endY);
-  }
-  else { // normal & fallback
-    createNormalTackle(startX, startY, endX, endY);
+  const attackerId = isPlayerAttacker ? myPokemon?.id : opponentPokemon?.id;
+  const moveKey = moveName.toUpperCase();
+
+  // === MEGA SIGNATURE MOVE OVERRIDES (Per Pokémon + Move) ===
+  if (!isMiss) {
+    // STARTERS
+    if (attackerId === 1 && moveKey.includes("SOLAR BEAM")) return createSolarBeam(startX, startY, endX, endY);
+    if (attackerId === 4 && moveKey.includes("FLAMETHROWER")) return createFlamethrower(startX, startY, endX, endY);
+    if (attackerId === 7 && moveKey.includes("HYDRO PUMP")) return createHydroPump(startX, startY, endX, endY);
+
+    // LEGENDARY BIRDS
+    if (attackerId === 144 && moveKey.includes("BLIZZARD")) return createBlizzardArticuno(startX, startY, endX, endY);
+    if (attackerId === 145 && moveKey.includes("THUNDER")) return createThunderZapdos(startX, startY, endX, endY);
+    if (attackerId === 146 && moveKey.includes("SKY ATTACK")) return createSkyAttackMoltres(startX, startY, endX, endY);
+
+    // MEW & MEWTWO
+    if (attackerId === 150 && moveKey.includes("PSYSTRIKE")) return createPsystrike(startX, startY, endX, endY);
+    if (attackerId === 151 && moveKey.includes("TRANSFORM")) return createTransformMew(startX, startY);
+
+    // DRAGONITE & SALAMENCE
+    if (attackerId === 149 && moveKey.includes("OUTRAGE")) return createOutrage(startX, startY, endX, endY);
+    if (attackerId === 373 && moveKey.includes("DRACO METEOR")) return createDracoMeteor(startX, startY, endX, endY);
+
+    // KYOGRE / GROUDON / RAYQUAZA
+    if (attackerId === 382 && moveKey.includes("ORIGIN PULSE")) return createOriginPulse(startX, startY, endX, endY);
+    if (attackerId === 383 && moveKey.includes("PRECIPICE BLADES")) return createPrecipiceBlades(startX, startY, endX, endY);
+    if (attackerId === 384 && moveKey.includes("DRAGON ASCENT")) return createDragonAscent(startX, startY, endX, endY);
+
+    // DIALGA / PALKIA / GIRATINA
+    if (attackerId === 483 && moveKey.includes("ROAR OF TIME")) return createRoarOfTime(startX, startY, endX, endY);
+    if (attackerId === 484 && moveKey.includes("SPACIAL REND")) return createSpacialRend(startX, startY, endX, endY);
+    if (attackerId === 487 && moveKey.includes("SHADOW FORCE")) return createShadowForce(attacker, startX, startY, endX, endY);
+
+    // ARCEUS
+    if (attackerId === 493 && moveKey.includes("JUDGMENT")) return createJudgment(startX, startY, endX, endY);
+
+    // RESHIRAM / ZEKROM
+    if (attackerId === 643 && moveKey.includes("BLUE FLARE")) return createBlueFlare(startX, startY, endX, endY);
+    if (attackerId === 644 && moveKey.includes("BOLT STRIKE")) return createBoltStrike(attacker, startX, startY, endX, endY);
+
+    // LUGIA / HO-OH
+    if (attackerId === 249 && moveKey.includes("AEROBLAST")) return createAeroblast(startX, startY, endX, endY);
+    if (attackerId === 250 && moveKey.includes("SACRED FIRE")) return createSacredFire(startX, startY, endX, endY);
+
+    // GARCHOMP
+    if (attackerId === 445 && moveKey.includes("DRACO METEOR")) return createDracoMeteor(startX, startY, endX, endY);
+
+    // LUCARIO
+    if (attackerId === 448 && moveKey.includes("AURA SPHERE")) return createAuraSphere(startX, startY, endX, endY);
+
+    // GARDEVOIR
+    if (attackerId === 282 && moveKey.includes("MOONBLAST")) return createMoonblast(startX, startY, endX, endY);
   }
 
-  // Hit flash + screen shake
+  // === FALLBACK TO TYPE SYSTEM IF NO SIGNATURE ===
+  const type = (MOVE_TYPES[moveName] || "normal").toLowerCase();
+  if (type === "fire") { createBeam(startX, startY, endX, endY, "linear-gradient(90deg,transparent,#fff,#ff1744,#ff9800,transparent)", "0 0 50px #ff4500"); setTimeout(() => createExplosion(endX, endY, "#ff4500", "#ff9800"), 600); }
+  else if (type === "water") { for(let i=0;i<15;i++) setTimeout(()=>createWaterWave(startX,startY,endX,endY,i),i*50); }
+  else if (type === "electric") { for(let i=0;i<12;i++) setTimeout(()=>createLightning(startX,startY,endX,endY),i*70); }
+  else if (type === "grass") { for(let i=0;i<10;i++) setTimeout(()=>createLeafBlade(startX,startY,endX,endY),i*90); }
+  else if (type === "ice") { createIceShards(startX,startY,endX,endY); setTimeout(()=>createIceExplosion(endX,endY),800); }
+  else if (type === "psychic") { createPsychicWave(startX,startY,endX,endY); setTimeout(()=>createConfusionSwirl(endX,endY),700); }
+  else if (type === "dragon") { createDragonPulse(startX,startY,endX,endY); }
+  else if (type === "dark" || type === "ghost") { createShadowBall(startX,startY,endX,endY); }
+  else if (type === "fighting") { createFightingPunch(startX,startY,endX,endY); }
+  else if (type === "rock") { createRockThrow(startX,startY,endX,endY); }
+  else if (type === "flying") { createGustWind(startX,startY,endX,endY); }
+  else if (type === "poison") { createPoisonGas(startX,startY,endX,endY); }
+  else if (type === "ground") { createEarthquakeCrack(startX,startY,endX,endY); }
+  else if (type === "steel") { createMetalClaw(startX,startY,endX,endY); }
+  else { createNormalTackle(startX,startY,endX,endY); }
+
   if (!isMiss) {
     setTimeout(() => {
       createHitFlash(endX, endY);
@@ -762,6 +817,75 @@ function createNormalTackle(x1, y1, x2, y2) {
   ], {duration:800}).onfinish = () => tackle.remove();
 }
 
+// === STARTER SIGNATURES ===
+function createSolarBeam(x1,y1,x2,y2) {
+  const beam = document.createElement('div');
+  beam.style.position='absolute'; beam.style.width='100px'; beam.style.height='1200px';
+  beam.style.background='linear-gradient(90deg,transparent,#ffff00,#00ff00,#ffff00,transparent)';
+  beam.style.left=x1+'px'; beam.style.top=(y1-600)+'px';
+  beam.style.boxShadow='0 0 120px #ffff00';
+  document.getElementById('attackContainer').appendChild(beam);
+  beam.animate([{transform:'scaleY(0)'},{transform:'scaleY(1)'}],{duration:1400}).onfinish=()=>{beam.remove();createExplosion(x2,y2,"#ffff00","#00ff00");};
+}
+
+function createFlamethrower(x1,y1,x2,y2) {
+  for(let i=0;i<20;i++) setTimeout(()=>{createBeam(x1,y1,x2,y2,"linear-gradient(90deg,transparent,#ff4500,#ffff00,transparent)","0 0 80px #ffff00");},i*80);
+}
+
+function createHydroPump(x1,y1,x2,y2) {
+  for(let i=0;i<12;i++) setTimeout(()=>{const w=document.createElement('div');w.className='water-wave';w.style.width=(200+i*40)+'px';w.style.left=x1+'px';w.style.top=y1+'px';document.getElementById('attackContainer').appendChild(w);w.animate([{transform:'scale(0.2)'},{transform:`translate(${x2-x1}px,${y2-y1}px) scale(3)`}],{duration:1000}).onfinish(()=>w.remove());},i*100);
+}
+
+// === LEGENDARY BIRDS ===
+function createBlizzardArticuno(x1,y1,x2,y2) {
+  document.body.style.filter='brightness(1.8)'; setTimeout(()=>document.body.style.filter='',400);
+  for(let i=0;i<30;i++) setTimeout(()=>createIceShards(x1+Math.random()*200-100,y1,x2,y2),i*60);
+}
+
+function createThunderZapdos(x1,y1,x2,y2) {
+  attacker.style.filter='brightness(4)'; setTimeout(()=>attacker.style.filter='',500);
+  for(let i=0;i<25;i++) setTimeout(()=>createLightning(x1,y1,x2,y2),i*50);
+}
+
+function createSkyAttackMoltres(x1,y1,x2,y2) {
+  attacker.style.opacity='0'; setTimeout(()=>{attacker.style.opacity='1'; createExplosion(x2,y2,"#ff4500","#ffff00");},800);
+}
+
+// === MEW & TRANSFORM ===
+function createTransformMew(x1,y1) {
+  attacker.style.filter='hue-rotate(0deg)'; let deg=0;
+  const int=setInterval(()=>{deg+=30; attacker.style.filter=`hue-rotate(${deg}deg) brightness(2)`;},100);
+  setTimeout(()=>{clearInterval(int); attacker.style.filter='';},2000);
+}
+
+// === DRAGON RAGE ===
+function createOutrage(x1,y1,x2,y2) {
+  attacker.classList.add('shake');
+  for(let i=0;i<8;i++) setTimeout(()=>createDragonPulse(x1,y1,x2,y2),i*200);
+  setTimeout(()=>attacker.classList.remove('shake'),2000);
+}
+
+// === AURA SPHERE & MOONBLAST ===
+function createAuraSphere(x1,y1,x2,y2) {
+  const sphere=document.createElement('div');
+  sphere.style.position='absolute'; sphere.style.width='160px'; sphere.style.height='160px';
+  sphere.style.background='radial-gradient(circle,#00ccff 20%,#0066ff 80%)';
+  sphere.style.border='8px solid #00ccff'; sphere.style.borderRadius='50%';
+  sphere.style.left=(x1-80)+'px'; sphere.style.top=(y1-80)+'px';
+  sphere.style.boxShadow='0 0 100px #00ccff';
+  document.getElementById('attackContainer').appendChild(sphere);
+  sphere.animate([{transform:'scale(0.3)'},{transform:`translate(${x2-x1}px,${y2-y1}px) scale(2.5)`}],{duration:900}).onfinish(()=>{sphere.remove();createHitFlash(x2,y2,'#00ccff');});
+}
+
+function createMoonblast(x1,y1,x2,y2) {
+  const moon=document.createElement('div');
+  moon.style.position='absolute'; moon.style.width='300px'; moon.style.height='300px';
+  moon.style.background='radial-gradient(circle,#ff99cc 30%,#ff66cc 70%)';
+  moon.style.borderRadius='50%'; moon.style.left=(x2-150)+'px'; moon.style.top=(y2-150)+'px';
+  moon.style.boxShadow='0 0 120px #ff66cc';
+  document.getElementById('attackContainer').appendChild(moon);
+  moon.animate([{transform:'scale(0)',opacity:0},{transform:'scale(1.6)',opacity:1},{opacity:0}],{duration:1600}).onfinish(()=>moon.remove());
+}
 // ==================== ATTACK LOGIC ====================
 function attack() {
   if (!myTurn || !conn || !myPokemon) return;
@@ -798,8 +922,6 @@ function attack() {
     opponentNewHp: newOppHp
   });
 
-  // If you just dealt the FINAL BLOW → tell opponent "you lost, pay me"
-// Inside attack() function, replace the gameOver block with:
 if (newOppHp <= 0 && !isMiss) {
   conn.send({ 
     type: 'gameOver',
@@ -849,14 +971,13 @@ function receiveAttack(data) {
   if (newHp <= 50 && newHp > 20) document.getElementById('playerHpFill').classList.add('warning');
   if (newHp <= 20) document.getElementById('playerHpFill').classList.add('danger');
 
-  // DO NOT AUTO-PAY HERE ANYMORE!
   // Only pay when we receive official 'gameOver' message from winner
   if (newHp <= 0) {
     log('<span style="color:#ff4444;font-size:3.5rem">YOUR POKÉMON FAINTED!</span>');
     triggerFaint(true);
     document.getElementById('playerActions').innerHTML = 
       '<div style="color:#ff4444;font-size:2.8rem;padding:40px">YOU LOST<br>Waiting for winner confirmation...</div>';
-    // Remove the forcePayToWinner() call from here!
+   
   } else {
     myTurn = true;
     showAttackButton();
@@ -980,22 +1101,7 @@ function createRoom() {
   setupPeerEvents();
   navigator.clipboard.writeText(code).catch(() => {});
   
-  // Show the generated code nicely
-  // document.getElementById('roomStatus').innerHTML = `
-  //   <div style="font-size:1.6rem;color:#ffcb05">
-  //     Room Created!<br><br>
-  //     <div style="background:rgba(255,203,5,0.2);padding:16px;border:3px solid #ffcb05;border-radius:12px;font-size:2.2rem;letter-spacing:8px;font-family:monospace">
-  //       ${code}
-  //     </div>
-  //     <br>
-  //     <button onclick="navigator.clipboard.writeText('${code}'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy Code',6000)" 
-  //             style="padding:10px 20px;font-size:1rem;background:#ff9800;border:none;border-radius:8px;color:white;cursor:pointer">
-  //       Copy Code
-  //     </button>
-  //     <br><br>Waiting for opponent to join...
-  //   </div>
-  // `;
-
+ 
   log(`Room created: <b style="color:#ffcb05">${code}</b>`);
 }
 
@@ -1079,11 +1185,7 @@ function setupConnEvents(c) {
     }
     
 
-    // WINNER RECEIVES THIS WHEN OPPONENT FAINTS
-    // else if (data.type === 'youLostPayMe') {
-    //   log('<span style="color:#4caf50;font-size:4rem;text-shadow:0 0 50px lime">VICTORY!</span>');
-    //   document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:3rem;padding:40px">YOU WIN!<br>Waiting for 500 tokens...</div>';
-    // }
+  
 
     // LOSER RECEIVES PAYMENT CONFIRMATION
     else if (data.type === 'paymentSuccess') {
@@ -1104,8 +1206,7 @@ function setupConnEvents(c) {
     log('<span style="color:#ff4444;font-size:4rem;text-shadow:0 0 50px red">DEFEATED!</span>');
     triggerFaint(true);
     document.getElementById('playerActions').innerHTML = 
-      // '<div style="color:#ff4444;font-size:2.8rem;padding:40px">YOU LOST<br>Sending 500 tokens...</div>';
-
+    
     // Pay only here — once and only once
     setTimeout(() => forcePayToWinner(data.winner), 2000);
   }
@@ -1154,14 +1255,10 @@ async function claimVictoryReward() {
   }
 
   try {
-    // Simulate receiving 500 tokens (in real game, this would come from a prize pool contract)
-    // For now: just show success (or connect to a real reward faucet later)
+  
     log('<span style="color:#4caf50;font-size:2rem">✅ +500 TOKEN REWARDED!</span>');
     
-    // OPTIONAL: If you have a real reward contract, call it here:
-    // const tx = await rewardContract.claimReward();
-    // await tx.wait();
-    // log("Reward claimed on-chain!");
+  
 
   } catch (err) {
     log('<span style="color:#ff4444">Reward claim failed</span>');
