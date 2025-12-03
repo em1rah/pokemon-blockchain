@@ -78,44 +78,35 @@
     @keyframes faintEyes{0%,50%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
     @keyframes swirlFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(0deg)}30%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(360deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(720deg)}}
   
-  /* === EPIC WILD SHIELD (Replace the old one) === */
+  /* === EPIC WILD SHIELD === */
+/* === SIMPLE & CLEAN WILD SHIELD === */
 .shield-dome {
   position: absolute;
   width: 420px;
   height: 520px;
-  background: radial-gradient(circle at center, rgba(255, 235, 59, 0.4) 0%, transparent 65%);
-  border: 16px solid transparent;
-  border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><polygon points="50,5 90,30 90,70 50,95 10,70 10,30" fill="none" stroke="%23ffeb3b" stroke-width="8"/></svg>') 16;
+  background: radial-gradient(circle at center, rgba(255, 235, 59, 0.35) 0%, transparent 70%);
+  border: 12px solid #ffeb3b;
   border-radius: 50%;
   box-shadow: 
-    0 0 100px #ffeb3b,
-    0 0 200px #ffd700,
-    inset 0 0 120px rgba(255, 220, 5, 0.6);
+    0 0 80px #ffeb3b,
+    0 0 160px rgba(255, 235, 59, 0.6),
+    inset 0 0 80px rgba(255, 235, 59, 0.3);
   pointer-events: none;
   opacity: 0;
   z-index: 15;
-  animation: shieldAppear 0.6s ease-out forwards, shieldPulse 2s infinite alternate 0.6s;
+  animation: shieldSimpleAppear 0.7s ease-out forwards;
 }
 
 .shield-impact {
   position: absolute;
   width: 500px;
-  height:   600px;
-  background: radial-gradient(circle, #ffffff 5%, #ffeb3b 20%, transparent 50%);
+  height: 600px;
+  background: radial-gradient(circle, #ffffff 8%, #ffeb3b 25%, transparent 55%);
   border-radius: 50%;
   opacity: 0;
   pointer-events: none;
-  animation: shieldHitFlash 0.8s ease-out forwards;
+  animation: shieldSimpleHit 0.9s ease-out forwards;
   z-index: 16;
-}
-
-.shield-hexagon {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,8 88,35 88,65 50,92 12,65 12,35" fill="none" stroke="%23ffeb3b" stroke-width="6" opacity="0.8"/></svg>') center/contain no-repeat;
-  animation: hexRotate 8s linear infinite;
-  pointer-events: none;
 }
 
 .protect-text {
@@ -124,49 +115,32 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Press Start 2P', cursive;
-  font-size: 4rem;
+  font-size: 3.2rem;
   color: #ffeb3b;
-  text-shadow: 
-    0 0 20px #fff,
-    0 0 40px #ffeb3b,
-    0 0 80px gold;
+  text-shadow: 0 0 20px #fff, 0 0 40px #ffeb3b;
   opacity: 0;
   pointer-events: none;
-  z-index: 17;
-  animation: protectFlash 2s ease-out forwards;
+  animation: protectSimpleFlash 1.6s ease-out forwards;
 }
 
-@keyframes shieldAppear {
-  0%   { transform: scale(0.2); opacity: 0; }
-  50%  { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.9; }
+/* Simple animations */
+@keyframes shieldSimpleAppear {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
 }
 
-@keyframes shieldPulse {
-  0% { box-shadow: 0 0 100px #ffeb3b, 0 0 200px #ffd700, inset 0 0 120px rgba(255,220,5,0.6); }
-  100% { box-shadow: 0 0 140px #ffeb3b, 0 0 280px #ffd700, inset 0 0 160px rgba(255,220,5,0.8); }
+@keyframes shieldSimpleHit {
+  0%   { opacity: 0; transform: scale(0.7); }
+  40%  { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.6); }
 }
 
-@keyframes shieldHitFlash {
-  0%   { opacity: 0; transform: scale(0.8); }
-  30%  { opacity: 1; transform: scale(1.3); }
-  100% { opacity: 0; transform: scale(1.8); }
+@keyframes protectSimpleFlash {
+  0%, 75%  { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  15%, 55% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100%     { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
 }
-
-@keyframes hexRotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-@keyframes protectFlash {
-  0%, 80% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-  20%, 60% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
-}
-  @keyframes sparkleFly {
-    0% { transform: translate(0,0) scale(0); opacity: 1; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
-  }
   </style>
 </head>
 <body>
@@ -306,7 +280,7 @@ const POKEMON_MOVES = {
   498: { name: "Tepig", moves: ["Tackle", "Ember", "Flame Charge", "Heat Crash"] },
   501: { name: "Oshawott", moves: ["Tackle", "Water Gun", "Razor Shell", "Hydro Pump"] },
 
-  // Legendaries & Cool Ones
+  // Legendaries 
   144: { name: "Articuno", moves: ["Ice Beam", "Blizzard", "Hurricane", "Ancient Power"] },
   145: { name: "Zapdos", moves: ["Thunder Shock", "Drill Peck", "Thunderbolt", "Thunder"] },
   146: { name: "Moltres", moves: ["Fire Spin", "Air Slash", "Flamethrower", "Sky Attack"] },
@@ -424,8 +398,6 @@ document.getElementById('connectBtn').onclick = async () => {
 };
 
 document.getElementById('logoutBtn').onclick = () => location.reload();
-
-// ==================== ALL MISSING ANIMATION FUNCTIONS ====================
 
 function createEarthquakeCrack(x1, y1, x2, y2) {
   for (let i = 0; i < 12; i++) {
@@ -791,7 +763,6 @@ function createNormalTackle(x1, y1, x2, y2) {
 }
 
 // ==================== ATTACK LOGIC ====================
-// ==================== FIXED ATTACK (SENDS SHIELD INFO) ====================
 function attack() {
   if (!myTurn || !conn || !myPokemon) return;
 
@@ -838,8 +809,7 @@ function attack() {
   myTurn = false;
 }
 
-// ==================== FIXED RECEIVE ATTACK (NOW FULLY SYNCED) ====================
-// ==================== FIXED RECEIVE ATTACK (SHIELD LOGIC + SYNCED SHIELD) ====================
+// ==================== FIXED RECEIVE ATTACK  ====================
 function receiveAttack(data) {
   const damage = data.damage || 0;
   const missed = data.missed || false;
@@ -906,22 +876,15 @@ function showWildShieldEffect(isPlayerDefending) {
   shield.style.top = (centerY - 260) + 'px';
   document.getElementById('attackContainer').appendChild(shield);
 
-  // Hexagon
-  const hex = document.createElement('div');
-  hex.className = 'shield-hexagon';
-  hex.style.left = (centerX - 210) + 'px';
-  hex.style.top = (centerY - 260) + 'px';
-  document.getElementById('attackContainer').appendChild(hex);
-
   // PROTECT! text
   const text = document.createElement('div');
   text.className = 'protect-text';
   text.textContent = 'PROTECT!';
   text.style.left = centerX + 'px';
-  text.style.top = (centerY - 100) + 'px';
+  text.style.top = (centerY - 80) + 'px';
   document.getElementById('attackContainer').appendChild(text);
 
-  // Impact flash
+  // Impact flash (slightly delayed)
   setTimeout(() => {
     const impact = document.createElement('div');
     impact.className = 'shield-impact';
@@ -929,20 +892,20 @@ function showWildShieldEffect(isPlayerDefending) {
     impact.style.top = (centerY - 300) + 'px';
     document.getElementById('attackContainer').appendChild(impact);
 
+    // Quick white flash
     document.body.style.background = '#fff';
-    targetImg.style.filter = 'brightness(4)';
+    targetImg.style.filter = 'brightness(3.5)';
     setTimeout(() => {
       document.body.style.background = '#000';
       targetImg.style.filter = '';
-    }, 120);
-  }, 600);
+    }, 100);
+  }, 500);
 
   // Cleanup
   setTimeout(() => {
     shield.remove();
-    hex.remove();
     text.remove();
-  }, 3000);
+  }, 2800);
 }
 function triggerFaint(isPlayer) {
   const img = isPlayer ? document.getElementById('playerImg') : document.getElementById('oppoImg');
