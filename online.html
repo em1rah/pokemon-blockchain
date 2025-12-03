@@ -947,25 +947,23 @@ function createRoom() {
   });
 
   setupPeerEvents();
-
-  // Optional: Copy to clipboard automatically
   navigator.clipboard.writeText(code).catch(() => {});
   
   // Show the generated code nicely
-  document.getElementById('roomStatus').innerHTML = `
-    <div style="font-size:1.6rem;color:#ffcb05">
-      Room Created!<br><br>
-      <div style="background:rgba(255,203,5,0.2);padding:16px;border:3px solid #ffcb05;border-radius:12px;font-size:2.2rem;letter-spacing:8px;font-family:monospace">
-        ${code}
-      </div>
-      <br>
-      <button onclick="navigator.clipboard.writeText('${code}'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy Code',2000)" 
-              style="padding:10px 20px;font-size:1rem;background:#ff9800;border:none;border-radius:8px;color:white;cursor:pointer">
-        Copy Code
-      </button>
-      <br><br>Waiting for opponent to join...
-    </div>
-  `;
+  // document.getElementById('roomStatus').innerHTML = `
+  //   <div style="font-size:1.6rem;color:#ffcb05">
+  //     Room Created!<br><br>
+  //     <div style="background:rgba(255,203,5,0.2);padding:16px;border:3px solid #ffcb05;border-radius:12px;font-size:2.2rem;letter-spacing:8px;font-family:monospace">
+  //       ${code}
+  //     </div>
+  //     <br>
+  //     <button onclick="navigator.clipboard.writeText('${code}'); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy Code',6000)" 
+  //             style="padding:10px 20px;font-size:1rem;background:#ff9800;border:none;border-radius:8px;color:white;cursor:pointer">
+  //       Copy Code
+  //     </button>
+  //     <br><br>Waiting for opponent to join...
+  //   </div>
+  // `;
 
   log(`Room created: <b style="color:#ffcb05">${code}</b>`);
 }
