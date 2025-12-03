@@ -78,8 +78,7 @@
     @keyframes faintEyes{0%,50%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
     @keyframes swirlFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(0deg)}30%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(360deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(720deg)}}
   
-  /* === EPIC WILD SHIELD === */
-/* === SIMPLE & CLEAN WILD SHIELD === */
+
 .shield-dome {
   position: absolute;
   width: 420px;
@@ -234,8 +233,6 @@ let isHost = false, bothReady = false, turnDecided = false;
 let pendingOpponent = null;
 let opponentHpBeforeAttack = 100;
 
-// ==================== COMPLETE POKÉMON MOVES DATABASE (Gen 1–5) ====================
-// ==================== COMPLETE ACCURATE POKÉMON MOVES DATABASE (All your shop Pokémon) ====================
 const POKEMON_MOVES = {
   // Starters
   1: { name: "Bulbasaur", moves: ["Tackle", "Vine Whip", "Razor Leaf", "Solar Beam"] },
@@ -332,7 +329,6 @@ const POKEMON_MOVES = {
   495: { name: "Celebi", moves: ["Magical Leaf", "Future Sight", "Recover", "Healing Wish"] }
 };
 
-// ==================== EXPANDED MOVE TYPE MAPPING ====================
 const MOVE_TYPES = {
   // Normal
   "Tackle":"normal","Quick Attack":"normal","Scratch":"normal","Pound":"normal",
@@ -397,7 +393,6 @@ const MOVE_TYPES = {
   "default": "normal"
 };
 
-// Fallback: if Pokémon not in database, give 4 random moves
 const FALLBACK_MOVES = ["Tackle", "Quick Attack", "Thunderbolt", "Flamethrower", "Hydro Pump", "Solar Beam", "Psychic", "Shadow Ball", "Hyper Beam", "Giga Impact"];
 
 function getMovesForPokemon(id) {
@@ -405,7 +400,6 @@ function getMovesForPokemon(id) {
   if (pokemon && pokemon.moves && pokemon.moves.length === 4) {
     return pokemon.moves;
   }
-  // Final fallback (should never trigger now)
   const fallback = ["Tackle", "Quick Attack", "Hyper Beam", "Giga Impact"];
   console.warn(`No moves defined for Pokémon ID ${id}, using fallback`);
   return fallback;
@@ -575,8 +569,6 @@ function createMetalClaw(x1, y1, x2, y2) {
     { transform: `translate(${x2-x1}px,${y2-y1}px) rotate(360deg) scale(2)` }
   ], { duration: 700 }).onfinish = () => claw.remove();
 }
-// ==================== ATTACK ANIMATION ENGINE ====================
-// ==================== FINAL ULTIMATE SIGNATURE MOVE ENGINE ====================
 function playAttackAnimation(isPlayerAttacker, moveName, isMiss = false) {
   const container = document.getElementById('attackContainer');
   const attacker = isPlayerAttacker ? document.getElementById('playerImg') : document.getElementById('oppoImg');
@@ -938,7 +930,7 @@ if (newOppHp <= 0 && !isMiss) {
   myTurn = false;
 }
 
-// ==================== FIXED RECEIVE ATTACK (NO DOUBLE PAYMENT) ====================
+// ==================== FIXED RECEIVE ATTACK ====================
 function receiveAttack(data) {
   const damage = data.damage || 0;
   const missed = data.missed || false;
