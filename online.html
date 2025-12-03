@@ -1106,6 +1106,7 @@ function joinRoom() {
   peer.on('open', () => {
     conn = peer.connect(code);
     setupConnEvents(conn);
+   
     log('Joining room...');
   });
 }
@@ -1138,13 +1139,12 @@ function acceptOpponent() {
   document.getElementById('overlay').style.display = 'none';
   document.getElementById('confirmModal').style.display = 'none';
 
-  // Setup listeners FIRST
   setupConnEvents(conn);
 
-  // Tell the other player we accepted
-  conn.send({ type: 'accepted' });
+  // Tell the joiner: "We're both in!"
+  conn.send({ type: 'matchConfirmed' });
 
-  // Now both sides can safely go to team selection
+  // BOTH players now go to team selection
   startTeamSelection();
   log('Battle accepted! Choose your Pokémon!');
 }
@@ -1174,11 +1174,11 @@ function setupConnEvents(c) {
       opponentAddress = data.address;
     }
 
-    else if (data.type === 'accepted') {
-      // Joiner receives acceptance → now safe to start team selection
-      startTeamSelection();
-      log('Host accepted! Choose your Pokémon!');
-    }
+    else if (data.type === 'matchConfirmed') {
+  // This message means: "Both players are connected and accepted"
+  startTeamSelection();
+  log('Connected! Choose your Pokémon!');
+}
 
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
