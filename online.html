@@ -1117,22 +1117,36 @@ function setupPeerEvents() {
   });
 
   peer.on('connection', incoming => {
-    if (conn) return incoming.close();
-    document.getElementById('opponentId').textContent = incoming.peer;
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('confirmModal').style.display = 'block';
-    pendingOpponent = incoming;
+   if (conn && conn.open) {
+    incoming.close();
+    return;
+  }
+  // New opponent trying to join
+  document.getElementById('opponentId').textContent = incoming.peer;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('confirmModal').style.display = 'block';
+  pendingOpponent = incoming;
   });
 }
 
 function acceptOpponent() {
-  conn = pendingOpponent; pendingOpponent = null;
+  if (!pendingOpponent) return;
+
+  conn = pendingOpponent;
+  pendingOpponent = null;
+
   document.getElementById('overlay').style.display = 'none';
   document.getElementById('confirmModal').style.display = 'none';
+
+  // Setup listeners FIRST
   setupConnEvents(conn);
+
+  // Tell the other player we accepted
   conn.send({ type: 'accepted' });
+
+  // Now both sides can safely go to team selection
   startTeamSelection();
-  log('Battle accepted!');
+  log('Battle accepted! Choose your Pokémon!');
 }
 
 function rejectOpponent() {
@@ -1143,13 +1157,28 @@ function rejectOpponent() {
 }
 
 function setupConnEvents(c) {
+  // Prevent double-setup
+  if (c._events && c._events.data) return;
+
   conn = c;
-  conn.on('open', () => log('Connected!'));
+
+  conn.on('open', () => {
+    log('Connected to opponent!');
+    conn.send({ type: 'wallet', address: userAddress });
+  });
 
   conn.on('data', data => {
-    if (data.type === 'wallet') opponentAddress = data.address;
+    console.log('Received:', data); // debug help
 
-    else if (data.type === 'accepted') startTeamSelection();
+    if (data.type === 'wallet') {
+      opponentAddress = data.address;
+    }
+
+    else if (data.type === 'accepted') {
+      // Joiner receives acceptance → now safe to start team selection
+      startTeamSelection();
+      log('Host accepted! Choose your Pokémon!');
+    }
 
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
@@ -1158,15 +1187,26 @@ function setupConnEvents(c) {
       document.getElementById('oppoHpText').textContent = '100/100 HP';
       document.getElementById('oppoHpFill').style.width = '100%';
       log(`Opponent chose ${opponentPokemon.name.toUpperCase()}!`);
-      if (myPokemon) { bothReady = true; startBattle(); }
+
+      if (myPokemon) {
+        bothReady = true;
+        startBattle();
+      }
     }
 
-    else if (data.type === 'attack') receiveAttack(data);
+    else if (data.type === 'attack') {
+      receiveAttack(data);
+    }
 
     else if (data.type === 'turn') {
       turnDecided = true;
       myTurn = !data.first;
-      myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
+      if (myTurn) {
+        log('<span style="color:#4caf50">You go first!</span>');
+        showAttackButton();
+      } else {
+        log('<span style="color:#f44336">Opponent goes first...</span>');
+      }
     }
 
     else if (data.type === 'shield') {
@@ -1175,34 +1215,17 @@ function setupConnEvents(c) {
       document.getElementById('oppoHpText').textContent = opponentHpBeforeAttack + '/100 HP';
       showWildShieldEffect(false);
     }
-    
 
-  
-
-    // LOSER RECEIVES PAYMENT CONFIRMATION
-    else if (data.type === 'paymentSuccess') {
-      // log('<span style="color:#4caf50;font-size:3rem">+500 TOKENS RECEIVED!</span>');
+    else if (data.type === 'gameOver') {
+      if (data.winner === userAddress) {
+        log('<span style="color:#4caf50;font-size:4rem">VICTORY!</span>');
+        document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:3rem">YOU WIN!<br>Waiting for reward...</div>';
+      } else {
+        log('<span style="color:#ff4444;font-size:4rem">DEFEATED!</span>');
+        triggerFaint(true);
+        setTimeout(() => forcePayToWinner(data.winner), 2000);
+      }
     }
-
-    else if (data.type === 'paymentFailed') {
-      log('<span style="color:#ff9800">Opponent failed to pay<br>No reward this time</span>');
-    }
-   else if (data.type === 'gameOver') {
-  if (data.winner === userAddress) {
-    // I WON!
-    log('<span style="color:#4caf50;font-size:4rem;text-shadow:0 0 60px lime">★ VICTORY ★</span>');
-    document.getElementById('playerActions').innerHTML = 
-      '<div style="color:#4caf50;font-size:3rem;padding:40px">YOU WIN!<br>Waiting for 500 tokens reward...</div>';
-  } else {
-    // I LOST → Pay exactly once
-    log('<span style="color:#ff4444;font-size:4rem;text-shadow:0 0 50px red">DEFEATED!</span>');
-    triggerFaint(true);
-    document.getElementById('playerActions').innerHTML = 
-    
-    // Pay only here — once and only once
-    setTimeout(() => forcePayToWinner(data.winner), 2000);
-  }
-}
   });
 
   conn.on('close', () => {
