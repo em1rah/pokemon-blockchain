@@ -772,29 +772,24 @@ function attack() {
   const baseDamage = 15 + Math.floor(Math.random() * 6);
   const damage = isMiss ? 0 : baseDamage;
 
-  // Store opponent's HP BEFORE this attack (for potential shield revert)
   let oppHp = parseInt(document.getElementById('oppoHpText').textContent.split('/')[0]);
   opponentHpBeforeAttack = oppHp;
   const newOppHp = Math.max(0, oppHp - damage);
 
-  // Play animation
   playAttackAnimation(true, chosenMove, isMiss);
 
-  // Update opponent HP locally (optimistic)
   document.getElementById('oppoHpFill').style.width = newOppHp + '%';
   document.getElementById('oppoHpText').textContent = newOppHp + '/100 HP';
   document.getElementById('oppoHpFill').classList.remove('warning', 'danger');
-  document.getElementById('oppoHpFill').classList.toggle('warning', newOppHp <= 50 && newOppHp > 20);
-  document.getElementById('oppoHpFill').classList.toggle('danger', newOppHp <= 20);
+  if (newOppHp <= 50 && newOppHp > 20) document.getElementById('oppoHpFill').classList.add('warning');
+  if (newOppHp <= 20) document.getElementById('oppoHpFill').classList.add('danger');
 
-  // Log
   if (isMiss) {
     log(`<b>${myPokemon.name.toUpperCase()}</b> used <b>${chosenMove}</b>...<br><b style="color:#ff9800">MISSED!</b>`);
   } else {
     log(`<b>${myPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${chosenMove}</b>!<br>Dealt <b style="color:#ff4444">${damage}</b> damage!`);
   }
 
-  // SEND TO OPPONENT
   conn.send({
     type: 'attack',
     moveName: chosenMove,
@@ -803,61 +798,96 @@ function attack() {
     opponentNewHp: newOppHp
   });
 
-  // NO EARLY VICTORY CHECK HERE! Let defender decide (handles shield + disconnects)
+  // If you just dealt the FINAL BLOW → tell opponent "you lost, pay me"
+// Inside attack() function, replace the gameOver block with:
+if (newOppHp <= 0 && !isMiss) {
+  conn.send({ 
+    type: 'gameOver',
+    winner: userAddress,
+    loser: opponentAddress
+  });
+
+  triggerFaint(false);
+  document.getElementById('playerActions').innerHTML = 
+    '<div style="color:#4caf50;font-size:3rem;padding:40px">YOU WIN!<br>Awaiting 500 tokens...</div>';
+}
 
   document.getElementById('playerActions').innerHTML = '<div style="background:rgba(0,0,0,0.7);color:#ccc;padding:20px 40px;border-radius:16px;font-size:1.4rem">Waiting...</div>';
   myTurn = false;
 }
 
-// ==================== FIXED RECEIVE ATTACK  ====================
+// ==================== FIXED RECEIVE ATTACK (NO DOUBLE PAYMENT) ====================
 function receiveAttack(data) {
   const damage = data.damage || 0;
   const missed = data.missed || false;
   const moveName = data.moveName;
 
-  // Always play the animation first
   playAttackAnimation(false, moveName, missed);
 
-  // 1. MISS → no damage, no shield possible
   if (missed) {
-    log(`<span style="color:#ccc">Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b>${moveName}</b>...<br>but you <b style="color:#4caf50">DODGED!</b></span>`);
+    log(`Opponent used <b>${moveName}</b> → <span style="color:#4caf50">MISSED!</span>`);
     myTurn = true;
     showAttackButton();
     return;
   }
 
-  // 2. WILD SHIELD → block damage completely
-  const shieldActivated = Math.random() < 0.15;  // 15% chance
-
-  if (shieldActivated) {
-    log(`<span style="color:#ffeb3b;font-size:2.8rem;text-shadow:0 0 40px gold">
-           WILD SHIELD ACTIVATED!<br><i>Attack blocked!</i></span>`);
-
-    showWildShieldEffect(true);  // true = player defending
-    conn.send({ type: 'shield' });  // tell opponent
-
+  // Wild Shield (15% chance)
+  if (Math.random() < 0.15) {
+    log('<span style="color:#ffeb3b;font-size:3.2rem;text-shadow:0 0 40px gold">WILD SHIELD ACTIVATED!</span>');
+    showWildShieldEffect(true);
+    conn.send({ type: 'shield' });
     myTurn = true;
     showAttackButton();
-    return;  // ← CRITICAL: exit early, NO HP change!
+    return;
   }
 
-  // 3. NORMAL HIT → only now apply damage
-  log(`Opponent's <b>${opponentPokemon.name.toUpperCase()}</b> used <b style="color:#ffeb3b">${moveName}</b>!<br>You took <b style="color:#ff4444">${damage}</b> damage!`);
+  log(`Opponent used <b style="color:#ffeb3b">${moveName}</b> → <b style="color:#ff4444">${damage} damage!</b>`);
 
-  // Now it's safe to use the pre-calculated HP from opponent
   const newHp = data.opponentNewHp;
-
   document.getElementById('playerHpFill').style.width = newHp + '%';
   document.getElementById('playerHpText').textContent = newHp + '/100 HP';
-  document.getElementById('playerHpFill').classList.toggle('warning', newHp <= 50 && newHp > 20);
-  document.getElementById('playerHpFill').classList.toggle('danger', newHp <= 20);
+  if (newHp <= 50 && newHp > 20) document.getElementById('playerHpFill').classList.add('warning');
+  if (newHp <= 20) document.getElementById('playerHpFill').classList.add('danger');
 
+  // DO NOT AUTO-PAY HERE ANYMORE!
+  // Only pay when we receive official 'gameOver' message from winner
   if (newHp <= 0) {
-    setTimeout(() => triggerFaint(true), 1200);
-    conn.send({ type: 'defeat' });
+    log('<span style="color:#ff4444;font-size:3.5rem">YOUR POKÉMON FAINTED!</span>');
+    triggerFaint(true);
+    document.getElementById('playerActions').innerHTML = 
+      '<div style="color:#ff4444;font-size:2.8rem;padding:40px">YOU LOST<br>Waiting for winner confirmation...</div>';
+    // Remove the forcePayToWinner() call from here!
   } else {
     myTurn = true;
     showAttackButton();
+  }
+}
+
+async function forcePayToWinner(winnerAddress) {
+  if (!tokenContract || !winnerAddress) {
+    log('<span style="color:#ff4444">Wallet not connected!</span>');
+    return;
+  }
+
+  try {
+    const decimals = await tokenContract.decimals();
+    const amount = ethers.utils.parseUnits("500", decimals);
+
+    log('<span style="color:#ff9800;font-size:2.2rem">Battle Lost! Paying 500 tokens to winner...</span>');
+
+    // THIS WILL AUTOMATICALLY OPEN METAMASK
+    const tx = await tokenContract.transfer(winnerAddress, amount);
+
+    log('<span style="color:#ffeb3b">Transaction sent! Confirming...</span>');
+    await tx.wait();
+
+    log('<span style="color:#4caf50;font-size:2.8rem">500 TOKENS SENT TO WINNER!</span>');
+    conn?.send({ type: 'paymentSuccess' });
+
+  } catch (err) {
+    console.error("Payment rejected:", err);
+    log('<span style="color:#ff4444;font-size:2rem">Payment rejected!<br>You kept your tokens.</span>');
+    conn?.send({ type: 'paymentFailed' });
   }
 }
 
@@ -1017,66 +1047,126 @@ function rejectOpponent() {
 function setupConnEvents(c) {
   conn = c;
   conn.on('open', () => log('Connected!'));
+
   conn.on('data', data => {
     if (data.type === 'wallet') opponentAddress = data.address;
+
     else if (data.type === 'accepted') startTeamSelection();
+
     else if (data.type === 'pokemon') {
       opponentPokemon = data.poke;
       document.getElementById('oppoImg').src = frontImg(opponentPokemon.id) || img(opponentPokemon.id);
       document.getElementById('oppoName').textContent = opponentPokemon.name.toUpperCase();
       document.getElementById('oppoHpText').textContent = '100/100 HP';
-      
       document.getElementById('oppoHpFill').style.width = '100%';
-      opponentHpBeforeAttack = 100;
-      log(`Opponent sent ${opponentPokemon.name.toUpperCase()}!`);
+      log(`Opponent chose ${opponentPokemon.name.toUpperCase()}!`);
       if (myPokemon) { bothReady = true; startBattle(); }
     }
+
     else if (data.type === 'attack') receiveAttack(data);
+
     else if (data.type === 'turn') {
       turnDecided = true;
       myTurn = !data.first;
-      myTurn ? (log('<span style="color:#4caf50">Your turn first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
+      myTurn ? (log('<span style="color:#4caf50">You go first!</span>'), showAttackButton()) : log('<span style="color:#f44336">Opponent goes first</span>');
     }
-   else if (data.type === 'shield') {
-  log(`<span style="color:#ffeb3b;font-size:2.0rem;text-shadow:0 0 30px gold">
-         OPPONENT USED WILD SHIELD!<br><i>Your attack was blocked!</i></span>`);
-  
-  // Revert opponent HP (undo optimistic damage)
-  document.getElementById('oppoHpFill').style.width = opponentHpBeforeAttack + '%';
-  document.getElementById('oppoHpText').textContent = opponentHpBeforeAttack + '/100 HP';
-  document.getElementById('oppoHpFill').classList.remove('warning', 'danger');
-  if (opponentHpBeforeAttack <= 50 && opponentHpBeforeAttack > 20) {
-    document.getElementById('oppoHpFill').classList.add('warning');
-  } else if (opponentHpBeforeAttack <= 20) {
-    document.getElementById('oppoHpFill').classList.add('danger');
+
+    else if (data.type === 'shield') {
+      log('<span style="color:#ffeb3b;font-size:2.4rem">OPPONENT USED WILD SHIELD!</span>');
+      document.getElementById('oppoHpFill').style.width = opponentHpBeforeAttack + '%';
+      document.getElementById('oppoHpText').textContent = opponentHpBeforeAttack + '/100 HP';
+      showWildShieldEffect(false);
+    }
+    
+
+    // WINNER RECEIVES THIS WHEN OPPONENT FAINTS
+    // else if (data.type === 'youLostPayMe') {
+    //   log('<span style="color:#4caf50;font-size:4rem;text-shadow:0 0 50px lime">VICTORY!</span>');
+    //   document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:3rem;padding:40px">YOU WIN!<br>Waiting for 500 tokens...</div>';
+    // }
+
+    // LOSER RECEIVES PAYMENT CONFIRMATION
+    else if (data.type === 'paymentSuccess') {
+      // log('<span style="color:#4caf50;font-size:3rem">+500 TOKENS RECEIVED!</span>');
+    }
+
+    else if (data.type === 'paymentFailed') {
+      log('<span style="color:#ff9800">Opponent failed to pay<br>No reward this time</span>');
+    }
+   else if (data.type === 'gameOver') {
+  if (data.winner === userAddress) {
+    // I WON!
+    log('<span style="color:#4caf50;font-size:4rem;text-shadow:0 0 60px lime">★ VICTORY ★</span>');
+    document.getElementById('playerActions').innerHTML = 
+      '<div style="color:#4caf50;font-size:3rem;padding:40px">YOU WIN!<br>Waiting for 500 tokens reward...</div>';
+  } else {
+    // I LOST → Pay exactly once
+    log('<span style="color:#ff4444;font-size:4rem;text-shadow:0 0 50px red">DEFEATED!</span>');
+    triggerFaint(true);
+    document.getElementById('playerActions').innerHTML = 
+      // '<div style="color:#ff4444;font-size:2.8rem;padding:40px">YOU LOST<br>Sending 500 tokens...</div>';
+
+    // Pay only here — once and only once
+    setTimeout(() => forcePayToWinner(data.winner), 2000);
   }
-  
-  showWildShieldEffect(false); // opponent defending
-}
-else if (data.type === 'victory') {
-  log('<span style="color:#f44336;font-size:3rem">YOU LOST THE BATTLE!</span><br><span style="color:#ff9800">-500 TOKEN</span>');
-  triggerFaint(true);  // ← ADD: My Pokémon fainted
-  setTimeout(() => payToWinner(opponentAddress), 1500);
-  document.getElementById('playerActions').innerHTML = '<div style="color:#ff4444;font-size:2rem;padding:30px">DEFEAT</div>';
-}
-else if (data.type === 'defeat') {
-  log('<span style="color:#4caf50;font-size:3.5rem;text-shadow:0 0 30px lime">VICTORY!</span><br><span style="color:#ffeb3b">+500 TOKEN REWARD!</span>');
-  triggerFaint(false);  // ← ADD: Opponent fainted
-  document.getElementById('playerActions').innerHTML = '<div style="color:#4caf50;font-size:2.5rem;padding:30px">YOU WIN!</div>';
 }
   });
-  conn.on('close', () => { log('<span style="color:#f44336">Opponent disconnected!</span>'); alert('Opponent left'); location.reload(); });
+
+  conn.on('close', () => {
+    log('<span style="color:#f44336">Opponent disconnected!</span>');
+    alert('Opponent left the battle');
+    location.reload();
+  });
 }
 
-async function payToWinner(winner) {
-  if (!tokenContract || !winner) return;
-  const decimals = await tokenContract.decimals();
-  const amount = ethers.utils.parseUnits("500", decimals);
+async function payToWinner(winnerAddress) {
+  if (!tokenContract || !winnerAddress) {
+    log('<span style="color:#ff4444">Wallet or winner address missing!</span>');
+    return;
+  }
+
   try {
-    const tx = await tokenContract.transfer(winner, amount);
+    const decimals = await tokenContract.decimals();
+    const amount = ethers.utils.parseUnits("500", decimals);
+
+    log(`<span style="color:#ffeb3b">Sending 500 TOKEN to ${winnerAddress.slice(0,8)}...</span>`);
+
+    const tx = await tokenContract.transfer(winnerAddress, amount);
+    log('<span style="color:#ffeb3b">Transaction sent! Waiting for confirmation...</span>');
+
     await tx.wait();
-    log('<span style="color:#4caf50;font-size:1.8rem">500 TOKEN PAID!</span>');
-  } catch (e) { log('<span style="color:#ff4444">Payment failed</span>'); }
+
+    log('<span style="color:#4caf50;font-size:1.8rem">500 TOKEN SENT TO WINNER!</span>');
+    
+    // Notify winner that payment arrived
+    conn?.send({ type: 'paymentReceived' });
+
+  } catch (err) {
+    console.error("Payment failed:", err);
+    log('<span style="color:#ff4444">Payment failed! Not enough tokens or rejected.</span>');
+  }
+}
+
+async function claimVictoryReward() {
+  if (!tokenContract || !userAddress) {
+    log('<span style="color:#ff4444">Wallet not connected!</span>');
+    return;
+  }
+
+  try {
+    // Simulate receiving 500 tokens (in real game, this would come from a prize pool contract)
+    // For now: just show success (or connect to a real reward faucet later)
+    log('<span style="color:#4caf50;font-size:2rem">✅ +500 TOKEN REWARDED!</span>');
+    
+    // OPTIONAL: If you have a real reward contract, call it here:
+    // const tx = await rewardContract.claimReward();
+    // await tx.wait();
+    // log("Reward claimed on-chain!");
+
+  } catch (err) {
+    log('<span style="color:#ff4444">Reward claim failed</span>');
+    console.error(err);
+  }
 }
 
 function startTeamSelection() {
@@ -1122,7 +1212,9 @@ function startBattle() {
 }
 
 setInterval(() => {
-  if (conn && conn.open && userAddress) conn.send({ type: 'wallet', address: userAddress });
+  if (conn && conn.open && userAddress) {
+    conn.send({ type: 'wallet', address: userAddress });
+  }
 }, 2000);
 
 </script>
