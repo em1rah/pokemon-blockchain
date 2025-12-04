@@ -643,6 +643,13 @@ function playAttackAnimation(isPlayerAttacker, moveName, isMiss = false) {
     if (attackerId === 282 && moveKey.includes("MOONBLAST")) return createMoonblast(startX, startY, endX, endY);
   }
 
+      // Universal powerful moves
+    if (moveKey.includes("HYPER BEAM")) return createHyperBeam(startX, startY, endX, endY);
+    if (moveKey.includes("GIGA IMPACT")) return createHyperBeam(startX, startY, endX, endY, true);
+    if (moveKey.includes("DRACO METEOR")) return createDracoMeteor(startX, startY, endX, endY);
+    if (moveKey.includes("ROAR OF TIME")) return createRoarOfTime(startX, startY, endX, endY);
+    if (moveKey.includes("JUDGMENT")) return createHyperBeam(startX, startY, endX, endY); // rainbow later
+
   // === FALLBACK TO TYPE SYSTEM IF NO SIGNATURE ===
   const type = (MOVE_TYPES[moveName] || "normal").toLowerCase();
   if (type === "fire") { createBeam(startX, startY, endX, endY, "linear-gradient(90deg,transparent,#fff,#ff1744,#ff9800,transparent)", "0 0 50px #ff4500"); setTimeout(() => createExplosion(endX, endY, "#ff4500", "#ff9800"), 600); }
@@ -878,6 +885,113 @@ function createMoonblast(x1,y1,x2,y2) {
   document.getElementById('attackContainer').appendChild(moon);
   moon.animate([{transform:'scale(0)',opacity:0},{transform:'scale(1.6)',opacity:1},{opacity:0}],{duration:1600}).onfinish(()=>moon.remove());
 }
+
+// HYPER BEAM / GIGA IMPACT - Iconic charge + massive beam
+function createHyperBeam(x1, y1, x2, y2, isGiga = false) {
+  // Charge effect
+  const charge = document.createElement('div');
+  charge.style.position = 'absolute';
+  charge.style.width = '180px'; charge.style.height = '180px';
+  charge.style.background = isGiga ? 'radial-gradient(circle, #ffff00 20%, #ff9800 80%)' : 'radial-gradient(circle, white 20%, #ccccff 80%)';
+  charge.style.borderRadius = '50%';
+  charge.style.left = (x1-90)+'px'; charge.style.top = (y1-90)+'px';
+  charge.style.boxShadow = '0 0 100px white';
+  charge.style.zIndex = '17';
+  document.getElementById('attackContainer').appendChild(charge);
+
+  charge.animate([
+    {transform: 'scale(0.4)', opacity: 0},
+    {transform: 'scale(1.4)', opacity: 1},
+    {transform: 'scale(1)', opacity: 0.8}
+  ], {duration: 1200});
+
+  setTimeout(() => {
+    charge.remove();
+    // Massive beam
+    const beam = document.createElement('div');
+    beam.style.position = 'absolute';
+    beam.style.height = '180px';
+    beam.style.width = '2000px';
+    beam.style.background = isGiga 
+      ? 'linear-gradient(90deg, transparent, #ffff00, #ff9800, white, #ff9800, #ffff00, transparent)'
+      : 'linear-gradient(90deg, transparent, white, #ccccff, white, transparent)';
+    beam.style.left = x1 + 'px';
+    beam.style.top = (y1 - 90) + 'px';
+    beam.style.boxShadow = '0 0 200px white, 0 0 400px ' + (isGiga ? '#ffff00' : '#ccccff');
+    beam.style.filter = 'blur(8px)';
+    document.getElementById('attackContainer').appendChild(beam);
+
+    beam.animate([
+      {transform: 'translateX(0)', opacity: 0},
+      {opacity: 1, offset: 0.2},
+      {transform: 'translateX(1600px)', opacity: 0}
+    ], {duration: 1000}).onfinish = () => {
+      beam.remove();
+      createHitFlash(x2, y2, 'white');
+      document.getElementById('battleArea').classList.add('shake');
+      setTimeout(() => document.getElementById('battleArea').classList.remove('shake'), 1000);
+    };
+  }, 1200);
+}
+
+// DRACO METEOR - Meteors from sky
+function createDracoMeteor(x1, y1, x2, y2) {
+  for (let i = 0; i < 12; i++) {
+    setTimeout(() => {
+      const meteor = document.createElement('div');
+      meteor.style.position = 'absolute';
+      meteor.style.width = '60px'; meteor.style.height = '60px';
+      meteor.style.background = 'radial-gradient(circle, #ff4500 20%, #ff9800 60%)';
+      meteor.style.borderRadius = '50%';
+      meteor.style.boxShadow = '0 0 80px #ff4500';
+      meteor.style.left = (Math.random() * 1000) + 'px';
+      meteor.style.top = '-100px';
+      document.getElementById('attackContainer').appendChild(meteor);
+
+      meteor.animate([
+        {transform: 'translateY(0) rotate(0deg)'},
+        {transform: `translateY(${window.innerHeight + 200}px) rotate(720deg)`}
+      ], {duration: 1600 + i*100, easing: 'cubic-bezier(0.2,0.8,0.2,1)'}).onfinish = () => {
+        if (Math.random() > 0.6) createExplosion(x2 + (Math.random()-0.5)*400, y2 + (Math.random()-0.5)*200, '#ff4500', '#ffff00');
+        meteor.remove();
+      };
+    }, i * 150);
+  }
+}
+
+// ROAR OF TIME - Time slows + red beam
+function createRoarOfTime(x1, y1, x2, y2) {
+  document.body.style.animation = 'none';
+  document.body.offsetHeight; // reflow
+  document.body.style.animation = 'slowmo 3s linear';
+
+  const beam = document.createElement('div');
+  beam.style.position = 'absolute';
+  beam.style.height = '200px';
+  beam.style.width = '2400px';
+  beam.style.background = 'linear-gradient(90deg, transparent, #ff0066, #cc0000, white, #cc0000, #ff0066, transparent)';
+  beam.style.left = x1 + 'px';
+  beam.style.top = (y1 - 100) + 'px';
+  beam.style.boxShadow = '0 0 300px #ff0066';
+  beam.style.filter = 'blur(12px)';
+  document.getElementById('attackContainer').appendChild(beam);
+
+  beam.animate([
+    {opacity: 0},
+    {opacity: 1, offset: 0.4},
+    {opacity: 0}
+  ], {duration: 3000}).onfinish = () => {
+    beam.remove();
+    document.body.style.animation = '';
+  };
+}
+
+// Add this CSS for Roar of Time
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slowmo { from { filter: grayscale(0.8) brightness(0.7); } to { filter: grayscale(0) brightness(1); } }
+`;
+document.head.appendChild(style);
 // ==================== ATTACK LOGIC ====================
 function attack() {
   if (!myTurn || !conn || !myPokemon) return;
